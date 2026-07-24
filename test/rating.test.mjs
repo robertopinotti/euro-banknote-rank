@@ -1,0 +1,207 @@
+/**
+ * Test del motore di classifica. Si esegue con:  node --test test/
+ */
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+import {
+  bradleyTerry,
+  computeRankings,
+  strengthToElo,
+  pickPair,
+} from '../src/rating.js';
+
+/** Generatore pseudo-casuale deterministico, così i test non sono capricciosi. */
+function mulberry32(seed) {
+  return function () {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function pairKey(a, b) {
+  return a < b ? `${a}|${b}` : `${b}|${a}`;
+}
+
+test('recupera l\'ordine vero delle forze da confronti simulati', () => {
+  const truth = { a: 4.0, b: 2.0, c: 1.0, d: 0.5, e: 0.25 };
+  const items = Object.keys(truth);
+  const rng = mulberry32(42);
+
+  const wins = new Map(items.map((i) => [i, 0]));
+  const pairN = new Map();
+
+  for (let i = 0; i < items.length; i++) {
+    for (let j = i + 1; j < items.length; j++) {
+      const [x, y] = [items[i], items[j]];
+      const n = 400;
+      const p = truth[x] / (truth[x] + truth[y]);
+      let winsX = 0;
+      for (let k = 0; k < n; k++) if (rng() < p) winsX++;
+      pairN.set(pairKey(x, y), n);
+      wins.set(x, wins.get(x) + winsX);
+      wins.set(y, wins.get(y) + (n - winsX));
+    }
+  }
+
+  const { strength, converged } = bradleyTerry(items, wins, pairN, { prior: 0.5 });
+  assert.ok(converged, 'l\'algoritmo MM deve convergere');
+
+  const order = [...strength.entries()].sort((a, b) => b[1] - a[1]).map(([k]) => k);
+  assert.deepEqual(order, ['a', 'b', 'c', 'd', 'e']);
+
+  // I rapporti fra le forze devono avvicinarsi a quelli veri (scala ancorata
+  // dall'avversario virtuale, quindi si confrontano i rapporti su 'c' = 1).
+  for (const id of items) {
+    const estimated = strength.get(id) / strength.get('c');
+    const expected = truth[id] / truth.c;
+    assert.ok(
+      Math.abs(Math.log(estimated / expected)) < 0.2,
+      `${id}: stimato ${estimated.toFixed(3)}, atteso ${expected.toFixed(3)}`
+    );
+  }
+});
+
+test('un design imbattuto ottiene un punteggio finito', () => {
+  const items = ['a', 'b', 'c'];
+  const wins = new Map([['a', 20], ['b', 5], ['c', 5]]);
+  const pairN = new Map([
+    [pairKey('a', 'b'), 10],
+    [pairKey('a', 'c'), 10],
+    [pairKey('b', 'c'), 10],
+  ]);
+
+  const { strength } = bradleyTerry(items, wins, pairN, { prior: 1 });
+  const pa = strength.get('a');
+  assert.ok(Number.isFinite(pa) && pa > 0, `forza non finita: ${pa}`);
+  assert.ok(pa > strength.get('b'), 'chi vince sempre deve stare in testa');
+  assert.ok(Number.isFinite(strengthToElo(pa)));
+});
+
+test('senza alcun voto tutti i design sono in parità a 1500', () => {
+  const ids = ['a', 'b', 'c'];
+  const { byDenomination, families, totalVotes } = computeRankings([], ids, [5, 10], {});
+
+  assert.equal(totalVotes, 0);
+  for (const denom of [5, 10]) {
+    for (const row of byDenomination.get(denom)) {
+      assert.ok(Math.abs(row.elo - 1500) < 1e-6, `${row.designId}: ${row.elo}`);
+      assert.equal(row.played, 0);
+      assert.equal(row.winRate, null);
+    }
+  }
+  for (const f of families) assert.ok(Math.abs(f.elo - 1500) < 1e-6);
+});
+
+test('la classifica per taglio è indipendente dagli altri tagli', () => {
+  const ids = ['a', 'b'];
+  const stats = [
+    // Sul 5 € vince a, sul 10 € vince b: le due classifiche devono invertirsi.
+    { denomination: 5, designLo: 'a', designHi: 'b', winsLo: 90, winsHi: 10 },
+    { denomination: 10, designLo: 'a', designHi: 'b', winsLo: 10, winsHi: 90 },
+  ];
+  const { byDenomination, families } = computeRankings(stats, ids, [5, 10]);
+
+  assert.equal(byDenomination.get(5)[0].designId, 'a');
+  assert.equal(byDenomination.get(10)[0].designId, 'b');
+
+  // Vittorie speculari ⇒ le due famiglie devono risultare pari.
+  assert.ok(
+    Math.abs(families[0].elo - families[1].elo) < 1e-6,
+    `famiglie non in parità: ${families[0].elo} vs ${families[1].elo}`
+  );
+  assert.equal(families[0].played, 200);
+});
+
+test('il punteggio di famiglia media i sei tagli in scala logaritmica', () => {
+  const ids = ['a', 'b'];
+  const denoms = [5, 10, 20, 50, 100, 200];
+  // 'a' domina ovunque tranne che sul 200 €, dove perde con lo stesso margine.
+  const stats = denoms.map((d) => ({
+    denomination: d,
+    designLo: 'a',
+    designHi: 'b',
+    winsLo: d === 200 ? 20 : 80,
+    winsHi: d === 200 ? 80 : 20,
+  }));
+
+  const { families, byDenomination } = computeRankings(stats, ids, denoms);
+  const a = families.find((f) => f.designId === 'a');
+
+  assert.equal(a.rank, 1, 'a deve restare primo pur perdendo un taglio');
+  assert.equal(a.best.denomination !== 200, true);
+  assert.equal(a.worst.denomination, 200);
+  assert.equal(a.played, 600);
+
+  const meanLog =
+    denoms.reduce(
+      (acc, d) => acc + byDenomination.get(d).find((r) => r.designId === 'a').logStrength,
+      0
+    ) / denoms.length;
+  assert.ok(Math.abs(a.logStrength - meanLog) < 1e-9);
+});
+
+test('l\'errore standard si restringe quando arrivano più voti', () => {
+  const ids = ['a', 'b'];
+  const few = computeRankings(
+    [{ denomination: 5, designLo: 'a', designHi: 'b', winsLo: 6, winsHi: 4 }],
+    ids,
+    [5]
+  );
+  const many = computeRankings(
+    [{ denomination: 5, designLo: 'a', designHi: 'b', winsLo: 600, winsHi: 400 }],
+    ids,
+    [5]
+  );
+  const errFew = few.byDenomination.get(5)[0].eloError;
+  const errMany = many.byDenomination.get(5)[0].eloError;
+  assert.ok(errMany < errFew, `${errMany} dovrebbe essere < ${errFew}`);
+});
+
+test('pickPair preferisce le coppie mai votate', () => {
+  const pairs = [['a', 'b'], ['a', 'c'], ['b', 'c']];
+  const counts = new Map([
+    ['5|a|b', 500],
+    ['5|a|c', 500],
+    ['5|b|c', 0],
+  ]);
+  const strength = new Map([['a', 1], ['b', 1], ['c', 1]]);
+
+  let fresh = 0;
+  const rng = mulberry32(7);
+  for (let i = 0; i < 200; i++) {
+    if (pickPair(pairs, counts, strength, 5, new Set(), rng).key === '5|b|c') fresh++;
+  }
+  assert.ok(fresh > 150, `la coppia nuova è uscita solo ${fresh} volte su 200`);
+});
+
+test('pickPair non ripropone una coppia già vista, e riparte quando finiscono', () => {
+  const pairs = [['a', 'b'], ['a', 'c']];
+  const counts = new Map();
+  const strength = new Map([['a', 1], ['b', 1], ['c', 1]]);
+  const rng = mulberry32(3);
+
+  const seen = new Set(['5|a|b']);
+  for (let i = 0; i < 50; i++) {
+    assert.equal(pickPair(pairs, counts, strength, 5, seen, rng).key, '5|a|c');
+  }
+
+  const all = new Set(['5|a|b', '5|a|c']);
+  const result = pickPair(pairs, counts, strength, 5, all, rng);
+  assert.equal(result.exhausted, true);
+  assert.ok(['5|a|b', '5|a|c'].includes(result.key));
+});
+
+test('i tagli sconosciuti nei dati non inquinano le classifiche', () => {
+  const ids = ['a', 'b'];
+  const stats = [
+    { denomination: 5, designLo: 'a', designHi: 'b', winsLo: 10, winsHi: 0 },
+    { denomination: 500, designLo: 'a', designHi: 'b', winsLo: 999, winsHi: 0 },
+  ];
+  const { byDenomination, totalVotes } = computeRankings(stats, ids, [5]);
+  assert.equal(totalVotes, 10, 'il taglio da 500 € non esiste e va ignorato');
+  assert.equal(byDenomination.get(5)[0].played, 10);
+});
