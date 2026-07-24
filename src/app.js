@@ -163,12 +163,21 @@ function preloadNext(denom) {
   }
 }
 
+/**
+ * Vero quando i voti finiscono su un backend condiviso. Si guarda cosa *non* è
+ * locale invece di elencare i fornitori: aggiungerne uno domani non deve
+ * richiedere di ricordarsi di toccare anche qui.
+ */
+function isShared() {
+  return state.store != null && state.store.mode !== 'local';
+}
+
 function updateVoteCount() {
   const mine = myVoteCount();
   const total = state.rankings?.totalVotes ?? 0;
   const parts = [];
   parts.push(mine === 1 ? 'Hai espresso 1 voto' : `Hai espresso ${mine} voti`);
-  if (state.store?.mode === 'supabase') {
+  if (isShared()) {
     parts.push(total === 1 ? '1 voto in tutto' : `${total.toLocaleString('it-IT')} voti in tutto`);
   }
   $('vote-count').textContent = parts.join(' · ');
@@ -266,10 +275,9 @@ function renderRankings() {
 
   const { families, totalVotes } = state.rankings;
 
-  const modeNote =
-    state.store?.mode === 'supabase'
-      ? 'Classifica condivisa da tutti i votanti.'
-      : 'Modalità locale: questa classifica conta solo i tuoi voti, salvati in questo browser.';
+  const modeNote = isShared()
+    ? 'Classifica condivisa da tutti i votanti.'
+    : 'Modalità locale: questa classifica conta solo i tuoi voti, salvati in questo browser.';
 
   $('rank-summary').textContent =
     totalVotes === 0

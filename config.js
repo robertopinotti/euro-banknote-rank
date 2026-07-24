@@ -1,18 +1,38 @@
 /**
  * Configurazione del backend.
  *
- * Finché questi due valori restano vuoti il sito funziona ugualmente, ma i voti
- * vengono salvati solo nel browser di chi vota (modalità "locale"): utile per
- * provare il sito, inutile per una classifica collettiva.
+ * Finché non ne configuri uno il sito funziona ugualmente, ma i voti vengono
+ * salvati solo nel browser di chi vota (modalità "locale"): utile per provare,
+ * inutile per una classifica collettiva.
  *
- * Per attivare la classifica condivisa: crea un progetto su https://supabase.com,
- * esegui supabase/schema.sql nell'SQL Editor e incolla qui URL e chiave anon.
- * Istruzioni passo passo nel README.
- *
- * La chiave "anon" è pubblica per progetto: è pensata per stare nel codice di un
- * sito statico. La sicurezza è affidata alle policy RLS definite nello schema,
- * che impediscono di scrivere direttamente nelle tabelle. Non mettere mai qui la
- * chiave "service_role".
+ * Le chiavi qui sotto sono pubbliche per definizione — sia quella di Firebase
+ * sia la "anon" di Supabase sono pensate per stare nel codice di un sito
+ * statico. Non sono loro a proteggere i dati: a farlo sono le regole di
+ * sicurezza (`firebase/firestore.rules` oppure `supabase/schema.sql`).
+ * Non mettere mai qui una chiave di servizio o di amministrazione.
  */
-export const SUPABASE_URL = '';
-export const SUPABASE_ANON_KEY = '';
+
+/** Quale backend usare: 'firebase' | 'supabase' | 'local' */
+export const BACKEND = 'local';
+
+/**
+ * Firebase. Dalla console: Impostazioni progetto → Le tue app → app Web.
+ * Servono solo questi due valori, non l'intero oggetto di configurazione.
+ * Istruzioni passo passo nel README.
+ */
+export const FIREBASE = {
+  projectId: '',
+  apiKey: '',
+  // Facoltativo: puntando all'emulatore locale (es. '127.0.0.1:8080') si
+  // possono provare le regole di sicurezza senza toccare i dati veri.
+  // Lasciare vuoto in produzione.
+  host: '',
+};
+
+/**
+ * Supabase. Da Project Settings → API: Project URL e chiave anon/public.
+ */
+export const SUPABASE = {
+  url: '',
+  anonKey: '',
+};

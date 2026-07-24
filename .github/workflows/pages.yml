@@ -28,9 +28,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      # I test coprono il motore di classifica, che e' la parte con logica vera.
-      # Se saltano, non ha senso pubblicare.
+          cache: npm
+
+      # Il motore di classifica: la parte con la logica vera.
       - run: node --test test/rating.test.mjs
+
+      # Le regole di sicurezza Firestore, provate contro l'emulatore. Sul piano
+      # gratuito sono l'unica difesa dei dati, quindi una build verde deve
+      # significare anche che restano solide. L'emulatore gira su Java, gia'
+      # presente sui runner GitHub.
+      - run: npm ci
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm run test:rules
 
   deploy:
     needs: test

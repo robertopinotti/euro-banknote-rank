@@ -1,3 +1,10 @@
 node_modules/
 .DS_Store
 *.log
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebaserc

@@ -1,0 +1,18 @@
+{
+  "name": "euro-banknote-rank",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Voto a coppie sulle dieci proposte di design per le future banconote in euro",
+  "scripts": {
+    "test": "node --test test/rating.test.mjs",
+    "test:rules": "firebase emulators:exec --only firestore --project banconota-test \"node --test test/firestore-rules.test.mjs test/firestore-store.test.mjs\"",
+    "start": "python3 -m http.server 8000"
+  },
+  "//": "Il sito non ha dipendenze a runtime: e' HTML, CSS e moduli ES serviti cosi' come sono. Quelle qui sotto servono solo a eseguire i test delle regole di sicurezza Firestore contro l'emulatore.",
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.1",
+    "firebase": "^12.16.0",
+    "firebase-tools": "^15.24.0"
+  }
+}

@@ -54,52 +54,128 @@ per raccogliere opinioni.
 
 ## Test
 
+Il motore di classifica non ha dipendenze e si prova subito:
+
 ```bash
-node --test test/rating.test.mjs
+npm test
 ```
 
-Nove test sul motore di classifica: recupero delle forze da confronti simulati,
-comportamento con un design imbattuto, indipendenza fra i tagli, aggregazione
-per famiglia, restringimento dell'errore standard, selezione delle coppie.
+Nove test: recupero delle forze da confronti simulati, comportamento con un
+design imbattuto, indipendenza fra i tagli, aggregazione per famiglia,
+restringimento dell'errore standard, selezione delle coppie.
+
+Le regole di sicurezza Firestore si provano contro l'emulatore ufficiale, che
+gira in locale (serve Java, e `npm install` una volta sola per le dipendenze di
+sviluppo):
+
+```bash
+npm install
+npm run test:rules
+```
+
+Ventitré test in due gruppi. I primi quindici colpiscono le regole con l'SDK
+Firebase: scrivere un punteggio arbitrario, incrementare di 1000, togliere voti
+agli altri, muovere entrambi i contatori insieme, creare una coppia inesistente,
+riscrivere l'identità di una coppia, cancellare. Devono fallire tutti.
+
+Gli altri otto fanno girare il codice vero di `src/store.js` contro l'emulatore.
+Servono perché i due lati potrebbero non incastrarsi: le regole sono scritte
+pensando all'SDK, mentre il sito parla REST con `updateMask` e
+`updateTransforms`, che è una forma di scrittura diversa. Fra questi c'è il caso
+che conta di più — venti voti simultanei sulla stessa coppia devono dare venti
+voti contati, non uno perso.
 
 ---
 
 ## Attivare la classifica condivisa
 
-1. Crea un progetto gratuito su [supabase.com](https://supabase.com).
-2. Apri **SQL Editor** e incolla il contenuto di [`supabase/schema.sql`](supabase/schema.sql).
-   Esegui: crea le due tabelle, le policy e la funzione di voto.
-3. Vai in **Project Settings → API** e copia *Project URL* e la chiave **anon /
-   public**.
-4. Incollale in [`config.js`](config.js):
+Senza backend il sito funziona ma ogni visitatore vede solo i propri voti. Sono
+supportati Firebase e Supabase; si sceglie con `BACKEND` in
+[`config.js`](config.js).
+
+### Firebase (Firestore)
+
+1. Crea un progetto su [console.firebase.google.com](https://console.firebase.google.com)
+   e, al suo interno, un **database Firestore** (modalità produzione).
+2. Registra un'**app Web** (Impostazioni progetto → Le tue app → `</>`). Dei
+   valori mostrati servono solo `projectId` e `apiKey`.
+3. Pubblica le regole di sicurezza di
+   [`firebase/firestore.rules`](firebase/firestore.rules). Dalla console
+   (Firestore → Regole → incolla → Pubblica), oppure:
+
+   ```bash
+   npx firebase deploy --only firestore:rules
+   ```
+
+   **Non saltare questo passaggio.** Le regole predefinite di Firestore sono
+   "nega tutto" (il sito non funzionerebbe) oppure "consenti tutto" per 30
+   giorni (chiunque potrebbe cancellare la classifica).
+
+4. Compila [`config.js`](config.js):
 
 ```js
-export const SUPABASE_URL = 'https://xxxxxxxx.supabase.co';
-export const SUPABASE_ANON_KEY = 'eyJhbGciOi...';
+export const BACKEND = 'firebase';
+export const FIREBASE = {
+  projectId: 'nome-del-progetto',
+  apiKey: 'AIza...',
+  host: '',
+};
 ```
 
-La chiave `anon` è pubblica per definizione: è fatta per stare nel codice di un
-sito statico. **Non usare mai la chiave `service_role`**, che ha pieni poteri sul
-database.
+Il piano gratuito **Spark** basta: si usano solo Firestore e le sue regole,
+niente Cloud Functions. I limiti gratuiti sono 50.000 letture e 20.000
+scritture al giorno — un voto è una scrittura, e caricare la classifica costa
+una lettura per coppia già votata (al massimo 270).
+
+### Supabase
+
+1. Crea un progetto su [supabase.com](https://supabase.com).
+2. Apri **SQL Editor** ed esegui [`supabase/schema.sql`](supabase/schema.sql):
+   crea le tabelle, le policy e la funzione di voto.
+3. Da **Project Settings → API** copia *Project URL* e la chiave **anon /
+   public**, poi in [`config.js`](config.js):
+
+```js
+export const BACKEND = 'supabase';
+export const SUPABASE = { url: 'https://xxxx.supabase.co', anonKey: 'eyJhbGci...' };
+```
 
 ### Come sono protetti i dati
 
-Il browser non scrive mai direttamente nelle tabelle. Vota chiamando la funzione
-`cast_vote`, che valida i parametri, applica un limite di frequenza e incrementa
-gli aggregati in modo atomico. Le policy RLS e i GRANT, verificati su una
-istanza PostgreSQL reale, lasciano al client anonimo esattamente un permesso:
+Le chiavi di entrambi i backend sono pubbliche per definizione: stanno nel
+codice di un sito statico e non proteggono niente. A proteggere i dati sono le
+regole di sicurezza. **Non usare mai una chiave di servizio** (`service_role` su
+Supabase, le credenziali Admin SDK su Firebase): hanno pieni poteri e
+scavalcherebbero ogni regola.
 
-| operazione | client anonimo |
-| --- | --- |
-| leggere `pair_stats` (gli aggregati che formano la classifica) | sì |
-| leggere `votes` (il registro dei singoli voti) | no |
-| scrivere in `pair_stats` o `votes` | no |
-| chiamare `cast_vote` | sì, max 60 voti al minuto |
+Le due architetture arrivano allo stesso risultato per strade diverse.
 
-Il limite di frequenza si appoggia a un identificativo generato nel browser:
-ferma gli script e i doppioni accidentali, non un votante deciso a insistere. Per
-un sito di questo tipo è una difesa proporzionata; se servisse di più, la strada
-è l'autenticazione vera.
+Su **Supabase** il browser non scrive mai nelle tabelle: chiama `cast_vote`, che
+valida, applica un limite di frequenza e incrementa in modo atomico. Le policy
+RLS e i GRANT lasciano al client anonimo un solo permesso, leggere gli
+aggregati.
+
+Su **Firebase**, senza Cloud Functions (che richiedono il piano a pagamento), il
+browser scrive direttamente e sono le regole a fare il lavoro. Impongono che una
+scrittura possa solo aggiungere 1 a un contatore, che l'id del documento
+corrisponda alla coppia, che taglio e design esistano, e che niente si possa
+cancellare.
+
+| operazione | Firebase | Supabase |
+| --- | --- | --- |
+| leggere la classifica | sì | sì |
+| aggiungere 1 a un contatore | sì | sì, tramite `cast_vote` |
+| scrivere un punteggio arbitrario | no | no |
+| togliere voti | no | no |
+| cancellare dati | no | no |
+| leggere il registro dei singoli voti | non esiste | no |
+
+Su entrambi resta una cosa che le regole non possono fare: impedire a uno script
+di inviare molti voti legittimi da +1. Il limite di frequenza di Supabase si
+appoggia a un identificativo generato nel browser, quindi si aggira
+rigenerandolo. Se la cosa diventasse un problema, la risposta su Firebase è
+[App Check](https://firebase.google.com/docs/app-check) con reCAPTCHA, che
+verifica la provenienza delle richieste ed è disponibile sul piano gratuito.
 
 Se il backend è configurato ma irraggiungibile, il sito ripiega sulla modalità
 locale e lo dichiara, invece di mostrare una pagina rotta.
@@ -141,17 +217,24 @@ progetto, ricordati di aggiornarlo.
 ## Struttura
 
 ```
-index.html              le quattro viste (vota, classifica, design, metodo)
-config.js               URL e chiave Supabase — vuoti = modalità locale
-src/data.js             le 10 proposte: designer, tema, descrizioni, immagini
-src/rating.js           Bradley–Terry, errori standard, scelta delle coppie
-src/store.js            accesso ai dati: Supabase o localStorage
-src/app.js              interfaccia e instradamento
-assets/css/style.css    foglio di stile unico, chiaro e scuro
-assets/banknotes/       70 immagini WebP (60 fronti + 10 retri del 5 €)
-supabase/schema.sql     tabelle, RLS, funzione di voto
-test/rating.test.mjs    test del motore di classifica
+index.html                     le quattro viste (vota, classifica, design, metodo)
+config.js                      scelta del backend e relative chiavi
+src/data.js                    le 10 proposte: designer, tema, descrizioni, immagini
+src/rating.js                  Bradley–Terry, errori standard, scelta delle coppie
+src/store.js                   accesso ai dati: Firestore, Supabase o localStorage
+src/app.js                     interfaccia e instradamento
+assets/css/style.css           foglio di stile unico, chiaro e scuro
+assets/banknotes/              70 immagini WebP (60 fronti + 10 retri del 5 €)
+firebase/firestore.rules       regole di sicurezza Firestore
+supabase/schema.sql            tabelle, RLS, funzione di voto
+test/rating.test.mjs           motore di classifica
+test/firestore-rules.test.mjs  regole di sicurezza, contro l'emulatore
+test/firestore-store.test.mjs  adattatore Firestore, contro l'emulatore
 ```
+
+Il sito **non ha dipendenze a runtime**: è HTML, CSS e moduli ES serviti così
+come sono. Le dipendenze in `package.json` servono solo a eseguire i test delle
+regole Firestore.
 
 Le immagini sono ridimensionate a 1000 px sul lato lungo e convertite in WebP:
 5,4 MB in tutto invece dei 22,7 MB degli originali, perché in una schermata di

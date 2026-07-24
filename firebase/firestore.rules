@@ -1,0 +1,86 @@
+rules_version = '2';
+
+// ============================================================================
+//  Regole di sicurezza Firestore per la classifica delle banconote.
+//
+//  Sul piano gratuito le Cloud Functions non sono disponibili, quindi il
+//  browser scrive direttamente su Firestore e queste regole sono l'unica
+//  difesa. Sono scritte per garantire una cosa sola, ma garantirla bene:
+//  un voto puo' solo aggiungere 1 a un contatore. Non si puo' scrivere un
+//  punteggio arbitrario, non si puo' toccare l'altro contatore, non si puo'
+//  cancellare niente, non si puo' creare un documento che non corrisponde a
+//  una coppia valida.
+//
+//  Quello che le regole NON possono fare e' impedire a uno script di inviare
+//  molti voti legittimi da +1. Per quello serve App Check (vedi README): le
+//  regole difendono il valore dei dati, App Check difende la loro provenienza.
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isDenomination(value) {
+      return value is int && value in [5, 10, 20, 50, 100, 200];
+    }
+
+    function isDesign(value) {
+      return value is string && value.matches('^[a-j]$');
+    }
+
+    // I tre campi identificativi devono essere coerenti fra loro e con l'id
+    // del documento, cosi' una coppia ha una riga sola e non si possono
+    // creare documenti spuri.
+    function hasValidIdentity(pairId, data) {
+      return isDenomination(data.denomination)
+          && isDesign(data.designLo)
+          && isDesign(data.designHi)
+          && data.designLo < data.designHi
+          && pairId == string(data.denomination) + '_' + data.designLo + '_' + data.designHi;
+    }
+
+    function counters(data) {
+      return data.winsLo is int && data.winsHi is int
+          && data.winsLo >= 0 && data.winsHi >= 0;
+    }
+
+    match /pairStats/{pairId} {
+
+      // La classifica e' pubblica.
+      allow read: if true;
+
+      // Primo voto per questa coppia: nasce il documento, con esattamente un
+      // voto in totale. Nessun campo oltre i cinque previsti.
+      allow create: if hasValidIdentity(pairId, request.resource.data)
+                    && request.resource.data.keys().hasOnly(
+                         ['denomination', 'designLo', 'designHi', 'winsLo', 'winsHi'])
+                    && counters(request.resource.data)
+                    && request.resource.data.winsLo + request.resource.data.winsHi == 1;
+
+      // Voto successivo: puo' cambiare solo uno dei due contatori, e solo di
+      // +1. I campi identificativi devono restare quelli di prima.
+      allow update: if hasValidIdentity(pairId, request.resource.data)
+                    && counters(request.resource.data)
+                    && request.resource.data.denomination == resource.data.denomination
+                    && request.resource.data.designLo == resource.data.designLo
+                    && request.resource.data.designHi == resource.data.designHi
+                    && request.resource.data.diff(resource.data)
+                         .affectedKeys().hasOnly(['winsLo', 'winsHi'])
+                    && (
+                         (request.resource.data.winsLo == resource.data.winsLo + 1
+                          && request.resource.data.winsHi == resource.data.winsHi)
+                         ||
+                         (request.resource.data.winsHi == resource.data.winsHi + 1
+                          && request.resource.data.winsLo == resource.data.winsLo)
+                       );
+
+      // I voti non si cancellano.
+      allow delete: if false;
+    }
+
+    // Tutto il resto e' chiuso: se un giorno si aggiunge una collezione, deve
+    // essere una scelta esplicita e non un buco lasciato aperto.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
