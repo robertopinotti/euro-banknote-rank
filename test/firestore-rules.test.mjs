@@ -24,6 +24,7 @@ import {
   updateDoc,
   deleteDoc,
   increment,
+  deleteField,
   collection,
   getDocs,
 } from 'firebase/firestore';
@@ -135,6 +136,19 @@ test('non si possono aggiungere campi di fantasia', async () => {
   );
 });
 
+test('un documento non può nascere senza uno dei contatori', async () => {
+  // Questi casi erano già respinti prima che le regole controllassero la forma
+  // con hasAll: leggere un campo inesistente fa fallire la valutazione, quindi
+  // la scrittura veniva negata comunque. Il test resta a presidiare il
+  // comportamento, che prima dipendeva da un effetto collaterale del motore
+  // delle regole e ora da un controllo esplicito.
+  await assertFails(setDoc(doc(db(), 'pairStats', '50_a_c'), { ...PAIR, winsLo: 1 }));
+  await assertFails(setDoc(doc(db(), 'pairStats', '50_a_c'), { ...PAIR, winsHi: 1 }));
+  await assertFails(
+    setDoc(doc(db(), 'pairStats', '50_a_c'), { denomination: 50, winsLo: 1, winsHi: 0 })
+  );
+});
+
 test('i contatori devono essere interi non negativi', async () => {
   await assertFails(
     setDoc(doc(db(), 'pairStats', '50_a_c'), { ...PAIR, winsLo: 1.5, winsHi: -0.5 })
@@ -190,6 +204,21 @@ test("l'identità della coppia non si può riscrivere", async () => {
   );
   await assertFails(
     updateDoc(doc(db(), 'pairStats', '50_a_c'), { denomination: 5, winsLo: increment(1) })
+  );
+});
+
+test('un aggiornamento non può aggiungere né togliere campi', async () => {
+  await seed('50_a_c', { ...PAIR, winsLo: 3, winsHi: 2 });
+
+  await assertFails(
+    updateDoc(doc(db(), 'pairStats', '50_a_c'), { winsLo: increment(1), admin: true })
+  );
+  // Cancellare un contatore falserebbe la classifica quanto gonfiarlo.
+  await assertFails(
+    updateDoc(doc(db(), 'pairStats', '50_a_c'), {
+      winsLo: increment(1),
+      winsHi: deleteField(),
+    })
   );
 });
 

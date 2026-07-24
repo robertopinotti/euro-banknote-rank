@@ -38,6 +38,18 @@ service cloud.firestore {
           && pairId == string(data.denomination) + '_' + data.designLo + '_' + data.designHi;
     }
 
+    // Esattamente questi cinque campi, ne' uno di piu' ne' uno di meno.
+    // Servono entrambi i controlli: hasOnly vuol dire "sottoinsieme di", quindi
+    // da solo lascerebbe passare un documento a cui manca un contatore.
+    // Un documento cosi' verrebbe respinto lo stesso — i controlli successivi
+    // leggerebbero un campo inesistente e la valutazione fallirebbe — ma per
+    // effetto collaterale del motore delle regole, non per scelta. hasAll non
+    // chiude una falla, rende esplicito qualcosa che era solo implicito.
+    function hasExactShape(data) {
+      return data.keys().hasAll(['denomination', 'designLo', 'designHi', 'winsLo', 'winsHi'])
+          && data.keys().hasOnly(['denomination', 'designLo', 'designHi', 'winsLo', 'winsHi']);
+    }
+
     function counters(data) {
       return data.winsLo is int && data.winsHi is int
           && data.winsLo >= 0 && data.winsHi >= 0;
@@ -50,15 +62,15 @@ service cloud.firestore {
 
       // Primo voto per questa coppia: nasce il documento, con esattamente un
       // voto in totale. Nessun campo oltre i cinque previsti.
-      allow create: if hasValidIdentity(pairId, request.resource.data)
-                    && request.resource.data.keys().hasOnly(
-                         ['denomination', 'designLo', 'designHi', 'winsLo', 'winsHi'])
+      allow create: if hasExactShape(request.resource.data)
+                    && hasValidIdentity(pairId, request.resource.data)
                     && counters(request.resource.data)
                     && request.resource.data.winsLo + request.resource.data.winsHi == 1;
 
       // Voto successivo: puo' cambiare solo uno dei due contatori, e solo di
       // +1. I campi identificativi devono restare quelli di prima.
-      allow update: if hasValidIdentity(pairId, request.resource.data)
+      allow update: if hasExactShape(request.resource.data)
+                    && hasValidIdentity(pairId, request.resource.data)
                     && counters(request.resource.data)
                     && request.resource.data.denomination == resource.data.denomination
                     && request.resource.data.designLo == resource.data.designLo
