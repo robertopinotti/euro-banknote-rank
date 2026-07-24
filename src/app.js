@@ -25,13 +25,11 @@ import {
 
 const PAIRS = allPairs();
 const DESIGN_IDS = DESIGNS.map((d) => d.id);
-const RANDOM = 'random';
 
 const state = {
   store: null,
   stats: [],          // [{denomination, designLo, designHi, winsLo, winsHi}]
   rankings: null,
-  voteDenom: RANDOM,  // taglio scelto nella schermata di voto
   rankDenom: 5,       // taglio scelto nella classifica per taglio
   rankScope: 'famiglie',
   current: null,      // sfida in corso
@@ -111,8 +109,8 @@ function undoVoteLocally(denomination, winner, loser) {
 
 /* --------------------------------------------------------------- la sfida */
 
+// Il taglio è sempre sorteggiato: chi vota confronta i design, non i tagli.
 function nextDenomination() {
-  if (state.voteDenom !== RANDOM) return state.voteDenom;
   return DENOMINATIONS[Math.floor(Math.random() * DENOMINATIONS.length)];
 }
 
@@ -357,27 +355,21 @@ function renderDesignGallery() {
 
 /* ------------------------------------------------------------- controlli */
 
-function buildDenomButtons(container, { includeRandom, selected, onPick }) {
-  const options = includeRandom
-    ? [{ value: RANDOM, label: 'A caso' }, ...DENOMINATIONS.map((d) => ({ value: d, label: `${d} €` }))]
-    : DENOMINATIONS.map((d) => ({ value: d, label: `${d} €` }));
-
-  container.innerHTML = options
+function buildDenomButtons(container, { selected, onPick }) {
+  container.innerHTML = DENOMINATIONS
     .map(
-      (o) =>
-        `<button type="button" class="denom-btn ${o.value === selected ? 'is-active' : ''}" data-value="${o.value}">${o.label}</button>`
+      (d) =>
+        `<button type="button" class="denom-btn ${d === selected ? 'is-active' : ''}" data-value="${d}">${d} €</button>`
     )
     .join('');
 
   container.addEventListener('click', (e) => {
     const btn = e.target.closest('.denom-btn');
     if (!btn) return;
-    const raw = btn.dataset.value;
-    const value = raw === RANDOM ? RANDOM : Number(raw);
     for (const b of container.querySelectorAll('.denom-btn')) {
       b.classList.toggle('is-active', b === btn);
     }
-    onPick(value);
+    onPick(Number(btn.dataset.value));
   });
 }
 
@@ -391,17 +383,7 @@ function wireControls() {
     renderArena();
   });
 
-  buildDenomButtons($('denom-buttons'), {
-    includeRandom: true,
-    selected: state.voteDenom,
-    onPick: (value) => {
-      state.voteDenom = value;
-      nextChallenge();
-    },
-  });
-
   buildDenomButtons($('rank-denom-buttons'), {
-    includeRandom: false,
     selected: state.rankDenom,
     onPick: (value) => {
       state.rankDenom = value;

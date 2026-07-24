@@ -163,16 +163,16 @@ code {
   margin-top: -.2em;
 }
 
-/* --------------------------------------------------------------- selettore */
+/* ------------------------------------------ istruzioni e selettore di taglio */
 
+/* Contiene il solo testo di istruzioni: niente da allineare, serve solo lo
+   stacco dall'arena. */
 .vote-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px 28px;
-  flex-wrap: wrap;
   margin-bottom: 22px;
 }
+
+/* Le classi .denom-* qui sotto servono ora alla sola classifica: nella schermata
+   di voto il taglio e' sorteggiato e non c'e' piu' niente da scegliere. */
 
 .denom-picker { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 
@@ -218,7 +218,7 @@ code {
   margin: 0;
   color: var(--ink-soft);
   font-size: .92rem;
-  max-width: 42ch;
+  max-width: 62ch;   /* senza il selettore accanto può usare tutta la misura */
 }
 
 /* ----------------------------------------------------------------- arena */
@@ -255,11 +255,13 @@ code {
   transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
 }
 
+/* Sollevamento e bordo acceso sono l'unico invito a cliccare rimasto: vanno
+   tenuti netti. */
 .note-card:hover,
 .note-card:focus-visible {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-lift);
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lift), 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--line));
   outline: none;
 }
 
@@ -308,16 +310,6 @@ code {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.note-pick {
-  text-align: center;
-  font-size: .87rem;
-  font-weight: 600;
-  color: var(--accent);
-  background: var(--accent-soft);
-  border-radius: 8px;
-  padding: 8px;
 }
 
 .versus {
@@ -680,7 +672,8 @@ kbd {
 @media (max-width: 560px) {
   .header-inner { min-height: 0; padding-block: 10px; }
   .brand-text small { display: none; }
-  .vote-hint { display: none; }
+  /* Nascondere il solo testo lascerebbe un blocco vuoto con il suo margine. */
+  .vote-head { display: none; }
   .kbd-hint { display: none; }
   .rank-elo { font-size: 1.05rem; }
 }
