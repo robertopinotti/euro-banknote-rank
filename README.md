@@ -112,17 +112,20 @@ Il workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) esegue 
 test e pubblica il sito su GitHub Pages a ogni push sul branch di default. Il
 sito è statico e senza build: si pubblica il repository così com'è.
 
-**Pages va attivato una volta a mano.** Il workflow non può farlo da sé: il suo
-token non ha il permesso di creare il sito (`Create Pages site failed. Error:
-Resource not accessible by integration`).
+Alla prima esecuzione il workflow attiva Pages da sé
+(`actions/configure-pages` con `enablement: true`), senza passare dalle
+impostazioni.
 
-1. Il repository deve essere **pubblico**, oppure privato con piano **GitHub Pro
-   o Team** — su privato con piano gratuito Pages non è disponibile.
-   Per renderlo pubblico: **Settings → General → Danger Zone → Change
-   visibility**.
-2. **Settings → Pages → Source: GitHub Actions**.
-3. Rilancia il workflow da **Actions → Pubblica su GitHub Pages → Run workflow**,
-   oppure fai un push qualsiasi.
+**Serve però che Pages sia disponibile per il repository:** pubblico, oppure
+privato con piano **GitHub Pro o Team**. Su un repository privato con piano
+gratuito l'attivazione fallisce con un errore che sembra di permessi
+(`Resource not accessible by integration`) ma è in realtà di disponibilità.
+Per rendere pubblico il repository: **Settings → General → Danger Zone → Change
+visibility**.
+
+Se l'attivazione automatica non dovesse funzionare, la si fa una volta a mano da
+**Settings → Pages → Source: GitHub Actions**, poi si rilancia il workflow da
+**Actions → Pubblica su GitHub Pages → Run workflow**.
 
 Il sito sarà su `https://<utente>.github.io/euro-banknote-rank/`.
 

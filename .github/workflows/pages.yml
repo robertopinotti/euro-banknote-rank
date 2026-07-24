@@ -41,13 +41,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Niente enablement: true. Provato, e il token del workflow non ha il
-      # permesso di creare il sito Pages:
-      #   Create Pages site failed. Error: Resource not accessible by integration
-      # Pages va quindi attivato una volta a mano, in Settings > Pages, con
-      # Source impostato su "GitHub Actions". Da li' in poi questo workflow
-      # pubblica a ogni push senza altri interventi.
+      # enablement: true crea il sito Pages se non esiste ancora. Con il
+      # repository privato falliva ("Resource not accessible by integration"):
+      # Pages non era disponibile sul piano, e l'errore arrivava travestito da
+      # problema di permessi. Da repository pubblico Pages e' disponibile.
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
