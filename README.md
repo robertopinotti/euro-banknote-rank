@@ -109,18 +109,22 @@ locale e lo dichiara, invece di mostrare una pagina rotta.
 ## Pubblicare
 
 Il workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) esegue i
-test e pubblica il sito su GitHub Pages a ogni push sul branch di default. Alla
-prima esecuzione attiva Pages da sé (`actions/configure-pages` con
-`enablement: true`), senza passare dalle impostazioni.
+test e pubblica il sito su GitHub Pages a ogni push sul branch di default. Il
+sito è statico e senza build: si pubblica il repository così com'è.
 
-**Perché Pages sia disponibile serve una di queste due condizioni:**
+**Pages va attivato una volta a mano.** Il workflow non può farlo da sé: il suo
+token non ha il permesso di creare il sito (`Create Pages site failed. Error:
+Resource not accessible by integration`).
 
-- il repository è **pubblico** — Pages è gratuito;
-- il repository è privato e l'account ha un piano **GitHub Pro o Team**.
+1. Il repository deve essere **pubblico**, oppure privato con piano **GitHub Pro
+   o Team** — su privato con piano gratuito Pages non è disponibile.
+   Per renderlo pubblico: **Settings → General → Danger Zone → Change
+   visibility**.
+2. **Settings → Pages → Source: GitHub Actions**.
+3. Rilancia il workflow da **Actions → Pubblica su GitHub Pages → Run workflow**,
+   oppure fai un push qualsiasi.
 
-Su un repository privato con piano gratuito il deploy fallisce: è un limite di
-GitHub, non del progetto. Per renderlo pubblico: **Settings → General →
-Danger Zone → Change visibility**.
+Il sito sarà su `https://<utente>.github.io/euro-banknote-rank/`.
 
 Va bene anche qualunque altro hosting statico: non c'è build, si servono i file
 così come sono.
