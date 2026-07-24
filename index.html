@@ -82,14 +82,29 @@
     <div class="rank-head">
       <h1>Classifica</h1>
       <div class="seg" role="group" aria-label="Tipo di classifica">
-        <button type="button" class="seg-btn is-active" data-scope="famiglie">Per design</button>
+        <button type="button" class="seg-btn is-active" data-scope="generale">Generale</button>
+        <button type="button" class="seg-btn" data-scope="famiglie">Per design</button>
         <button type="button" class="seg-btn" data-scope="tagli">Per taglio</button>
       </div>
     </div>
 
     <p class="rank-summary" id="rank-summary"></p>
 
-    <div id="rank-families">
+    <div id="rank-generale">
+      <p class="scope-note">
+        Tutte e 60 le banconote in un'unica graduatoria — dieci proposte per sei
+        tagli. I confronti avvengono però sempre fra banconote dello stesso
+        taglio, quindi ogni punteggio dice quanto quella banconota è forte
+        <strong>rispetto alle altre del suo taglio</strong>: la classifica le
+        mette in fila, non afferma che un 5 € batterebbe un 200 €.
+      </p>
+      <ol class="ranking" id="ranking-all-list"></ol>
+    </div>
+
+    <div id="rank-families" hidden>
+      <p class="scope-note">
+        Le dieci proposte, ciascuna con la media delle sue sei banconote.
+      </p>
       <ol class="ranking" id="ranking-list"></ol>
     </div>
 

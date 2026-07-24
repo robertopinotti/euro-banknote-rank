@@ -31,7 +31,7 @@ const state = {
   stats: [],          // [{denomination, designLo, designHi, winsLo, winsHi}]
   rankings: null,
   rankDenom: 5,       // taglio scelto nella classifica per taglio
-  rankScope: 'famiglie',
+  rankScope: 'generale',   // 'generale' | 'famiglie' | 'tagli'
   current: null,      // sfida in corso
   showingBack: false,
   seen: loadSeenPairs(),
@@ -171,14 +171,14 @@ function isShared() {
 }
 
 function updateVoteCount() {
+  // Solo i voti di chi sta votando. Il totale generale stava qui accanto, ma
+  // era una mezza verità: veniva letto all'apertura della pagina e non si
+  // riallineava, quindi dopo qualche voto mostrava un numero vecchio. Il totale
+  // aggiornato si trova nella classifica, che è il posto dove si va a
+  // guardare i numeri.
   const mine = myVoteCount();
-  const total = state.rankings?.totalVotes ?? 0;
-  const parts = [];
-  parts.push(mine === 1 ? 'Hai espresso 1 voto' : `Hai espresso ${mine} voti`);
-  if (isShared()) {
-    parts.push(total === 1 ? '1 voto in tutto' : `${total.toLocaleString('it-IT')} voti in tutto`);
-  }
-  $('vote-count').textContent = parts.join(' · ');
+  $('vote-count').textContent =
+    mine === 1 ? 'Hai espresso 1 voto' : `Hai espresso ${mine} voti`;
 }
 
 async function vote(position) {
@@ -236,7 +236,18 @@ function themeTag(design) {
   return `<span class="tag ${t.id}">${t.short}</span>`;
 }
 
-function rankRow(entry, denomination, maxElo, minElo) {
+/**
+ * Una riga di classifica.
+ *
+ * @param {object} entry              riga con elo, eloError, wins, played, rank
+ * @param {number|null} denomination  taglio della miniatura; null = famiglia intera
+ * @param {number} maxElo
+ * @param {number} minElo
+ * @param {boolean} [showDenomination] mostra il taglio accanto alla proposta:
+ *   serve nella classifica generale, dove convivono banconote di tagli diversi
+ *   e la sola lettera non basta a capire di quale si tratta.
+ */
+function rankRow(entry, denomination, maxElo, minElo, showDenomination = false) {
   const design = DESIGNS_BY_ID[entry.designId];
   const span = Math.max(1, maxElo - minElo);
   // La barra parte dall'8% invece che da zero: l'ultimo in classifica resta
@@ -246,8 +257,13 @@ function rankRow(entry, denomination, maxElo, minElo) {
 
   const record =
     entry.played > 0
-      ? `${entry.wins} vittorie su ${entry.played} · ${Math.round(entry.winRate * 100)}%`
+      ? `${entry.wins} ${entry.wins === 1 ? 'vittoria' : 'vittorie'} su ${entry.played} · ` +
+        `${Math.round(entry.winRate * 100)}%`
       : 'nessun voto';
+
+  const denomLabel = showDenomination
+    ? `<span class="rank-denom">${entry.denomination} €</span>`
+    : '';
 
   return `
     <li class="rank-row ${entry.rank === 1 ? 'is-first' : ''}">
@@ -256,7 +272,7 @@ function rankRow(entry, denomination, maxElo, minElo) {
         <img src="${imageUrl(entry.designId, thumbDenom)}" alt="" loading="lazy">
       </div>
       <div class="rank-info">
-        <div class="rank-name">Proposta ${design.letter}${themeTag(design)}</div>
+        <div class="rank-name">Proposta ${design.letter}${denomLabel}${themeTag(design)}</div>
         <div class="rank-designer">${design.designer}</div>
       </div>
       <div class="rank-score">
@@ -266,6 +282,31 @@ function rankRow(entry, denomination, maxElo, minElo) {
       </div>
       <div class="rank-bar"><span style="width:${pct.toFixed(1)}%"></span></div>
     </li>`;
+}
+
+/**
+ * Le 60 banconote (10 proposte × 6 tagli) in un'unica graduatoria.
+ *
+ * Il punteggio di ciascuna resta quello calcolato dentro il proprio taglio: non
+ * esiste alcun voto che confronti un 5 € con un 200 €, quindi il modello non ha
+ * modo di collegarli. Le forze sono comunque ancorate alla stessa scala —
+ * l'avversario virtuale della regolarizzazione vale 1 in ogni taglio — e questo
+ * rende i numeri accostabili: dicono quanto una banconota svetta sul campo del
+ * suo taglio. Metterle in fila ha senso a patto di leggerle così, ed è quello
+ * che la nota in cima alla vista spiega a chi guarda.
+ */
+function allNotesRanking() {
+  const rows = [];
+  for (const denom of DENOMINATIONS) {
+    for (const r of state.rankings.byDenomination.get(denom)) {
+      // Copia: la posizione qui è un'altra cosa rispetto a quella dentro il
+      // taglio, e sovrascriverla romperebbe la classifica per taglio.
+      rows.push({ ...r });
+    }
+  }
+  rows.sort((a, b) => b.strength - a.strength);
+  rows.forEach((r, i) => (r.rank = i + 1));
+  return rows;
 }
 
 function renderRankings() {
@@ -281,6 +322,13 @@ function renderRankings() {
     totalVotes === 0
       ? `Nessun voto ancora. ${modeNote}`
       : `${totalVotes.toLocaleString('it-IT')} confronti raccolti. ${modeNote}`;
+
+  // Generale: tutte e 60 le banconote
+  const all = allNotesRanking();
+  const allElos = all.map((r) => r.elo);
+  $('ranking-all-list').innerHTML = all
+    .map((r) => rankRow(r, r.denomination, Math.max(...allElos), Math.min(...allElos), true))
+    .join('');
 
   // Per design
   const famElos = families.map((f) => f.elo);
@@ -373,6 +421,13 @@ function buildDenomButtons(container, { selected, onPick }) {
   });
 }
 
+/** Mostra il livello di classifica scelto: generale, per design o per taglio. */
+function showRankScope() {
+  $('rank-generale').hidden = state.rankScope !== 'generale';
+  $('rank-families').hidden = state.rankScope !== 'famiglie';
+  $('rank-denoms').hidden = state.rankScope !== 'tagli';
+}
+
 function wireControls() {
   $('card-left').addEventListener('click', () => vote('left'));
   $('card-right').addEventListener('click', () => vote('right'));
@@ -397,8 +452,7 @@ function wireControls() {
       for (const b of document.querySelectorAll('.seg-btn')) {
         b.classList.toggle('is-active', b === btn);
       }
-      $('rank-families').hidden = state.rankScope !== 'famiglie';
-      $('rank-denoms').hidden = state.rankScope !== 'tagli';
+      showRankScope();
     });
   }
 
