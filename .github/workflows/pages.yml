@@ -1,0 +1,56 @@
+name: Pubblica su GitHub Pages
+
+# Il sito e' statico e senza build: si pubblica il repository cosi' com'e'.
+# Il workflow gira a ogni push sul branch di default e si puo' lanciare a mano
+# dalla scheda Actions.
+on:
+  push:
+    branches: [claude/eu-banknote-voting-a65myy]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Una pubblicazione alla volta. Le esecuzioni gia' in coda vengono scartate,
+# ma quella in corso viene lasciata finire: interrompere un deploy a meta'
+# lascerebbe il sito in uno stato incoerente.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # I test coprono il motore di classifica, che e' la parte con logica vera.
+      # Se saltano, non ha senso pubblicare.
+      - run: node --test test/rating.test.mjs
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # enablement: true attiva Pages da sola alla prima esecuzione, senza
+      # passare dalle impostazioni del repository. Funziona solo se Pages e'
+      # disponibile: repository pubblico, oppure privato con piano a pagamento.
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

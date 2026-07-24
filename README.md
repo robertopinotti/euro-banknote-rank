@@ -108,8 +108,22 @@ locale e lo dichiara, invece di mostrare una pagina rotta.
 
 ## Pubblicare
 
-Basta un hosting statico qualsiasi. Con GitHub Pages: **Settings → Pages →
-Deploy from a branch**, scegli il branch e la cartella `/ (root)`.
+Il workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) esegue i
+test e pubblica il sito su GitHub Pages a ogni push sul branch di default. Alla
+prima esecuzione attiva Pages da sé (`actions/configure-pages` con
+`enablement: true`), senza passare dalle impostazioni.
+
+**Perché Pages sia disponibile serve una di queste due condizioni:**
+
+- il repository è **pubblico** — Pages è gratuito;
+- il repository è privato e l'account ha un piano **GitHub Pro o Team**.
+
+Su un repository privato con piano gratuito il deploy fallisce: è un limite di
+GitHub, non del progetto. Per renderlo pubblico: **Settings → General →
+Danger Zone → Change visibility**.
+
+Va bene anche qualunque altro hosting statico: non c'è build, si servono i file
+così come sono.
 
 Attenzione: `config.js` contiene la chiave `anon` ed è pensato per essere
 pubblico, ma resta un file versionato — se in futuro rigeneri le chiavi del
