@@ -13,7 +13,7 @@
  */
 
 /** Quale backend usare: 'firebase' | 'supabase' | 'local' */
-export const BACKEND = 'local';
+export const BACKEND = 'firebase';
 
 /**
  * Firebase. Dalla console: Impostazioni progetto → Le tue app → app Web.
@@ -21,8 +21,8 @@ export const BACKEND = 'local';
  * Istruzioni passo passo nel README.
  */
 export const FIREBASE = {
-  projectId: '',
-  apiKey: '',
+  projectId: 'euro-banknote-rank-bc351',
+  apiKey: 'AIzaSyC2J56TI0rdaSrT0yDjBugmM-Onsgf9zJI',
   // Facoltativo: puntando all'emulatore locale (es. '127.0.0.1:8080') si
   // possono provare le regole di sicurezza senza toccare i dati veri.
   // Lasciare vuoto in produzione.
