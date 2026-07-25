@@ -1,12 +1,19 @@
 /**
- * Test delle regole di sicurezza Firestore contro l'emulatore.
+ * Firestore security rules, exercised against the emulator.
  *
- * Sul piano gratuito le regole sono l'unica difesa: il browser scrive
- * direttamente su Firestore. Quello che si verifica qui è che un voto possa
- * solo aggiungere 1 a un contatore, e che ogni altra scrittura venga respinta.
+ * On the free plan the rules are the only defence: the browser writes to
+ * Firestore directly. What is checked here is that a vote can do nothing but
+ * add 1 to one counter, and that every other write is refused.
  *
- * Richiede l'emulatore in ascolto (FIRESTORE_EMULATOR_HOST) e le dipendenze
- * di sviluppo. Vedi README, sezione Firebase.
+ * All 540 counters live in one document, stats/all, so the rules can no longer
+ * name the field being written. Instead the write declares which counter it is
+ * touching, in `last`, and the rules check that claim against the data with
+ * dynamic indexing — c[last]. That mechanism is the load-bearing part of this
+ * design, so the first thing these tests do is prove it actually works rather
+ * than assume it.
+ *
+ * Needs the emulator listening (FIRESTORE_EMULATOR_HOST) and the dev
+ * dependencies. See the README, Firebase section.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -25,8 +32,6 @@ import {
   deleteDoc,
   increment,
   deleteField,
-  collection,
-  getDocs,
 } from 'firebase/firestore';
 
 const RULES = new URL('../firebase/firestore.rules', import.meta.url);
@@ -48,188 +53,237 @@ test.after(async () => {
   await env?.cleanup();
 });
 
-test.beforeEach(async () => {
-  await env.clearFirestore();
-});
+/** A few real counters, enough to exercise every rule. */
+const A_LO = 'd50_a_c_lo';
+const A_HI = 'd50_a_c_hi';
+const B_LO = 'd5_b_j_lo';
 
-/** Client anonimo, esattamente quello che è il browser di un votante. */
-function db() {
-  return env.unauthenticatedContext().firestore();
+/** The document as it exists in production: counters, all of them integers. */
+function seedData(overrides = {}) {
+  return {
+    last: A_LO,
+    c: { [A_LO]: 3, [A_HI]: 7, [B_LO]: 0, ...overrides },
+  };
 }
 
-/** Semina una coppia scavalcando le regole, per preparare i test di update. */
-async function seed(id, data) {
+/** Seeds stats/all bypassing the rules, which forbid creating it. */
+async function seed(data = seedData()) {
+  await env.clearFirestore();
   await env.withSecurityRulesDisabled(async (ctx) => {
-    await setDoc(doc(ctx.firestore(), 'pairStats', id), data);
+    await setDoc(doc(ctx.firestore(), 'stats', 'all'), data);
   });
 }
 
-const PAIR = { denomination: 50, designLo: 'a', designHi: 'c' };
+/** An anonymous client: exactly what a voter's browser is. */
+function ref() {
+  return doc(env.unauthenticatedContext().firestore(), 'stats', 'all');
+}
 
-/* ------------------------------------------------------------------ lettura */
+/** The counters as they now stand, read with the rules out of the way. */
+async function counters() {
+  let out;
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    out = (await getDoc(doc(ctx.firestore(), 'stats', 'all'))).data().c;
+  });
+  return out;
+}
 
-test('chiunque può leggere la classifica', async () => {
-  await seed('50_a_c', { ...PAIR, winsLo: 3, winsHi: 2 });
-  await assertSucceeds(getDoc(doc(db(), 'pairStats', '50_a_c')));
-  await assertSucceeds(getDocs(collection(db(), 'pairStats')));
+test.beforeEach(async () => {
+  await seed();
 });
 
-/* ---------------------------------------------------------------- creazione */
+/* ------------------------------------------------------------------- read */
 
-test('il primo voto su una coppia crea il documento', async () => {
-  await assertSucceeds(
-    setDoc(doc(db(), 'pairStats', '50_a_c'), { ...PAIR, winsLo: 1, winsHi: 0 })
-  );
+test('anyone can read the ranking', async () => {
+  const snap = await assertSucceeds(getDoc(ref()));
+  assert.equal(snap.data().c[A_HI], 7);
 });
 
-test('un documento non può nascere con più di un voto', async () => {
-  await assertFails(
-    setDoc(doc(db(), 'pairStats', '50_a_c'), { ...PAIR, winsLo: 999, winsHi: 0 })
-  );
-  await assertFails(
-    setDoc(doc(db(), 'pairStats', '50_a_c'), { ...PAIR, winsLo: 1, winsHi: 1 })
-  );
-  await assertFails(
-    setDoc(doc(db(), 'pairStats', '50_a_c'), { ...PAIR, winsLo: 0, winsHi: 0 })
-  );
+/* ------------------------------------------------------ the legitimate vote */
+
+test('a vote adds 1 to the counter it declares', async () => {
+  await assertSucceeds(updateDoc(ref(), { last: A_LO, [`c.${A_LO}`]: increment(1) }));
+  const c = await counters();
+  assert.equal(c[A_LO], 4, 'il contatore dichiarato deve salire di 1');
+  assert.equal(c[A_HI], 7, 'gli altri non si devono muovere');
 });
 
-test("l'id del documento deve corrispondere ai campi", async () => {
-  await assertFails(
-    setDoc(doc(db(), 'pairStats', '50_a_b'), { ...PAIR, winsLo: 1, winsHi: 0 })
-  );
-  await assertFails(
-    setDoc(doc(db(), 'pairStats', 'qualsiasi-cosa'), { ...PAIR, winsLo: 1, winsHi: 0 })
-  );
+test('both sides of a pair can be voted', async () => {
+  await assertSucceeds(updateDoc(ref(), { last: A_HI, [`c.${A_HI}`]: increment(1) }));
+  assert.equal((await counters())[A_HI], 8);
 });
 
-test('tagli e design inesistenti vengono respinti', async () => {
+test('a counter still at zero can be voted', async () => {
+  await assertSucceeds(updateDoc(ref(), { last: B_LO, [`c.${B_LO}`]: increment(1) }));
+  assert.equal((await counters())[B_LO], 1);
+});
+
+/* -------------------------------------------- the claim has to be the truth */
+
+test('declaring one counter and incrementing another is refused', async () => {
+  // Senza il controllo sulle chiavi toccate, questa scrittura passerebbe: la
+  // chiave dichiarata è valida e il suo valore è coerente con sé stesso.
+  await assertFails(updateDoc(ref(), { last: A_LO, [`c.${A_HI}`]: increment(1) }));
+  assert.equal((await counters())[A_HI], 7);
+});
+
+test('incrementing two counters in one write is refused', async () => {
   await assertFails(
-    setDoc(doc(db(), 'pairStats', '500_a_c'), {
-      ...PAIR, denomination: 500, winsLo: 1, winsHi: 0,
+    updateDoc(ref(), {
+      last: A_LO,
+      [`c.${A_LO}`]: increment(1),
+      [`c.${A_HI}`]: increment(1),
     })
   );
+  const c = await counters();
+  assert.equal(c[A_LO], 3);
+  assert.equal(c[A_HI], 7);
+});
+
+test('a vote plus a hidden inflation elsewhere is refused', async () => {
   await assertFails(
-    setDoc(doc(db(), 'pairStats', '50_a_z'), {
-      ...PAIR, designHi: 'z', winsLo: 1, winsHi: 0,
-    })
+    updateDoc(ref(), { last: A_LO, [`c.${A_LO}`]: increment(1), [`c.${A_HI}`]: 9999 })
   );
-  // Lettere fuori ordine: aprirebbe la porta a due documenti per la stessa coppia.
-  await assertFails(
-    setDoc(doc(db(), 'pairStats', '50_c_a'), {
-      denomination: 50, designLo: 'c', designHi: 'a', winsLo: 1, winsHi: 0,
-    })
-  );
-  // Un design non può sfidare se stesso.
-  await assertFails(
-    setDoc(doc(db(), 'pairStats', '50_a_a'), {
-      denomination: 50, designLo: 'a', designHi: 'a', winsLo: 1, winsHi: 0,
-    })
+  assert.equal((await counters())[A_HI], 7);
+});
+
+/* ------------------------------------------------------------ only ever +1 */
+
+test('adding more than 1 is refused', async () => {
+  await assertFails(updateDoc(ref(), { last: A_LO, [`c.${A_LO}`]: increment(2) }));
+  await assertFails(updateDoc(ref(), { last: A_LO, [`c.${A_LO}`]: increment(1000) }));
+  assert.equal((await counters())[A_LO], 3);
+});
+
+test('writing an arbitrary score is refused', async () => {
+  await assertFails(updateDoc(ref(), { last: A_LO, [`c.${A_LO}`]: 500 }));
+  assert.equal((await counters())[A_LO], 3);
+});
+
+test('taking votes away is refused', async () => {
+  await assertFails(updateDoc(ref(), { last: A_HI, [`c.${A_HI}`]: increment(-1) }));
+  await assertFails(updateDoc(ref(), { last: A_HI, [`c.${A_HI}`]: 0 }));
+  assert.equal((await counters())[A_HI], 7);
+});
+
+test('a non-integer counter is refused', async () => {
+  await assertFails(updateDoc(ref(), { last: A_LO, [`c.${A_LO}`]: 3.5 }));
+  await assertFails(updateDoc(ref(), { last: A_LO, [`c.${A_LO}`]: 'quattro' }));
+});
+
+/* -------------------------------------------------- only real counter names */
+
+test('an invented counter name is refused', async () => {
+  for (const name of [
+    'd50_a_c_boh',   // lato inesistente
+    'd7_a_c_lo',     // taglio inesistente
+    'd50_a_z_lo',    // design inesistente
+    'd50_a_a_lo',    // un design contro sé stesso
+    'd50_c_a_lo',    // coppia rovesciata: sarebbe letta come un risultato vero
+    'totale',
+  ]) {
+    await assertFails(
+      updateDoc(ref(), { last: name, [`c.${name}`]: increment(1) }),
+      `avrebbe dovuto respingere ${name}`
+    );
+  }
+});
+
+test('an empty counter name never even reaches the rules', async () => {
+  // Il nome vuoto darebbe il percorso "c.", che Firestore rifiuta come
+  // malformato prima di inviarlo. Sta qui perché senza questa nota il caso
+  // sembra scoperto dalle regole, e invece è coperto piu' a monte.
+  // updateDoc solleva in modo sincrono, non restituisce una promessa
+  // respinta: assert.rejects non lo intercetta.
+  assert.throws(
+    () => updateDoc(ref(), { last: '', ['c.']: increment(1) }),
+    /Invalid field path/
   );
 });
 
-test('non si possono aggiungere campi di fantasia', async () => {
+test('a counter that does not exist yet cannot be created', async () => {
+  // Il documento nasce con tutti e 540 i contatori: se una scrittura potesse
+  // aggiungerne uno, potrebbe anche nascere con un valore qualunque.
   await assertFails(
-    setDoc(doc(db(), 'pairStats', '50_a_c'), {
-      ...PAIR, winsLo: 1, winsHi: 0, admin: true,
-    })
+    updateDoc(ref(), { last: 'd100_i_j_lo', ['c.d100_i_j_lo']: increment(1) })
   );
 });
 
-test('un documento non può nascere senza uno dei contatori', async () => {
-  // Questi casi erano già respinti prima che le regole controllassero la forma
-  // con hasAll: leggere un campo inesistente fa fallire la valutazione, quindi
-  // la scrittura veniva negata comunque. Il test resta a presidiare il
-  // comportamento, che prima dipendeva da un effetto collaterale del motore
-  // delle regole e ora da un controllo esplicito.
-  await assertFails(setDoc(doc(db(), 'pairStats', '50_a_c'), { ...PAIR, winsLo: 1 }));
-  await assertFails(setDoc(doc(db(), 'pairStats', '50_a_c'), { ...PAIR, winsHi: 1 }));
+test('a declaration that is not a string is refused', async () => {
+  await assertFails(updateDoc(ref(), { last: 42, [`c.${A_LO}`]: increment(1) }));
+  await assertFails(updateDoc(ref(), { last: ['d50_a_c_lo'], [`c.${A_LO}`]: increment(1) }));
+});
+
+test('omitting the declaration leaves the previous one standing, and that is safe', async () => {
+  // Questo test aveva un'aspettativa sbagliata: pensavo che una scrittura
+  // senza `last` dovesse essere respinta. Non lo è, e non può esserlo: se il
+  // campo non viene scritto, le regole leggono quello che c'era già, e la
+  // scrittura passa a patto di incrementare proprio quel contatore.
+  //
+  // Non è una falla, ed è il motivo per cui il test resta invece di sparire.
+  // Chi omette la dichiarazione non guadagna niente: può solo fare +1 sul
+  // contatore che l'ultimo votante ha dichiarato, cioè esattamente un voto
+  // legittimo. Ogni altra chiave viene comunque respinta.
+  assert.equal((await counters())[A_LO], 3, 'il seme dichiara A_LO');
+
+  await assertSucceeds(updateDoc(ref(), { [`c.${A_LO}`]: increment(1) }));
+  assert.equal((await counters())[A_LO], 4);
+
+  // La garanzia che conta regge lo stesso: nessun altro contatore è toccabile.
+  await assertFails(updateDoc(ref(), { [`c.${A_HI}`]: increment(1) }));
+  await assertFails(updateDoc(ref(), { [`c.${A_LO}`]: increment(50) }));
+  assert.equal((await counters())[A_HI], 7);
+});
+
+/* ---------------------------------------------------------- document shape */
+
+test('invented fields are refused', async () => {
   await assertFails(
-    setDoc(doc(db(), 'pairStats', '50_a_c'), { denomination: 50, winsLo: 1, winsHi: 0 })
+    updateDoc(ref(), { last: A_LO, [`c.${A_LO}`]: increment(1), admin: true })
   );
+  await assertFails(updateDoc(ref(), { nota: 'ciao' }));
 });
 
-test('i contatori devono essere interi non negativi', async () => {
-  await assertFails(
-    setDoc(doc(db(), 'pairStats', '50_a_c'), { ...PAIR, winsLo: 1.5, winsHi: -0.5 })
-  );
-  await assertFails(
-    setDoc(doc(db(), 'pairStats', '50_a_c'), { ...PAIR, winsLo: '1', winsHi: 0 })
-  );
+test('removing a counter is refused', async () => {
+  await assertFails(updateDoc(ref(), { last: A_LO, [`c.${A_HI}`]: deleteField() }));
+  assert.equal((await counters())[A_HI], 7);
 });
 
-/* ---------------------------------------------------------------- incremento */
-
-test('un voto aggiunge 1 a un contatore, da entrambi i lati', async () => {
-  await seed('50_a_c', { ...PAIR, winsLo: 3, winsHi: 2 });
-  await assertSucceeds(updateDoc(doc(db(), 'pairStats', '50_a_c'), { winsLo: increment(1) }));
-  await assertSucceeds(updateDoc(doc(db(), 'pairStats', '50_a_c'), { winsHi: increment(1) }));
+test('replacing the whole counter map is refused', async () => {
+  await assertFails(setDoc(ref(), { last: A_LO, c: { [A_LO]: 999 } }));
+  assert.equal((await counters())[A_LO], 3);
 });
 
-test('non si può aggiungere più di 1 alla volta', async () => {
-  await seed('50_a_c', { ...PAIR, winsLo: 3, winsHi: 2 });
-  await assertFails(updateDoc(doc(db(), 'pairStats', '50_a_c'), { winsLo: increment(2) }));
-  await assertFails(updateDoc(doc(db(), 'pairStats', '50_a_c'), { winsLo: increment(1000) }));
+/* --------------------------------------------------- creation and deletion */
+
+test('the ranking document cannot be created from the browser', async () => {
+  // È seminato una volta a mano. Se si potesse creare, si potrebbe anche
+  // cancellare e ricreare con i numeri che si vogliono.
+  await env.clearFirestore();
+  await assertFails(setDoc(ref(), seedData()));
 });
 
-test('non si può scrivere un punteggio arbitrario', async () => {
-  await seed('50_a_c', { ...PAIR, winsLo: 3, winsHi: 2 });
-  await assertFails(updateDoc(doc(db(), 'pairStats', '50_a_c'), { winsLo: 999999 }));
+test('votes are never deleted', async () => {
+  await assertFails(deleteDoc(ref()));
 });
 
-test('non si possono togliere voti agli altri', async () => {
-  await seed('50_a_c', { ...PAIR, winsLo: 3, winsHi: 2 });
-  await assertFails(updateDoc(doc(db(), 'pairStats', '50_a_c'), { winsHi: increment(-1) }));
-  await assertFails(updateDoc(doc(db(), 'pairStats', '50_a_c'), { winsHi: 0 }));
+/* ------------------------------------------------------ everything else off */
+
+test('the old per-pair collection is readable but frozen', async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await setDoc(doc(ctx.firestore(), 'pairStats', '50_a_c'), {
+      denomination: 50, designLo: 'a', designHi: 'c', winsLo: 1, winsHi: 0,
+    });
+  });
+  const old = doc(env.unauthenticatedContext().firestore(), 'pairStats', '50_a_c');
+  await assertSucceeds(getDoc(old));
+  await assertFails(updateDoc(old, { winsLo: increment(1) }));
+  await assertFails(deleteDoc(old));
 });
 
-test('non si possono muovere i due contatori insieme', async () => {
-  await seed('50_a_c', { ...PAIR, winsLo: 3, winsHi: 2 });
-  await assertFails(
-    updateDoc(doc(db(), 'pairStats', '50_a_c'), {
-      winsLo: increment(1), winsHi: increment(1),
-    })
-  );
-  await assertFails(
-    updateDoc(doc(db(), 'pairStats', '50_a_c'), {
-      winsLo: increment(1), winsHi: increment(-1),
-    })
-  );
-});
-
-test("l'identità della coppia non si può riscrivere", async () => {
-  await seed('50_a_c', { ...PAIR, winsLo: 3, winsHi: 2 });
-  await assertFails(
-    updateDoc(doc(db(), 'pairStats', '50_a_c'), { designHi: 'b', winsLo: increment(1) })
-  );
-  await assertFails(
-    updateDoc(doc(db(), 'pairStats', '50_a_c'), { denomination: 5, winsLo: increment(1) })
-  );
-});
-
-test('un aggiornamento non può aggiungere né togliere campi', async () => {
-  await seed('50_a_c', { ...PAIR, winsLo: 3, winsHi: 2 });
-
-  await assertFails(
-    updateDoc(doc(db(), 'pairStats', '50_a_c'), { winsLo: increment(1), admin: true })
-  );
-  // Cancellare un contatore falserebbe la classifica quanto gonfiarlo.
-  await assertFails(
-    updateDoc(doc(db(), 'pairStats', '50_a_c'), {
-      winsLo: increment(1),
-      winsHi: deleteField(),
-    })
-  );
-});
-
-/* ---------------------------------------------------- cancellazione e resto */
-
-test('i voti non si cancellano', async () => {
-  await seed('50_a_c', { ...PAIR, winsLo: 3, winsHi: 2 });
-  await assertFails(deleteDoc(doc(db(), 'pairStats', '50_a_c')));
-});
-
-test('nessun accesso a collezioni non previste', async () => {
-  await assertFails(getDoc(doc(db(), 'altro', 'x')));
-  await assertFails(setDoc(doc(db(), 'altro', 'x'), { qualsiasi: 'cosa' }));
+test('no access to collections that were never planned', async () => {
+  const db = env.unauthenticatedContext().firestore();
+  await assertFails(getDoc(doc(db, 'utenti', 'io')));
+  await assertFails(setDoc(doc(db, 'utenti', 'io'), { admin: true }));
+  await assertFails(setDoc(doc(db, 'stats', 'altro'), { c: {} }));
 });

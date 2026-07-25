@@ -1,13 +1,13 @@
 /**
- * Test dell'adattatore Firestore contro l'emulatore.
+ * The Firestore adapter, exercised against the emulator.
  *
- * I test delle regole (firestore-rules.test.mjs) usano l'SDK Firebase, mentre
- * il sito parla REST con `updateMask` e `updateTransforms`: è una forma di
- * scrittura diversa, che le regole potrebbero benissimo rifiutare. Qui gira il
- * codice vero di `src/store.js`, così si verifica l'incastro fra i due — che è
- * il punto in cui un errore passerebbe inosservato fino alla produzione.
+ * The rules tests (firestore-rules.test.mjs) drive the Firebase SDK, while the
+ * site speaks REST with `updateMask` and `updateTransforms` — a different shape
+ * of write, which the rules could perfectly well refuse. What runs here is the
+ * real code from `src/store.js`, so the join between the two is checked: that
+ * is exactly where a mistake would go unnoticed until production.
  *
- * Richiede l'emulatore in ascolto (FIRESTORE_EMULATOR_HOST). Vedi README.
+ * Needs the emulator listening (FIRESTORE_EMULATOR_HOST). See the README.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -16,6 +16,7 @@ import { FirestoreStore } from '../src/store.js';
 
 const HOST = process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8080';
 const PROJECT = 'banconota-store-test';
+const ROOT = `projects/${PROJECT}/databases/(default)/documents`;
 
 const store = new FirestoreStore({
   projectId: PROJECT,
@@ -23,13 +24,51 @@ const store = new FirestoreStore({
   host: HOST,
 });
 
-/** L'emulatore espone un endpoint per svuotare il database fra un test e l'altro. */
+const DENOMINATIONS = [5, 10, 20, 50, 100, 200];
+const DESIGNS = 'abcdefghij'.split('');
+
+/** The 540 counter names, in the same order the seeding script produces. */
+function allCounterNames() {
+  const names = [];
+  for (const d of DENOMINATIONS) {
+    for (let i = 0; i < DESIGNS.length; i++) {
+      for (let j = i + 1; j < DESIGNS.length; j++) {
+        names.push(FirestoreStore.counterName(d, DESIGNS[i], DESIGNS[j], 'lo'));
+        names.push(FirestoreStore.counterName(d, DESIGNS[i], DESIGNS[j], 'hi'));
+      }
+    }
+  }
+  return names;
+}
+
+/** The emulator exposes an endpoint that empties the database between tests. */
 async function clear() {
-  const res = await fetch(
-    `http://${HOST}/emulator/v1/projects/${PROJECT}/databases/(default)/documents`,
-    { method: 'DELETE' }
-  );
+  const res = await fetch(`http://${HOST}/emulator/v1/${ROOT}`, { method: 'DELETE' });
   assert.ok(res.ok, `pulizia del database fallita: HTTP ${res.status}`);
+}
+
+/**
+ * Creates stats/all with all 540 counters at zero.
+ *
+ * The rules forbid creating it — it is seeded once, by hand, in production —
+ * so this goes in as the emulator owner, which bypasses them. Doing it in
+ * every test is also what makes the "cannot create from the browser" case in
+ * the rules tests meaningful: here we prove the site works given a seeded
+ * document, there that the site cannot seed it itself.
+ */
+async function seed(values = {}) {
+  const fields = {};
+  for (const name of allCounterNames()) {
+    fields[name] = { integerValue: String(values[name] ?? 0) };
+  }
+  const res = await fetch(`http://${HOST}/v1/${ROOT}/stats?documentId=all`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer owner' },
+    body: JSON.stringify({
+      fields: { last: { stringValue: '' }, c: { mapValue: { fields } } },
+    }),
+  });
+  assert.ok(res.ok, `semina fallita: HTTP ${res.status} ${await res.text()}`);
 }
 
 function find(stats, denomination, lo, hi) {
@@ -38,13 +77,63 @@ function find(stats, denomination, lo, hi) {
   );
 }
 
-test.beforeEach(clear);
+test.beforeEach(async () => {
+  await clear();
+  await seed();
+});
 
-test('una collezione vuota non è un errore', async () => {
+test('a document that is not there yet is not an error', async () => {
+  await clear();
   assert.deepEqual(await store.loadPairStats(), []);
 });
 
-test('il primo voto crea la coppia con entrambi i contatori', async () => {
+test('before the migration it still reads the old collection', async () => {
+  // Percorso di transizione: il codice puo' essere pubblicato prima che
+  // stats/all esista senza che la classifica vada a zero per tutti.
+  await clear();
+  const res = await fetch(`http://${HOST}/v1/${ROOT}/pairStats?documentId=50_a_c`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer owner' },
+    body: JSON.stringify({ fields: {
+      denomination: { integerValue: '50' },
+      designLo: { stringValue: 'a' }, designHi: { stringValue: 'c' },
+      winsLo: { integerValue: '11' }, winsHi: { integerValue: '4' },
+    } }),
+  });
+  assert.ok(res.ok);
+
+  const stats = await store.loadPairStats();
+  assert.equal(stats.length, 1);
+  assert.equal(stats[0].winsLo, 11);
+  assert.equal(stats[0].winsHi, 4);
+});
+
+test('once seeded, the old collection is ignored', async () => {
+  // Se leggesse entrambe le fonti i voti verrebbero contati due volte.
+  const res = await fetch(`http://${HOST}/v1/${ROOT}/pairStats?documentId=50_a_c`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer owner' },
+    body: JSON.stringify({ fields: {
+      denomination: { integerValue: '50' },
+      designLo: { stringValue: 'a' }, designHi: { stringValue: 'c' },
+      winsLo: { integerValue: '999' }, winsHi: { integerValue: '999' },
+    } }),
+  });
+  assert.ok(res.ok);
+
+  await store.submitVote({ denomination: 50, winner: 'a', loser: 'c' });
+  const row = find(await store.loadPairStats(), 50, 'a', 'c');
+  assert.equal(row.winsLo, 1, 'deve contare solo il documento aggregato');
+  assert.equal(row.winsHi, 0);
+});
+
+test('a seeded but unvoted ranking reads as empty', async () => {
+  // I 540 contatori esistono tutti, ma nessuno è stato votato: le coppie a zero
+  // non portano informazione e non devono comparire.
+  assert.deepEqual(await store.loadPairStats(), []);
+});
+
+test('the first vote lands on the right side of the pair', async () => {
   await store.submitVote({ denomination: 50, winner: 'c', loser: 'a' });
 
   const stats = await store.loadPairStats();
@@ -59,13 +148,13 @@ test('il primo voto crea la coppia con entrambi i contatori', async () => {
   });
 });
 
-test("l'ordine di presentazione non crea documenti doppi", async () => {
+test('the order the pair was shown in does not split the counts', async () => {
   await store.submitVote({ denomination: 50, winner: 'c', loser: 'a' });
   await store.submitVote({ denomination: 50, winner: 'a', loser: 'c' });
   await store.submitVote({ denomination: 50, winner: 'a', loser: 'c' });
 
   const stats = await store.loadPairStats();
-  assert.equal(stats.length, 1, 'la coppia a-c deve avere un documento solo');
+  assert.equal(stats.length, 1, 'la coppia a-c deve restare una riga sola');
   assert.deepEqual(find(stats, 50, 'a', 'c'), {
     denomination: 50,
     designLo: 'a',
@@ -75,7 +164,7 @@ test("l'ordine di presentazione non crea documenti doppi", async () => {
   });
 });
 
-test('i voti si sommano senza sovrascriversi', async () => {
+test('votes add up instead of overwriting each other', async () => {
   for (let i = 0; i < 25; i++) {
     await store.submitVote({ denomination: 5, winner: 'b', loser: 'j' });
   }
@@ -84,9 +173,11 @@ test('i voti si sommano senza sovrascriversi', async () => {
   assert.equal(row.winsHi, 0);
 });
 
-test('voti simultanei sulla stessa coppia non si perdono', async () => {
+test('simultaneous votes on the same pair are not lost', async () => {
   // L'incremento avviene lato server, quindi non c'è la finestra fra lettura e
-  // scrittura in cui due votanti si sovrascriverebbero a vicenda.
+  // scrittura in cui due votanti si sovrascriverebbero a vicenda. Ora che i
+  // contatori stanno in un documento solo, questo caso vale anche di piu': la
+  // contesa è su un unico documento invece che su 270.
   await Promise.all(
     Array.from({ length: 20 }, (_, i) =>
       store.submitVote(
@@ -103,7 +194,26 @@ test('voti simultanei sulla stessa coppia non si perdono', async () => {
   assert.equal(row.winsHi, 10);
 });
 
-test('tagli e coppie diverse restano separati', async () => {
+test('simultaneous votes on different pairs do not collide either', async () => {
+  // Tutte le scritture ora colpiscono lo stesso documento: se la contesa fosse
+  // gestita male, dei voti su coppie diverse si perderebbero fra loro.
+  await Promise.all([
+    store.submitVote({ denomination: 5, winner: 'a', loser: 'b' }),
+    store.submitVote({ denomination: 10, winner: 'c', loser: 'd' }),
+    store.submitVote({ denomination: 20, winner: 'e', loser: 'f' }),
+    store.submitVote({ denomination: 50, winner: 'g', loser: 'h' }),
+    store.submitVote({ denomination: 100, winner: 'i', loser: 'j' }),
+    store.submitVote({ denomination: 200, winner: 'a', loser: 'j' }),
+  ]);
+
+  const stats = await store.loadPairStats();
+  assert.equal(stats.length, 6, 'sei voti su sei coppie diverse, sei righe');
+  assert.equal(find(stats, 5, 'a', 'b').winsLo, 1);
+  assert.equal(find(stats, 10, 'c', 'd').winsLo, 1);
+  assert.equal(find(stats, 200, 'a', 'j').winsLo, 1);
+});
+
+test('denominations and pairs stay separate', async () => {
   await store.submitVote({ denomination: 5, winner: 'a', loser: 'b' });
   await store.submitVote({ denomination: 200, winner: 'a', loser: 'b' });
   await store.submitVote({ denomination: 5, winner: 'a', loser: 'c' });
@@ -115,44 +225,80 @@ test('tagli e coppie diverse restano separati', async () => {
   assert.equal(find(stats, 5, 'a', 'c').winsLo, 1);
 });
 
-test('le regole respingono una scrittura che non sia un +1', async () => {
+test('reading the whole ranking costs exactly one request', async () => {
+  // È il motivo per cui questo schema esiste: prima erano 270 letture, una per
+  // coppia, e la quota gratuita finiva dopo meno di cento visite.
+  await store.submitVote({ denomination: 50, winner: 'a', loser: 'c' });
+
+  const vera = globalThis.fetch;
+  let chiamate = 0;
+  globalThis.fetch = (...args) => { chiamate++; return vera(...args); };
+  try {
+    await store.loadPairStats();
+  } finally {
+    globalThis.fetch = vera;
+  }
+  assert.equal(chiamate, 1);
+});
+
+test('the rules refuse a write that is not a +1', async () => {
   await store.submitVote({ denomination: 50, winner: 'a', loser: 'c' });
 
   // Stessa rotta REST usata dal sito, ma con un incremento gonfiato: è il modo
   // in cui qualcuno proverebbe a truccare la classifica.
-  const res = await fetch(
-    `http://${HOST}/v1/projects/${PROJECT}/databases/(default)/documents:commit`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        writes: [
-          {
-            update: {
-              name: `projects/${PROJECT}/databases/(default)/documents/pairStats/50_a_c`,
-              fields: {
-                denomination: { integerValue: '50' },
-                designLo: { stringValue: 'a' },
-                designHi: { stringValue: 'c' },
-              },
-            },
-            updateMask: { fieldPaths: ['denomination', 'designLo', 'designHi'] },
-            updateTransforms: [
-              { fieldPath: 'winsLo', increment: { integerValue: '999999' } },
-            ],
+  const res = await fetch(`http://${HOST}/v1/${ROOT}:commit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      writes: [
+        {
+          update: {
+            name: `${ROOT}/stats/all`,
+            fields: { last: { stringValue: 'd50_a_c_lo' } },
           },
-        ],
-      }),
-    }
-  );
+          updateMask: { fieldPaths: ['last'] },
+          updateTransforms: [
+            { fieldPath: 'c.d50_a_c_lo', increment: { integerValue: '999999' } },
+          ],
+        },
+      ],
+    }),
+  });
 
-  assert.equal(res.status, 403, 'l\'incremento gonfiato deve essere respinto');
-
-  const row = find(await store.loadPairStats(), 50, 'a', 'c');
-  assert.equal(row.winsLo, 1, 'il punteggio non deve essere cambiato');
+  assert.equal(res.status, 403, "l'incremento gonfiato deve essere respinto");
+  assert.equal(find(await store.loadPairStats(), 50, 'a', 'c').winsLo, 1);
 });
 
-test('le regole respingono una coppia inesistente', async () => {
+test('the rules refuse a counter that declares one pair and inflates another', async () => {
+  await store.submitVote({ denomination: 50, winner: 'a', loser: 'c' });
+
+  const res = await fetch(`http://${HOST}/v1/${ROOT}:commit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      writes: [
+        {
+          update: {
+            name: `${ROOT}/stats/all`,
+            fields: { last: { stringValue: 'd50_a_c_lo' } },
+          },
+          updateMask: { fieldPaths: ['last'] },
+          updateTransforms: [
+            { fieldPath: 'c.d50_a_c_lo', increment: { integerValue: '1' } },
+            { fieldPath: 'c.d50_a_c_hi', increment: { integerValue: '1' } },
+          ],
+        },
+      ],
+    }),
+  });
+
+  assert.equal(res.status, 403);
+  const row = find(await store.loadPairStats(), 50, 'a', 'c');
+  assert.equal(row.winsLo, 1);
+  assert.equal(row.winsHi, 0);
+});
+
+test('the rules refuse a pair that does not exist', async () => {
   await assert.rejects(
     () => store.submitVote({ denomination: 500, winner: 'a', loser: 'b' }),
     /Voto rifiutato/

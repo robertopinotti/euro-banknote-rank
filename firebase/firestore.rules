@@ -7,84 +7,79 @@ rules_version = '2';
 //  to Firestore directly and these rules are the only defence. They are
 //  written to guarantee one thing, but to guarantee it well: a vote can only
 //  add 1 to one counter. You cannot write an arbitrary score, you cannot touch
-//  the other counter, you cannot delete anything, and you cannot create a
-//  document that does not correspond to a valid pair.
+//  a second counter in the same write, and you cannot delete anything.
 //
-//  What the rules CANNOT do is stop a script from sending many legitimate +1
-//  votes. That needs App Check (see the README): the rules defend the value of
-//  the data, App Check defends where it comes from.
+//  All 540 counters live in a single document, stats/all. They used to be 270
+//  separate documents, one per pair, which cost 270 reads every time somebody
+//  opened the site — 50,000 free reads a day divided by 270 is 185 visits, and
+//  the ranking really did go dark when that ran out. One document is one read.
+//
+//  The price is that the rules can no longer name the field being changed:
+//  with one document per pair, "winsLo" was written into the rule. Here the
+//  write says which counter it is touching, in the `last` field, and the rules
+//  check that claim against the data. Dynamic indexing — c[last] — is what
+//  makes that possible, and it is verified by the tests, not assumed.
+//
+//  What the rules still CANNOT do is stop a script from sending many
+//  legitimate +1 votes. That needs App Check (see the README): the rules
+//  defend the value of the data, App Check defends where it comes from.
 // ============================================================================
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isDenomination(value) {
-      return value is int && value in [5, 10, 20, 50, 100, 200];
+    // A counter name: denomination, the two designs in alphabetical order, and
+    // which of the two won. The 45 pairs are spelled out rather than matched
+    // with [a-j]_[a-j], because that shorter pattern would also accept "c_a"
+    // and "a_a" — a reversed or self-paired counter would be read back as a
+    // real result and would quietly distort the ranking.
+    function isCounterName(k) {
+      return k is string
+          && k.matches('^d(5|10|20|50|100|200)_(a_b|a_c|a_d|a_e|a_f|a_g|a_h|a_i|a_j|b_c|b_d|b_e|b_f|b_g|b_h|b_i|b_j|c_d|c_e|c_f|c_g|c_h|c_i|c_j|d_e|d_f|d_g|d_h|d_i|d_j|e_f|e_g|e_h|e_i|e_j|f_g|f_h|f_i|f_j|g_h|g_i|g_j|h_i|h_j|i_j)_(lo|hi)$');
     }
 
-    function isDesign(value) {
-      return value is string && value.matches('^[a-j]$');
-    }
-
-    // The three identity fields must be consistent with each other and with
-    // the document id, so a pair has exactly one row and spurious documents
-    // cannot be created.
-    function hasValidIdentity(pairId, data) {
-      return isDenomination(data.denomination)
-          && isDesign(data.designLo)
-          && isDesign(data.designHi)
-          && data.designLo < data.designHi
-          && pairId == string(data.denomination) + '_' + data.designLo + '_' + data.designHi;
-    }
-
-    // Exactly these five fields, no more and no fewer. Both checks are needed:
-    // hasOnly means "subset of", so on its own it would let through a document
-    // missing a counter. Such a document would be rejected anyway — the later
-    // checks would read a non-existent field and evaluation would fail — but
-    // as a side effect of the rules engine, not by choice. hasAll does not
-    // close a hole; it makes explicit something that was only implicit.
-    function hasExactShape(data) {
-      return data.keys().hasAll(['denomination', 'designLo', 'designHi', 'winsLo', 'winsHi'])
-          && data.keys().hasOnly(['denomination', 'designLo', 'designHi', 'winsLo', 'winsHi']);
-    }
-
-    function counters(data) {
-      return data.winsLo is int && data.winsHi is int
-          && data.winsLo >= 0 && data.winsHi >= 0;
-    }
-
-    match /pairStats/{pairId} {
+    match /stats/all {
 
       // The ranking is public.
       allow read: if true;
 
-      // First vote for this pair: the document is born, with exactly one vote
-      // in total. No fields beyond the five expected ones.
-      allow create: if hasExactShape(request.resource.data)
-                    && hasValidIdentity(pairId, request.resource.data)
-                    && counters(request.resource.data)
-                    && request.resource.data.winsLo + request.resource.data.winsHi == 1;
+      // The document is seeded once, by hand, and then only ever incremented.
+      // Nothing legitimate creates it, so nothing is allowed to: a create rule
+      // here would be a way to overwrite the whole ranking with one write.
+      allow create: if false;
 
-      // Later votes: only one of the two counters may change, and only by +1.
-      // The identity fields must stay as they were.
-      allow update: if hasExactShape(request.resource.data)
-                    && hasValidIdentity(pairId, request.resource.data)
-                    && counters(request.resource.data)
-                    && request.resource.data.denomination == resource.data.denomination
-                    && request.resource.data.designLo == resource.data.designLo
-                    && request.resource.data.designHi == resource.data.designHi
-                    && request.resource.data.diff(resource.data)
-                         .affectedKeys().hasOnly(['winsLo', 'winsHi'])
-                    && (
-                         (request.resource.data.winsLo == resource.data.winsLo + 1
-                          && request.resource.data.winsHi == resource.data.winsHi)
-                         ||
-                         (request.resource.data.winsHi == resource.data.winsHi + 1
-                          && request.resource.data.winsLo == resource.data.winsLo)
-                       );
+      allow update: if
+        // Only these two fields exist, and only these two may change.
+           request.resource.data.keys().hasOnly(['c', 'last'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['c', 'last'])
+
+        // The write has to name the counter it is touching, and the name has
+        // to be one of the 540 real ones.
+        && isCounterName(request.resource.data.last)
+
+        // ...and that name has to be the truth: exactly one counter changed,
+        // and it is the one named. Without this, a write could declare a
+        // harmless counter and inflate a different one in the same operation.
+        && request.resource.data.c.diff(resource.data.c)
+             .affectedKeys().hasOnly([request.resource.data.last])
+
+        // One vote is one vote. Reading the old value through the same key
+        // also means a counter that does not already exist cannot be created:
+        // the comparison has nothing to read and the rule fails.
+        && request.resource.data.c[request.resource.data.last]
+             == resource.data.c[request.resource.data.last] + 1;
 
       // Votes are never deleted.
       allow delete: if false;
+    }
+
+    // The old per-pair collection. Kept readable so a browser still running
+    // the previous version from its cache is not broken; writes are closed,
+    // because the counts that matter now live in stats/all. It can be deleted
+    // once the old caches have expired.
+    match /pairStats/{pairId} {
+      allow read: if true;
+      allow write: if false;
     }
 
     // Everything else is closed: if a collection is added one day, that has to

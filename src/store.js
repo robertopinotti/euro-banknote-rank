@@ -3,18 +3,17 @@
  *
  * Due implementazioni dietro la stessa interfaccia:
  *
- *  - FirestoreStore: classifica condivisa su Firebase. Legge la collezione
- *    `pairStats` e registra i voti con un incremento atomico. Le regole di
- *    sicurezza (firebase/firestore.rules) impongono che un voto possa solo
- *    aggiungere 1 a un contatore.
+ *  - FirestoreStore: shared ranking on Firebase. Reads the single document
+ *    `stats/all`, which holds all 540 counters, and records votes with an
+ *    atomic increment. The security rules (firebase/firestore.rules) allow a
+ *    write to do nothing but add 1 to one counter.
  *  - LocalStore: tutto in localStorage. È la modalità di prova quando nessun
  *    backend è configurato, ed è anche la rete di sicurezza se il backend è
  *    irraggiungibile: il sito resta usabile invece di mostrare una pagina rotta.
  *
- * In tutti i casi si scambiano solo statistiche aggregate per coppia (270 righe
- * al massimo: 6 tagli × 45 coppie), non i singoli voti. La classifica si
- * ricalcola sul client in pochi millisecondi, quindi il server non deve fare
- * altro che contare.
+ * Either way only aggregate per-pair counts travel (270 pairs at most: 6
+ * denominations × 45 pairs), never individual votes. The ranking is recomputed
+ * in the browser in a few milliseconds, so the server does nothing but count.
  */
 
 import { BACKEND, FIREBASE } from '../config.js';
@@ -127,17 +126,70 @@ export class FirestoreStore {
     this.base = `${this.origin}/v1/${this.root}`;
   }
 
-  /** Id del documento di una coppia, es. "50_a_c". Una coppia, un documento. */
-  static docId(denomination, lo, hi) {
-    return `${denomination}_${lo}_${hi}`;
+  /**
+   * Name of one counter: denomination, the two designs in alphabetical order,
+   * and which of the two won. The leading "d" is not decoration — a Firestore
+   * field path segment cannot start with a digit without being backquoted, and
+   * `c.d50_a_c_lo` is easier to get right than `c.` + backticks.
+   */
+  static counterName(denomination, lo, hi, side) {
+    return `d${denomination}_${lo}_${hi}_${side}`;
   }
 
+  /**
+   * One read. All 540 counters live in stats/all, so the whole ranking costs a
+   * single document read instead of one per pair.
+   */
   async loadPairStats() {
+    const res = await fetch(
+      `${this.base}/stats/all?key=${encodeURIComponent(this.apiKey)}`
+    );
+
+    // Not seeded yet. This is the transition: the aggregate document is
+    // written once by tools/seed-aggregate.mjs, and until that has happened
+    // the counts still only exist as 270 separate documents. Falling back
+    // means this code can be deployed before the migration is run without the
+    // ranking showing zero to everyone in between. Delete this — and
+    // loadFromOldCollection — once stats/all is in place.
+    if (res.status === 404) return this.loadFromOldCollection();
+
+    if (!res.ok) {
+      throw new Error(`Lettura statistiche fallita (HTTP ${res.status}): ${await res.text()}`);
+    }
+
+    const body = await res.json();
+    const counters = body.fields?.c?.mapValue?.fields || {};
+
+    // The counters are flat; the rest of the code thinks in pairs, so they are
+    // folded back into one row per pair here. Nothing above this line needs to
+    // know that the storage shape changed.
+    const byPair = new Map();
+    for (const [name, value] of Object.entries(counters)) {
+      const m = /^d(\d+)_([a-j])_([a-j])_(lo|hi)$/.exec(name);
+      if (!m) continue;
+      const [, denom, lo, hi, side] = m;
+      const key = `${denom}|${lo}|${hi}`;
+      let row = byPair.get(key);
+      if (!row) {
+        row = { denomination: Number(denom), designLo: lo, designHi: hi, winsLo: 0, winsHi: 0 };
+        byPair.set(key, row);
+      }
+      row[side === 'lo' ? 'winsLo' : 'winsHi'] = Number(value.integerValue ?? 0);
+    }
+
+    // Pairs nobody has voted on yet carry no information: dropping them keeps
+    // the array small and matches what the caller used to receive.
+    return [...byPair.values()].filter((r) => r.winsLo + r.winsHi > 0);
+  }
+
+  /**
+   * The old shape: one document per pair, 270 reads. Only reached while the
+   * aggregate document does not exist yet. Temporary — see the caller.
+   */
+  async loadFromOldCollection() {
     const stats = [];
     let pageToken = '';
 
-    // Le coppie sono al massimo 270, quindi una pagina basta; il ciclo c'è
-    // perché affidarsi a quel "al massimo" sarebbe una scommessa inutile.
     do {
       const url =
         `${this.base}/pairStats?key=${encodeURIComponent(this.apiKey)}&pageSize=300` +
@@ -168,34 +220,22 @@ export class FirestoreStore {
 
   async submitVote({ denomination, winner, loser }) {
     const { lo, hi, winnerIsLo } = normaliseVote(denomination, winner, loser);
-    const name = `${this.root}/pairStats/${FirestoreStore.docId(denomination, lo, hi)}`;
+    const counter = FirestoreStore.counterName(denomination, lo, hi, winnerIsLo ? 'lo' : 'hi');
+    const name = `${this.root}/stats/all`;
 
-    // Una sola scrittura fa tutto: crea il documento se non esiste, e in ogni
-    // caso incrementa il contatore giusto lato server. Niente lettura prima
-    // della scrittura, quindi niente voti persi se due persone votano la
-    // stessa coppia nello stesso istante.
-    //
-    // L'incremento di 0 sul contatore perdente non è inutile: garantisce che
-    // alla creazione il documento nasca con entrambi i campi presenti. Senza,
-    // il documento avrebbe un contatore solo e le regole di sicurezza — che
-    // verificano `winsLo + winsHi == 1` — rifiuterebbero il primo voto.
+    // The increment happens on the server, so two people voting on the same
+    // pair in the same instant both count — no read before the write, nothing
+    // to lose. `last` is not bookkeeping: the rules read it to know which
+    // counter this write claims to be touching, and then check the claim.
     const body = {
       writes: [
         {
-          update: {
-            name,
-            fields: {
-              denomination: { integerValue: String(denomination) },
-              designLo: { stringValue: lo },
-              designHi: { stringValue: hi },
-            },
-          },
-          // Senza updateMask la scrittura azzererebbe i contatori esistenti,
-          // perché `update` sostituisce il documento con i soli campi elencati.
-          updateMask: { fieldPaths: ['denomination', 'designLo', 'designHi'] },
+          update: { name, fields: { last: { stringValue: counter } } },
+          // Without updateMask the write would replace the document with just
+          // the fields listed, wiping all 540 counters in one go.
+          updateMask: { fieldPaths: ['last'] },
           updateTransforms: [
-            { fieldPath: 'winsLo', increment: { integerValue: winnerIsLo ? '1' : '0' } },
-            { fieldPath: 'winsHi', increment: { integerValue: winnerIsLo ? '0' : '1' } },
+            { fieldPath: `c.${counter}`, increment: { integerValue: '1' } },
           ],
         },
       ],
@@ -243,12 +283,14 @@ function loadSharedStats() {
  * Picks the implementation to use, and brings back the statistics it read
  * while doing so.
  *
- * Returning the stats is the point. This function used to load the whole
- * collection just to see whether the backend answered, throw the result away,
- * and let the caller ask for it again — so every single visit read all 270
- * pair documents twice. On Firestore's free tier that is 50,000 reads a day
- * divided by 540, about ninety visits, and then the quota is gone and the
- * shared ranking disappears for everyone until midnight. It happened.
+ * Returning the stats is the point. This function used to load the statistics
+ * just to see whether the backend answered, throw the result away, and let the
+ * caller ask for it again — two full loads per visit. Back when the counters
+ * were 270 separate documents that meant 540 reads a visit, and Firestore's
+ * 50,000 free daily reads divided by 540 is about ninety visits: the quota ran
+ * out one morning and the shared ranking went dark for everyone. The counters
+ * now live in one document, so a visit costs one read — but reading twice for
+ * no reason would still be reading twice for no reason.
  *
  * If the backend is configured but refuses, the site falls back to local mode
  * rather than showing a broken page — but it hands over the last shared

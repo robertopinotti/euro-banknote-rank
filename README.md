@@ -48,16 +48,17 @@ and the ranking is your own.
 
 ```bash
 npm test                            # 9 rating-engine tests, no dependencies
-npm install && npm run test:rules   # 25 tests against the Firestore emulator (needs Java)
+npm install && npm run test:rules   # 37 tests against the Firestore emulator (needs Java)
 ```
 
-The rules tests come in two groups. Seventeen attack the rules through the Firebase
-SDK — writing an arbitrary score, incrementing by 1000, taking votes away from
-others, deleting — and all of them must fail. The other eight run the real
-`src/store.js` code against the emulator, because the rules are written with the
-SDK in mind while the site speaks REST with `updateMask` and `updateTransforms`.
-Among those is the case that matters most: twenty simultaneous votes on the same
-pair must yield twenty counted votes, not one lost.
+The rules tests come in two groups. Twenty-three attack the rules through the
+Firebase SDK — writing an arbitrary score, incrementing by 1000, taking votes
+away from others, declaring one counter while inflating another, deleting — and
+all of them must fail. The other fourteen run the real `src/store.js` code
+against the emulator, because the rules are written with the SDK in mind while
+the site speaks REST with `updateMask` and `updateTransforms`. Among those is
+the case that matters most: twenty simultaneous votes on the same pair must
+yield twenty counted votes, not one lost.
 
 ---
 
@@ -80,25 +81,39 @@ needs Firestore:
 4. Put `projectId` and `apiKey` in [`config.js`](config.js).
 
 The free **Spark** plan is enough: only Firestore and its rules are used, no
-Cloud Functions. One vote is one write; loading the ranking costs one read per
-pair already voted on (at most 270).
+Cloud Functions. One vote is one write, and loading the ranking is one read.
+
+That last part was learned the hard way. The counters started out as 270
+documents, one per pair, so opening the site cost 270 reads — and the free tier
+allows 50,000 a day. The ranking went dark one morning after fewer than a
+hundred visits. All 540 counters now live in a single document, `stats/all`,
+which puts the ceiling somewhere around 50,000 visits a day instead of 185.
 
 ### How the data is protected
 
 The Firebase key is public by design: it sits in the code of a static site and
 protects nothing. The rules are what protect the data. They require that a write
-can only add 1 to one counter, that the document id matches the pair, that the
-denomination and design exist, and that nothing can be deleted. **Never put a
-service key or Admin SDK credentials in `config.js`:** they would bypass every
-rule.
+can only add 1 to one counter, that the counter is one of the 540 real ones, and
+that nothing can be created or deleted. **Never put a service key or Admin SDK
+credentials in `config.js`:** they would bypass every rule.
+
+With one document per pair the rules could name the field being written. With a
+single document they cannot, so each write declares which counter it is touching
+in a `last` field and the rules check that claim against the data — including
+that the counter named is the only one that moved, which is what stops a write
+from declaring something harmless and inflating something else. The mechanism
+that makes this possible is dynamic indexing inside the rules, `c[last]`; the
+tests prove it works rather than take it on faith.
 
 | operation | allowed |
 | --- | --- |
 | read the ranking | yes |
-| add 1 to a counter | yes |
+| add 1 to one counter | yes |
+| add 1 to two counters at once | no |
 | write an arbitrary score | no |
 | take votes away | no |
-| delete data | no |
+| invent a counter name | no |
+| create or delete the document | no |
 
 One thing the rules cannot do is stop a script from sending many legitimate +1
 votes. If that became a problem, the answer is
@@ -107,6 +122,23 @@ on the free plan.
 
 If the backend is configured but unreachable, the site falls back to local mode
 and says so, rather than showing a broken page.
+
+### Seeding the ranking document
+
+`stats/all` is created once, by hand, and the rules forbid creating it from the
+browser — a create rule would be a way to overwrite the whole ranking with one
+write. [`tools/seed-aggregate.mjs`](tools/seed-aggregate.mjs) writes it, carrying
+across whatever votes the old per-pair collection already held:
+
+1. In the Firebase console, publish the rules with `allow create: if true` on
+   `stats/all` instead of `if false`.
+2. `npm run seed`
+3. Publish [`firebase/firestore.rules`](firebase/firestore.rules) as it stands
+   here, so `allow create` goes back to `false`.
+
+Step 3 is not optional: between 1 and 3 anybody who knows the project could
+replace the document. The script prints the totals it wrote, so you can check
+that what ends up in the database is what came out of the old collection.
 
 ---
 
@@ -149,6 +181,7 @@ src/image-aspects.js           aspect ratios of the 120 images (generated)
 assets/css/style.css           single stylesheet, light and dark
 assets/banknotes/              120 WebP images (60 fronts + 60 reverses)
 tools/stamp-assets.mjs         cache-busting fingerprints and import map
+tools/seed-aggregate.mjs       one-off migration to the single-document schema
 firebase/firestore.rules       Firestore security rules
 test/                          rating engine, rules, and the Firestore adapter
 ```
