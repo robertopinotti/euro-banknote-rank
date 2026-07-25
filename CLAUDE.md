@@ -108,7 +108,14 @@ win in both directions.
   browser — unit tests will not catch it.
 - **Counting DOM nodes does not tell you they are visible.** A bug where the
   ranking vanished went undetected because the rows were there — it was the
-  container that was hidden. Measure rendered height.
+  container that was hidden. Measure rendered height, and measure it against
+  the viewport: on the vote screen the second card fitted the page and not the
+  screen, which is not the same thing.
+- **Accessibility fixes collide with each other.** Moving focus to a view on
+  every route change put the start point past the skip link, making it
+  unreachable by Tab; and giving the selected segmented button an `outline`
+  overrode the focus ring, which has lower specificity. Both were introduced by
+  fixes and found only by tabbing through the page afterwards.
 - **ECB images are not all oriented the way the design is.** Four designs
   (D, G, I, J) are portrait but published rotated. Do not trust the file's
   aspect ratio: it says how the file was saved, not how the design was drawn.

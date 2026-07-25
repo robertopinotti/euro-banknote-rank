@@ -274,6 +274,15 @@ button:focus-visible {
 .view { padding: 32px 0 72px; }
 .view[hidden] { display: none; }
 
+/* Le viste ricevono il fuoco solo per spostare il punto di lettura di uno
+   screen reader quando si cambia sezione: non sono controlli e non si
+   attivano. Senza questa riga il browser ci disegna attorno il suo anello, e
+   al primo caricamento ogni visitatore vedeva un riquadro attorno a tutta la
+   pagina. L'anello dei controlli veri non e' toccato: quello e' definito
+   sopra, su a e button. */
+.view:focus,
+.view:focus-visible { outline: none; }
+
 .lede {
   font-size: 1.05rem;
   color: var(--ink-soft);
@@ -499,9 +508,10 @@ kbd {
 .seg-btn.is-active {
   background: var(--bg-raised);
   color: var(--ink);
-  box-shadow: var(--shadow);
-  outline: 1px solid var(--ink-faint);
-  outline-offset: -1px;
+  /* Il contorno dello stato attivo e' un'ombra interna, non un outline: con
+     outline vinceva sull'anello del fuoco, che ha specificita' minore, e chi
+     naviga da tastiera perdeva l'indicatore proprio sul bottone selezionato. */
+  box-shadow: var(--shadow), inset 0 0 0 1px var(--ink-faint);
 }
 
 .rank-summary { color: var(--ink-soft); font-size: .93rem; margin: 14px 0 26px; }
@@ -740,7 +750,6 @@ kbd {
   /* Stacking the two sides made each card twice as tall, so every pixel of
      chrome above and between them is one the two banknotes do not get. */
   #view-vota { padding-top: 14px; }
-  .arena { gap: 8px; }
   .versus { width: 30px; height: 30px; font-size: .66rem; }
   /* nowrap on .header-inner alone was not enough: .nav wrapped inside itself,
      "Metodo" dropped to a second row and the header still cost 87px.
@@ -759,6 +768,39 @@ kbd {
   }
   .nav::-webkit-scrollbar { display: none; }
   .nav a { padding: 6px 7px; font-size: .78rem; }
+  /* Le banconote si rimpiccioliscono per stare nello schermo.
+     Impilando fronte e retro le carte sono raddoppiate in altezza, e su un
+     telefono corto la seconda finiva sotto la piega: si votava confrontando
+     una banconota con qualcosa che non si vedeva. L'altezza massima delle
+     immagini si ricava da quella della finestra, togliendo tutto cio' che sta
+     attorno, e le due carte se ne dividono lo spazio.
+
+     dvh e non vh: su mobile la barra del browser compare e scompare, e vh si
+     riferisce sempre alla viewport piu' grande — quindi con la barra visibile
+     il conto tornerebbe sbagliato proprio nel caso che conta. La riga in vh
+     resta per i browser che non conoscono dvh: la ignorano e basta. */
+  .arena {
+    --chrome: 55px;      /* intestazione fissa, misurata */
+    --sopra: 14px;       /* stacco in cima alla vista */
+    --vs: 30px;          /* il tondo "vs" fra le due carte */
+    --respiro: 6px;      /* margine sugli arrotondamenti */
+    --carta: calc((100vh - var(--chrome) - var(--sopra) - var(--vs)
+                   - var(--gap-arena) * 2 - var(--respiro)) / 2);
+    --gap-arena: 8px;
+    gap: var(--gap-arena);
+  }
+  @supports (height: 100dvh) {
+    .arena {
+      --carta: calc((100dvh - var(--chrome) - var(--sopra) - var(--vs)
+                     - var(--gap-arena) * 2 - var(--respiro)) / 2);
+    }
+  }
+
+  /* Dentro la carta: 20px di imbottitura, e per le orizzontali due immagini
+     separate da 8px. Le verticali stanno affiancate, quindi una riga sola. */
+  .note-sides img { max-height: calc((var(--carta) - 20px - 8px) / 2); }
+  .note-sides.is-portrait img { max-height: calc(var(--carta) - 20px); }
+
   /* Fuori dagli occhi ma non fuori dall'albero di accessibilita': su un
      telefono queste due righe sono spazio tolto alle banconote, ma erano anche
      l'unico testo della schermata, e toglierle del tutto lasciava uno screen

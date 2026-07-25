@@ -73,6 +73,9 @@ const designText = (id) =>
 
 const VIEWS = ['vota', 'classifica', 'design', 'metodo'];
 
+/** Falso solo alla prima chiamata di showView, all'apertura della pagina. */
+let viewAlreadyShown = false;
+
 function currentView() {
   const hash = location.hash.replace('#', '');
   return VIEWS.includes(hash) ? hash : 'vota';
@@ -97,7 +100,13 @@ function showView(name) {
   // sulla sezione, uno screen reader riparte da lì e legge la nuova
   // intestazione. Senza, resta ad annunciare la vista precedente.
   // preventScroll perché la posizione l'ha già decisa la riga sopra.
-  $(`view-${name}`).focus({ preventScroll: true });
+  //
+  // Non al primo caricamento, però. Rubare il fuoco appena la pagina si apre
+  // sposta il punto di partenza oltre il link "vai al contenuto", che sta in
+  // cima al documento: da lì in avanti non lo si raggiunge più con Tab, e un
+  // link di salto irraggiungibile è peggio che non averlo.
+  if (viewAlreadyShown) $(`view-${name}`).focus({ preventScroll: true });
+  viewAlreadyShown = true;
 }
 
 /* -------------------------------------------------------- indici sui dati */
