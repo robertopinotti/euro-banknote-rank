@@ -36,7 +36,7 @@ export const STRINGS = {
 
     'nav.vote': 'Vota',
     'nav.ranking': 'Classifica',
-    'nav.designs': 'I design',
+    'nav.designs': 'I disegni',
     'nav.method': 'Metodo',
 
     'vote.hintHtml':
@@ -59,7 +59,7 @@ export const STRINGS = {
 
     'rank.title': 'Classifica',
     'scope.general': 'Generale',
-    'scope.design': 'Per design',
+    'scope.design': 'Per disegno',
     'scope.denomination': 'Per taglio',
     'rank.noteDesign':
       'Le dieci proposte, ciascuna con la media delle sue sei banconote.',
@@ -69,8 +69,8 @@ export const STRINGS = {
     'rank.modeLocal':
       'Modalità locale: questa classifica conta solo i tuoi voti, salvati in questo browser.',
     'rank.denomLabel': 'Taglio',
-    'rank.proposal': 'Proposta {letter}',
-    'rank.proposalDenom': 'Proposta {letter} • {denom} €',
+    'rank.proposal': 'Disegno {letter}',
+    'rank.proposalDenom': 'Disegno {letter} • {denom} €',
     'rank.recordOne': '1 vittoria su {n} · {p}%',
     'rank.recordMany': '{w} vittorie su {n} · {p}%',
     'rank.recordNone': 'nessun voto',
@@ -90,7 +90,7 @@ export const STRINGS = {
     'themeName.culture': 'Cultura europea',
     'themeName.nature': 'Fiumi e uccelli',
 
-    'alt.note': 'Proposta {letter}, banconota da {denom} euro, {side}',
+    'alt.note': 'Disegno {letter}, banconota da {denom} euro, {side}',
 
     'footer.theme': 'Tema',
     'theme.auto': 'Auto',
@@ -198,7 +198,7 @@ export const STRINGS = {
     'vote.kbdHtml':
       'Keyboard: <kbd>←</kbd> or <kbd>→</kbd> to vote, <kbd>space</kbd> to skip.',
     'side.front': 'front',
-    'side.back': 'back',
+    'side.back': 'reverse',
 
     'banner.notConfigured':
       'No backend configured: your votes stay in this browser and the ranking is yours alone.',
@@ -514,7 +514,7 @@ export const STRINGS = {
 
     'rank.title': 'Rangliste',
     'scope.general': 'Gesamt',
-    'scope.design': 'Nach Entwurf',
+    'scope.design': 'Nach Design',
     'scope.denomination': 'Nach Stückelung',
     'rank.noteDesign':
       'Die zehn Vorschläge, jeweils als Mittel ihrer sechs Banknoten.',
@@ -524,8 +524,8 @@ export const STRINGS = {
     'rank.modeLocal':
       'Lokaler Modus: Diese Rangliste zählt nur Ihre eigenen, in diesem Browser gespeicherten Stimmen.',
     'rank.denomLabel': 'Stückelung',
-    'rank.proposal': 'Entwurf {letter}',
-    'rank.proposalDenom': 'Entwurf {letter} • {denom} €',
+    'rank.proposal': 'Design {letter}',
+    'rank.proposalDenom': 'Design {letter} • {denom} €',
     'rank.recordOne': '1 Sieg von {n} · {p} %',
     'rank.recordMany': '{w} Siege von {n} · {p} %',
     'rank.recordNone': 'keine Stimmen',
@@ -545,7 +545,7 @@ export const STRINGS = {
     'themeName.culture': 'Europäische Kultur',
     'themeName.nature': 'Flüsse und Vögel',
 
-    'alt.note': 'Entwurf {letter}, {denom}-Euro-Banknote, {side}',
+    'alt.note': 'Design {letter}, {denom}-Euro-Banknote, {side}',
 
     'footer.theme': 'Design',
     'theme.auto': 'Auto',
@@ -648,7 +648,7 @@ export const STRINGS = {
     'nav.method': 'Método',
 
     'vote.hintHtml':
-      'Siempre se comparan <strong>dos billetes del mismo valor</strong>, ' +
+      'Siempre se comparan <strong>dos billetes de la misma denominación</strong>, ' +
       'anverso y reverso. Elige el que más te guste.',
     'vote.skip': 'No sabría decidir, saltar',
     'vote.countOne': 'Has emitido 1 voto',
@@ -668,7 +668,7 @@ export const STRINGS = {
     'rank.title': 'Clasificación',
     'scope.general': 'General',
     'scope.design': 'Por diseño',
-    'scope.denomination': 'Por valor',
+    'scope.denomination': 'Por denominación',
     'rank.noteDesign':
       'Las diez propuestas, cada una con la media de sus seis billetes.',
     'rank.summaryNone': 'Todavía no hay votos. {mode}',
@@ -676,7 +676,7 @@ export const STRINGS = {
     'rank.modeShared': 'Clasificación compartida por todos los votantes.',
     'rank.modeLocal':
       'Modo local: esta clasificación solo cuenta tus votos, guardados en este navegador.',
-    'rank.denomLabel': 'Valor',
+    'rank.denomLabel': 'Denominación',
     'rank.proposal': 'Diseño {letter}',
     'rank.proposalDenom': 'Diseño {letter} • {denom} €',
     'rank.recordOne': '1 victoria de {n} · {p} %',
@@ -759,12 +759,12 @@ export const STRINGS = {
       puntuaciones y evitar que un diseño votado tres veces adelante a uno votado
       trescientas.</p>
 
-      <h2>Del valor concreto a la propuesta entera</h2>
-      <p>Cada valor tiene su propia clasificación, calculada solo con las
-      comparaciones entre billetes de ese valor. La puntuación global de una
+      <h2>De la denominación concreta a la propuesta entera</h2>
+      <p>Cada denominación tiene su propia clasificación, calculada solo con
+      las comparaciones entre billetes de esa denominación. La puntuación global de una
       propuesta es la media de sus seis fuerzas, tomada sobre los logaritmos —
-      es la escala en la que el modelo es lineal, e impide que un único valor muy
-      fuerte arrastre por sí solo a toda la familia.</p>
+      es la escala en la que el modelo es lineal, e impide que una única
+      denominación muy fuerte arrastre por sí sola a toda la familia.</p>
 
       <h2>Qué parejas se te muestran</h2>
       <p>No al azar puro. El sitio prioriza las parejas aún poco votadas y las
