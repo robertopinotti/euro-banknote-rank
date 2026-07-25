@@ -196,6 +196,14 @@ una pubblicazione un browser può ritrovarsi con l'HTML nuovo e il CSS vecchio, 
 la pagina risulta rotta. Se modifichi CSS o JavaScript in locale puoi allineare
 le impronte con `npm run stamp`, ma non è necessario: ci pensa la CI.
 
+Marcare l'HTML non basta per i moduli: `import './i18n.js'` si risolve rispetto
+a chi importa e scarta la query, quindi i moduli importati da `app.js`
+resterebbero senza versione. È già capitato: HTML e `app.js` nuovi con `i18n.js`
+vecchio, e il footer mostrava la chiave `footer.creditHtml` invece del testo.
+Lo script genera perciò anche un `<script type="importmap">` che rimappa ogni
+modulo alla propria versione — l'unico modo per marcarli senza riscrivere gli
+import nei sorgenti, cioè senza introdurre un passo di compilazione.
+
 Alla prima esecuzione il workflow attiva Pages da sé
 (`actions/configure-pages` con `enablement: true`), senza passare dalle
 impostazioni.

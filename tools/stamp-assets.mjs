@@ -1,38 +1,37 @@
 /**
- * Marca CSS e script in index.html con l'impronta del loro contenuto.
+ * Marca ogni file servito con l'impronta del suo contenuto.
  *
  * Perché serve. GitHub Pages serve ogni file con `cache-control: max-age=600`,
  * e HTML, CSS e JavaScript scadono ciascuno per conto proprio. Nei dieci minuti
  * dopo una pubblicazione un browser può quindi ritrovarsi con l'HTML nuovo e il
- * CSS ancora vecchio. Finché i due cambiano insieme — come quando è sparito il
- * riquadro attorno alle banconote, che ha spostato le regole da `.note-figure
- * img` a `.note-sides img` — la pagina risulta rotta: le immagini perdono ogni
- * regola di dimensione e tornano ai loro 1000 px, sfondando il layout.
+ * CSS — o un modulo — ancora vecchio. È già successo due volte: una pagina
+ * senza regole di stile, e un footer che mostrava `footer.creditHtml` perché
+ * `i18n.js` era la copia vecchia, priva di quella chiave.
  *
- * Aggiungere `?v=<impronta>` risolve alla radice: se il contenuto cambia cambia
- * l'URL, quindi il browser non ha nulla in cache da riusare e lo scarica.
- * Se il contenuto non cambia l'URL resta identico e la cache continua a valere.
+ * `?v=<impronta>` risolve alla radice: se il contenuto cambia cambia l'URL,
+ * quindi il browser non ha nulla in cache da riusare; se non cambia, l'URL resta
+ * identico e la cache continua a valere.
  *
- * Questo non è un passo di compilazione: il sito si serve così com'è anche
- * senza mai eseguire questo script. Serve solo a tenere allineate le impronte,
- * e la CI lo esegue prima di pubblicare perché nessuno debba ricordarsene.
+ * I moduli importati sono il punto delicato. `import './i18n.js'` si risolve
+ * relativamente a chi importa e scarta la query, quindi marcare `app.js` non
+ * basta: i suoi moduli restavano senza versione. Si genera allora un import map
+ * che rimappa ogni modulo alla propria versione. È l'unico modo per farlo senza
+ * riscrivere gli import nei sorgenti, cioè senza introdurre un passo di
+ * compilazione in un progetto che ne è volutamente privo.
  *
- * Limite noto: i moduli che `app.js` importa non ereditano l'impronta, perché
- * `import './data.js'` si risolve senza la query dell'importatore. Se cambia un
- * solo modulo senza che cambi `app.js`, per dieci minuti un browser può usarne
- * la versione vecchia. È un rischio molto minore di quello risolto qui — un
- * modulo disallineato di solito solleva un errore invece di produrre una pagina
- * apparentemente rotta — e chiuderlo richiederebbe di riscrivere gli import,
- * cioè di introdurre davvero un passo di compilazione.
+ * Questo script non serve a costruire il sito: il sito funziona anche senza
+ * eseguirlo mai. Allinea solo le impronte, e la CI lo esegue prima di
+ * pubblicare perché nessuno debba ricordarsene.
  */
 
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const HTML = resolve(ROOT, 'index.html');
+const ENTRY = 'src/app.js';
 
 /**
  * Impronta breve del contenuto di un file. Otto caratteri esadecimali: la
@@ -47,17 +46,54 @@ function fingerprint(relativePath) {
 let html = readFileSync(HTML, 'utf8');
 const stamped = [];
 
-// Riscrive `href`/`src` che puntano a un file locale, con o senza `?v=` già
-// presente, così lo script è idempotente e si può rieseguire quante volte si
-// vuole senza accumulare code.
+// --- CSS e script di ingresso, referenziati direttamente dall'HTML ---------
+// La regex accetta un `?v=` già presente, così lo script è idempotente e si può
+// rieseguire senza accumulare code.
 html = html.replace(
   /((?:href|src)=")((?:assets|src)\/[^"?]+)(\?v=[^"]*)?(")/g,
-  (_match, before, path, _oldQuery, after) => {
+  (_m, before, path, _old, after) => {
     const hash = fingerprint(path);
     stamped.push(`${path} -> ${hash}`);
     return `${before}${path}?v=${hash}${after}`;
   }
 );
+
+// --- moduli importati da app.js -------------------------------------------
+// Le chiavi dell'import map si risolvono rispetto all'HTML, gli specificatori
+// dentro i moduli rispetto a chi importa: entrambi finiscono sullo stesso URL
+// `<base>/src/<nome>.js`, quindi la corrispondenza vale.
+const modules = readdirSync(resolve(ROOT, 'src'))
+  .filter((f) => f.endsWith('.js') && `src/${f}` !== ENTRY)
+  .sort();
+
+const imports = Object.fromEntries(
+  modules.map((f) => {
+    const hash = fingerprint(`src/${f}`);
+    stamped.push(`src/${f} -> ${hash}`);
+    return [`./src/${f}`, `./src/${f}?v=${hash}`];
+  })
+);
+
+// config.js sta nella radice ed è importato da store.js.
+const configHash = fingerprint('config.js');
+imports['./config.js'] = `./config.js?v=${configHash}`;
+stamped.push(`config.js -> ${configHash}`);
+
+const importMap =
+  '<script type="importmap">\n' +
+  JSON.stringify({ imports }, null, 2) +
+  '\n</script>';
+
+// L'import map deve precedere lo script che la usa.
+const MAP_RE = /<script type="importmap">[\s\S]*?<\/script>\n?/;
+if (MAP_RE.test(html)) {
+  html = html.replace(MAP_RE, `${importMap}\n`);
+} else {
+  html = html.replace(
+    /(<script type="module")/,
+    `${importMap}\n$1`
+  );
+}
 
 writeFileSync(HTML, html);
 
