@@ -25,7 +25,6 @@ import {
 } from './i18n.js';
 
 import { computeRankings, pickPair } from './rating.js';
-import { isConfigured as appCheckOn, warmUp as warmUpAppCheck } from './app-check.js';
 
 import {
   createStore,
@@ -620,15 +619,6 @@ async function main() {
 
   applyTheme();
   applyLanguage();
-
-  // Le condizioni d'uso di reCAPTCHA chiedono di dichiararlo quando il badge
-  // e' nascosto. La nota compare solo se App Check e' davvero configurato:
-  // senza, il sito non carica niente da Google e non ha niente da dichiarare.
-  if (appCheckOn()) {
-    $('recaptcha-note').hidden = false;
-    // Il token si scalda ora, cosi' la prima lettura non paga il caricamento.
-    warmUpAppCheck();
-  }
 
   wireControls();
   showView(currentView());

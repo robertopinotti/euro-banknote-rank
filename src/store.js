@@ -17,7 +17,6 @@
  */
 
 import { BACKEND, FIREBASE } from '../config.js';
-import { appCheckHeaders } from './app-check.js';
 
 /** I sei tagli che esistono davvero, per non fidarsi solo delle regole. */
 const VALID_DENOMINATIONS = new Set([5, 10, 20, 50, 100, 200]);
@@ -146,8 +145,7 @@ export class FirestoreStore {
    */
   async loadPairStats() {
     const res = await fetch(
-      `${this.base}/stats/all?key=${encodeURIComponent(this.apiKey)}`,
-      { headers: await appCheckHeaders() }
+      `${this.base}/stats/all?key=${encodeURIComponent(this.apiKey)}`
     );
 
     // A fresh install with nothing seeded yet: an empty ranking, not an error.
@@ -232,7 +230,7 @@ export class FirestoreStore {
       `${this.origin}/v1/${this.root}:commit?key=${encodeURIComponent(this.apiKey)}`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(await appCheckHeaders()) },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       }
     );
