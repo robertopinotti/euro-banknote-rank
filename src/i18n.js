@@ -26,6 +26,8 @@ const ECB_URL =
 
 const REPO_URL = 'https://github.com/robertopinotti/euro-banknote-rank';
 
+const SITE_URL = 'https://robertopinotti.github.io/euro-banknote-rank/';
+
 export const STRINGS = {
   /* ------------------------------------------------------------- italiano */
   it: {
@@ -52,6 +54,13 @@ export const STRINGS = {
     'vote.kbdHtml':
       'Da tastiera: <kbd>←</kbd> o <kbd>→</kbd> per votare, <kbd>spazio</kbd> per saltare.',
     'side.front': 'fronte',
+
+    'share.title': 'Hai espresso {n} voti. Vuoi far votare anche qualcun altro?',
+    'share.whatsapp': 'Condividi su WhatsApp',
+    'share.continue': 'Continua a votare',
+    'share.text':
+      'Sto votando quale sarà la banconota più bella d\'Europa: le dieci proposte per il futuro euro, una sfida alla volta. Vota anche tu: ' + SITE_URL,
+
     'side.back': 'retro',
 
     'banner.notConfigured':
@@ -204,6 +213,13 @@ export const STRINGS = {
     'vote.kbdHtml':
       'Keyboard: <kbd>←</kbd> or <kbd>→</kbd> to vote, <kbd>space</kbd> to skip.',
     'side.front': 'front',
+
+    'share.title': 'You have cast {n} votes. Fancy roping someone else in?',
+    'share.whatsapp': 'Share on WhatsApp',
+    'share.continue': 'Keep voting',
+    'share.text':
+      "I'm voting on which will be Europe's most beautiful banknote: the ten proposals for the future euro, one duel at a time. Have a go: " + SITE_URL,
+
     'side.back': 'reverse',
 
     'banner.notConfigured':
@@ -357,6 +373,13 @@ export const STRINGS = {
     'vote.kbdHtml':
       'Au clavier : <kbd>←</kbd> ou <kbd>→</kbd> pour voter, <kbd>espace</kbd> pour passer.',
     'side.front': 'recto',
+
+    'share.title': 'Vous avez exprimé {n} votes. Envie d\'y entraîner quelqu\'un ?',
+    'share.whatsapp': 'Partager sur WhatsApp',
+    'share.continue': 'Continuer à voter',
+    'share.text':
+      'Je vote pour le plus beau billet d\'Europe : les dix propositions pour le futur euro, un duel à la fois. À votre tour : ' + SITE_URL,
+
     'side.back': 'verso',
 
     'banner.notConfigured':
@@ -513,6 +536,13 @@ export const STRINGS = {
     'vote.kbdHtml':
       'Tastatur: <kbd>←</kbd> oder <kbd>→</kbd> zum Abstimmen, <kbd>Leertaste</kbd> zum Überspringen.',
     'side.front': 'Vorderseite',
+
+    'share.title': 'Sie haben {n} Stimmen abgegeben. Jemanden mitmachen lassen?',
+    'share.whatsapp': 'Auf WhatsApp teilen',
+    'share.continue': 'Weiter abstimmen',
+    'share.text':
+      'Ich stimme ab, welches Europas schönste Banknote wird: die zehn Vorschläge für den künftigen Euro, ein Duell nach dem anderen. Mach mit: ' + SITE_URL,
+
     'side.back': 'Rückseite',
 
     'banner.notConfigured':
@@ -668,6 +698,13 @@ export const STRINGS = {
     'vote.kbdHtml':
       'Con el teclado: <kbd>←</kbd> o <kbd>→</kbd> para votar, <kbd>espacio</kbd> para saltar.',
     'side.front': 'anverso',
+
+    'share.title': 'Has emitido {n} votos. ¿Quieres que vote alguien más?',
+    'share.whatsapp': 'Compartir en WhatsApp',
+    'share.continue': 'Seguir votando',
+    'share.text':
+      'Estoy votando cuál será el billete más bonito de Europa: las diez propuestas para el futuro euro, un duelo cada vez. Vota tú también: ' + SITE_URL,
+
     'side.back': 'reverso',
 
     'banner.notConfigured':

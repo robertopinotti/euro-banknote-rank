@@ -57,6 +57,9 @@ const state = {
   // Quando la classifica mostrata è l'ultima copia salvata invece di quella
   // appena letta: serve a non spacciarla per aggiornata.
   staleSince: null,
+  // Vero mentre è aperto il traguardo dei dieci voti: l'arena è nascosta e
+  // le scorciatoie da tastiera non devono votare al buio.
+  atMilestone: false,
   seen: loadSeenPairs(),
 };
 
@@ -280,13 +283,51 @@ function vote(position) {
     showBanner('banner.voteFailed');
   });
 
-  nextChallenge();
+  const mine = myVoteCount();
+  if (mine > 0 && mine % MILESTONE_EVERY === 0) showMilestone(mine);
+  else nextChallenge();
 }
 
 function skip() {
   if (!state.current) return;
   state.seen.add(state.current.key);
   markPairSeen(state.current.key);
+  nextChallenge();
+}
+
+/* ------------------------------------------------------------- traguardo */
+
+/** Ogni quanti voti si propone di condividere. */
+const MILESTONE_EVERY = 10;
+
+/**
+ * Pannello del traguardo. Prende il posto dell'arena invece di sovrapporsi:
+ * niente da chiudere, niente fuoco da imprigionare, e su un telefono niente
+ * che copra le banconote.
+ */
+function showMilestone(n) {
+  state.atMilestone = true;
+  $('milestone-title').textContent = t('share.title', { n });
+  $('share-whatsapp').href =
+    `https://wa.me/?text=${encodeURIComponent(t('share.text'))}`;
+
+  // Il conteggio si aggiorna in renderArena, che al traguardo non viene
+  // chiamata: senza questa riga il pannello diceva 10 e il contatore 9.
+  updateVoteCount();
+
+  $('arena').hidden = true;
+  $('arena-actions').hidden = true;
+  $('milestone').hidden = false;
+  // Il fuoco va sul pulsante per proseguire, non su quello per condividere:
+  // chi tira dritto con la tastiera non deve finire su WhatsApp per sbaglio.
+  $('btn-continue').focus({ preventScroll: true });
+}
+
+function hideMilestone() {
+  state.atMilestone = false;
+  $('milestone').hidden = true;
+  $('arena').hidden = false;
+  $('arena-actions').hidden = false;
   nextChallenge();
 }
 
@@ -547,6 +588,8 @@ function wireControls() {
   $('card-right').addEventListener('click', () => vote('right'));
   $('btn-skip').addEventListener('click', skip);
 
+  $('btn-continue').addEventListener('click', hideMilestone);
+
   $('btn-more').addEventListener('click', () => {
     state.visibleRows += PAGE_SIZE;
     renderRankings();
@@ -588,6 +631,9 @@ function wireControls() {
   // screen reader — votavano una banconota fuori schermo.
   document.addEventListener('keydown', (e) => {
     if (currentView() !== 'vota') return;
+    // L'arena e' nascosta dietro al traguardo: votare adesso significherebbe
+    // scegliere fra due banconote che non si vedono.
+    if (state.atMilestone) return;
     if (e.target.closest('a, button, input, textarea, select')) return;
     if (e.key === 'ArrowLeft') { e.preventDefault(); vote('left'); }
     else if (e.key === 'ArrowRight') { e.preventDefault(); vote('right'); }

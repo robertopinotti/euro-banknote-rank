@@ -314,6 +314,13 @@ button:focus-visible {
   gap: 18px;
 }
 
+/* Un display dichiarato qui vince sul [hidden] del browser, che e' solo una
+   regola del foglio predefinito: senza queste due righe l'arena restava a
+   schermo dietro al traguardo. E' la stessa ragione per cui esiste
+   .view[hidden] piu' sopra. */
+.arena[hidden],
+.arena-actions[hidden] { display: none; }
+
 /* Senza min-width:0 le tracce grid si dimensionano sulla larghezza intrinseca
    dell'immagine (1000 px) invece che sullo spazio disponibile, e su schermi
    stretti la banconota sfonda la carta. Vale per ogni livello dell'annidamento. */
@@ -565,6 +572,50 @@ kbd {
 }
 
 .more-wrap { display: flex; justify-content: center; margin-top: 20px; }
+
+/* ------------------------------------------------------------- traguardo */
+
+.milestone {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  text-align: center;
+  padding: 40px 20px;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.milestone[hidden] { display: none; }
+
+.milestone-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 650;
+  max-width: 34ch;
+  line-height: 1.35;
+}
+
+.milestone-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+/* Verde di WhatsApp, con l'inchiostro scuro sopra. Il bianco su questo verde
+   sta a 2:1 — e' quello che usa WhatsApp stessa, ma qui tutto il resto e' gia'
+   stato portato sopra soglia e non ha senso fare un'eccezione proprio sul
+   pulsante piu' grande della schermata. */
+.btn-whatsapp {
+  background: #25d366;
+  border-color: #25d366;
+  color: #10241a;
+  font-weight: 700;
+  text-decoration: none;   /* e' un link, ma si comporta da pulsante */
+}
+
+.btn-whatsapp:hover {
+  background: #1fbb59;
+  border-color: #1fbb59;
+  color: #10241a;
+}
 
 /* Fronte e retro affiancati: e' la banconota intera che si vota, quindi e' la
    banconota intera che la classifica deve mostrare. */
