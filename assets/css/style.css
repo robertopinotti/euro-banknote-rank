@@ -526,25 +526,27 @@ kbd {
 .rank-note { grid-column: 1 / -1; }
 
 /* Classifica per disegno: la riga rappresenta una famiglia intera, quindi si
-   mostrano tutti e sei i tagli — 3x2 — che sono esattamente quelli di cui il
-   punteggio è la media. */
+   mostrano tutti e sei i tagli, ciascuno con le sue due facce — sei coppie,
+   che sono esattamente quelle di cui il punteggio è la media. */
 .rank-note.is-family {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  max-width: 720px;
+  grid-template-columns: repeat(6, 1fr);
+  max-width: 860px;
 }
 
-.rank-note.is-family img { max-width: none; }
-
 .more-wrap { display: flex; justify-content: center; margin-top: 20px; }
+
+/* Fronte e retro affiancati: e' la banconota intera che si vota, quindi e' la
+   banconota intera che la classifica deve mostrare. */
+.rank-note {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  max-width: 620px;
+}
 
 .rank-note img {
   display: block;
   width: 100%;
-  /* Le immagini sono larghe 1000 px: oltre questa misura si ingrandirebbero
-     senza guadagnare dettaglio. */
-  max-width: 560px;
   height: auto;
   border-radius: 4px;
 }
@@ -604,40 +606,50 @@ kbd {
   flex-direction: column;
 }
 
-.design-card > figure {
-  position: relative;
-  margin: 0;
-  background: var(--bg-sunken);
-  aspect-ratio: 21 / 10;
+/* Tutte e sei le banconote della proposta, fronte e retro, in cima alla
+   scheda: quattro colonne, cioe' due banconote complete per riga. */
+.design-notes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 14px 14px 0;
 }
 
-.design-card > figure img {
-  position: absolute;
-  inset: 14px;
-  width: calc(100% - 28px);
-  height: calc(100% - 28px);
-  object-fit: contain;
-  border-radius: 3px;
+.design-notes img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 2px;
 }
+
+/* Le proposte verticali starebbero altissime su quattro colonne: sei le
+   riportano a un'altezza paragonabile alle altre schede. */
+.design-notes.is-portrait { grid-template-columns: repeat(6, 1fr); }
 
 .design-body { padding: 16px 18px 20px; }
 .design-body h3 { margin: 0 0 2px; font-size: 1.05rem; }
+
+/* Etichetta del tema accanto alla lettera. Viveva nella sezione delle
+   classifiche ed e' sparita quando quella e' stata riscritta: le classifiche
+   non la usano piu', la galleria si'. */
+.tag {
+  display: inline-block;
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  vertical-align: 2px;
+  margin-left: 8px;
+}
+
+.tag.culture { background: color-mix(in srgb, var(--gold) 18%, transparent); color: var(--gold); }
+.tag.nature  { background: color-mix(in srgb, var(--green) 18%, transparent); color: var(--green); }
 .design-body .who { color: var(--ink-faint); font-size: .88rem; margin: 0 0 10px; }
 .design-body p.desc { margin: 0; font-size: .9rem; color: var(--ink-soft); }
 
-.design-strip {
-  display: flex;
-  gap: 6px;
-  padding: 0 18px 18px;
-  flex-wrap: wrap;
-}
 
-.design-strip img {
-  height: 34px;
-  width: auto;
-  border-radius: 2px;
-  border: 1px solid var(--line);
-}
 
 /* ---------------------------------------------------------------- metodo */
 
@@ -687,6 +699,12 @@ kbd {
 }
 
 .seg-sm .seg-btn { font-size: .82rem; padding: 5px 12px; }
+
+.footer-credit {
+  margin: 0;
+  font-size: .9rem;
+  color: var(--ink-soft);
+}
 
 .footer-note {
   color: var(--ink-faint);

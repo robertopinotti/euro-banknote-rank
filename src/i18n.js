@@ -24,6 +24,8 @@ export const DEFAULT_LANG = 'it';
 const ECB_URL =
   'https://www.ecb.europa.eu/euro/banknotes/future_banknotes/html/design-proposals.en.html';
 
+const REPO_URL = 'https://github.com/robertopinotti/euro-banknote-rank';
+
 export const STRINGS = {
   /* ------------------------------------------------------------- italiano */
   it: {
@@ -98,6 +100,9 @@ export const STRINGS = {
     'theme.light': 'Chiaro',
     'theme.dark': 'Scuro',
     'footer.language': 'Lingua',
+    'footer.creditHtml':
+      'Creato da Roberto Pinotti · ' +
+      `<a href="${REPO_URL}" target="_blank" rel="noopener">codice sorgente su GitHub</a>`,
     'footer.attributionHtml':
       'Le immagini sono <strong>proposte di design</strong> per una possibile ' +
       'futura serie di banconote in euro. Fonte: Banca centrale europea — ' +
@@ -249,6 +254,9 @@ export const STRINGS = {
     'theme.light': 'Light',
     'theme.dark': 'Dark',
     'footer.language': 'Language',
+    'footer.creditHtml':
+      'Created by Roberto Pinotti · ' +
+      `<a href="${REPO_URL}" target="_blank" rel="noopener">source code on GitHub</a>`,
     'footer.attributionHtml':
       'The images are <strong>design proposals</strong> for a possible future ' +
       'series of euro banknotes. Source: European Central Bank — ' +
@@ -401,6 +409,9 @@ export const STRINGS = {
     'theme.light': 'Clair',
     'theme.dark': 'Sombre',
     'footer.language': 'Langue',
+    'footer.creditHtml':
+      'Créé par Roberto Pinotti · ' +
+      `<a href="${REPO_URL}" target="_blank" rel="noopener">code source sur GitHub</a>`,
     'footer.attributionHtml':
       'Les images sont des <strong>propositions de graphisme</strong> pour une ' +
       'éventuelle future série de billets en euros. Source : Banque centrale ' +
@@ -556,6 +567,9 @@ export const STRINGS = {
     'theme.light': 'Hell',
     'theme.dark': 'Dunkel',
     'footer.language': 'Sprache',
+    'footer.creditHtml':
+      'Erstellt von Roberto Pinotti · ' +
+      `<a href="${REPO_URL}" target="_blank" rel="noopener">Quellcode auf GitHub</a>`,
     'footer.attributionHtml':
       'Die Abbildungen sind <strong>Gestaltungsvorschläge</strong> für eine ' +
       'mögliche künftige Euro-Banknotenserie. Quelle: Europäische Zentralbank — ' +
@@ -710,6 +724,9 @@ export const STRINGS = {
     'theme.light': 'Claro',
     'theme.dark': 'Oscuro',
     'footer.language': 'Idioma',
+    'footer.creditHtml':
+      'Creado por Roberto Pinotti · ' +
+      `<a href="${REPO_URL}" target="_blank" rel="noopener">código fuente en GitHub</a>`,
     'footer.attributionHtml':
       'Las imágenes son <strong>propuestas de diseño</strong> para una posible ' +
       'futura serie de billetes en euros. Fuente: Banco Central Europeo — ' +

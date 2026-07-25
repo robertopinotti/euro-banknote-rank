@@ -271,12 +271,17 @@ function themeTag(design) {
   return `<span class="tag ${theme.id}">${t(theme.labelKey)}</span>`;
 }
 
-/** Una miniatura di banconota, con proporzioni note per non far saltare il layout. */
-function noteThumb(designId, denomination, letter) {
-  return `<img src="${imageUrl(designId, denomination)}"
-       style="aspect-ratio:${imageAspect(designId, denomination, 'front')}"
-       alt="${t('alt.note', { letter, denom: denomination, side: t('side.front') })}"
-       loading="lazy">`;
+/**
+ * Le due facce di una banconota, con proporzioni note per non far saltare il
+ * layout mentre le immagini arrivano.
+ */
+function notePair(designId, denomination, letter) {
+  return SIDES.map(
+    (side) => `<img src="${imageUrl(designId, denomination, side)}"
+       style="aspect-ratio:${imageAspect(designId, denomination, side)}"
+       alt="${t('alt.note', { letter, denom: denomination, side: t(`side.${side}`) })}"
+       loading="lazy">`
+  ).join('');
 }
 
 /**
@@ -294,10 +299,11 @@ function rankRow(entry, denomination) {
 
   // Per una famiglia non c'è un taglio solo da mostrare: si mostrano tutti e
   // sei, che è poi ciò di cui il punteggio è la media.
+  // Si mostra sempre la banconota intera, fronte e retro: e' quello che si vota.
   const notes =
     denomination == null
-      ? DENOMINATIONS.map((d) => noteThumb(entry.designId, d, design.letter)).join('')
-      : noteThumb(entry.designId, denomination, design.letter);
+      ? DENOMINATIONS.map((d) => notePair(entry.designId, d, design.letter)).join('')
+      : notePair(entry.designId, denomination, design.letter);
 
   return `
     <li class="rank-row ${entry.rank === 1 ? 'is-first' : ''}">
@@ -411,37 +417,18 @@ function renderMatrix(rows) {
 function renderDesignGallery() {
   $('design-grid').innerHTML = DESIGNS.map((d) => {
     const text = designText(d.id);
-    const strip = DENOMINATIONS.map(
-      (den) =>
-        `<img src="${imageUrl(d.id, den)}" alt="${t('alt.note', {
-          letter: d.letter,
-          denom: den,
-          side: t('side.front'),
-        })}" loading="lazy">`
-    ).join('');
+    // Tutte e sei le banconote, fronte e retro, in cima alla scheda: prima
+    // c'era il solo 50 € ingrandito, che di una proposta mostrava un dodicesimo.
+    const notes = DENOMINATIONS.map((den) => notePair(d.id, den, d.letter)).join('');
 
     return `
       <article class="design-card">
-        <figure>
-          <img src="${imageUrl(d.id, 50)}" alt="${t('alt.note', {
-            letter: d.letter,
-            denom: 50,
-            side: t('side.front'),
-          })}" loading="lazy">
-        </figure>
-        <figure>
-          <img src="${imageUrl(d.id, 50, 'back')}" alt="${t('alt.note', {
-            letter: d.letter,
-            denom: 50,
-            side: t('side.back'),
-          })}" loading="lazy">
-        </figure>
+        <div class="design-notes ${isPortrait(d.id) ? 'is-portrait' : ''}">${notes}</div>
         <div class="design-body">
           <h3>${t('rank.proposal', { letter: d.letter })}${themeTag(d)}</h3>
           <p class="who">${text.designer}</p>
           <p class="desc">${text.description}</p>
         </div>
-        <div class="design-strip">${strip}</div>
       </article>`;
   }).join('');
 }
