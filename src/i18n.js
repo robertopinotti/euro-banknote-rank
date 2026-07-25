@@ -59,6 +59,8 @@ export const STRINGS = {
       'Backend non raggiungibile: i voti restano in questo browser finché il collegamento non torna.',
     'banner.voteFailed':
       'Il voto non è stato registrato: controlla la connessione e riprova.',
+    'banner.stale':
+      "Classifica non aggiornabile in questo momento: questa è l'ultima copia condivisa che il sito ha ricevuto. I voti che esprimi ora restano in questo browser.",
 
     'rank.title': 'Classifica',
     'scope.note': 'Per banconota',
@@ -71,6 +73,7 @@ export const STRINGS = {
     'rank.modeShared': 'Classifica condivisa da tutti i votanti.',
     'rank.modeLocal':
       'Modalità locale: questa classifica conta solo i tuoi voti, salvati in questo browser.',
+    'rank.modeStale': 'Ultima classifica condivisa ricevuta, non aggiornata in questo momento.',
     'rank.proposal': 'Disegno {letter}',
     'rank.proposalDenom': 'Disegno {letter} • {denom} €',
     'rank.showMore': 'Mostra altre {n}',
@@ -204,6 +207,8 @@ export const STRINGS = {
       'Backend unreachable: your votes stay in this browser until the connection is back.',
     'banner.voteFailed':
       'Your vote was not recorded: check your connection and try again.',
+    'banner.stale':
+      'The ranking cannot be refreshed right now: this is the last shared copy the site received. Votes you cast now stay in this browser.',
 
     'rank.title': 'Ranking',
     'scope.note': 'By banknote',
@@ -216,6 +221,7 @@ export const STRINGS = {
     'rank.modeShared': 'Ranking shared by all voters.',
     'rank.modeLocal':
       'Local mode: this ranking counts only your own votes, stored in this browser.',
+    'rank.modeStale': 'Last shared ranking received; not being refreshed right now.',
     'rank.proposal': 'Design {letter}',
     'rank.proposalDenom': 'Design {letter} • €{denom}',
     'rank.showMore': 'Show {n} more',
@@ -350,6 +356,8 @@ export const STRINGS = {
       'Serveur injoignable : vos votes restent dans ce navigateur en attendant le retour de la connexion.',
     'banner.voteFailed':
       "Votre vote n'a pas été enregistré : vérifiez votre connexion et réessayez.",
+    'banner.stale':
+      "Le classement ne peut pas être actualisé pour le moment : voici la dernière copie partagée reçue par le site. Les votes exprimés maintenant restent dans ce navigateur.",
 
     'rank.title': 'Classement',
     'scope.note': 'Par billet',
@@ -362,6 +370,7 @@ export const STRINGS = {
     'rank.modeShared': 'Classement partagé par tous les votants.',
     'rank.modeLocal':
       'Mode local : ce classement ne compte que vos propres votes, enregistrés dans ce navigateur.',
+    'rank.modeStale': 'Dernier classement partagé reçu ; pas actualisé pour le moment.',
     'rank.proposal': 'Graphisme {letter}',
     'rank.proposalDenom': 'Graphisme {letter} • {denom} €',
     'rank.showMore': 'Afficher {n} de plus',
@@ -499,6 +508,8 @@ export const STRINGS = {
       'Backend nicht erreichbar: Ihre Stimmen bleiben in diesem Browser, bis die Verbindung zurück ist.',
     'banner.voteFailed':
       'Ihre Stimme wurde nicht gespeichert: Prüfen Sie die Verbindung und versuchen Sie es erneut.',
+    'banner.stale':
+      'Die Rangliste kann gerade nicht aktualisiert werden: Dies ist die letzte gemeinsame Fassung, die die Website erhalten hat. Ihre jetzigen Stimmen bleiben in diesem Browser.',
 
     'rank.title': 'Rangliste',
     'scope.note': 'Nach Banknote',
@@ -511,6 +522,7 @@ export const STRINGS = {
     'rank.modeShared': 'Rangliste, die alle Abstimmenden teilen.',
     'rank.modeLocal':
       'Lokaler Modus: Diese Rangliste zählt nur Ihre eigenen, in diesem Browser gespeicherten Stimmen.',
+    'rank.modeStale': 'Zuletzt empfangene gemeinsame Rangliste; derzeit nicht aktualisiert.',
     'rank.proposal': 'Design {letter}',
     'rank.proposalDenom': 'Design {letter} • {denom} €',
     'rank.showMore': 'Weitere {n} anzeigen',
@@ -647,6 +659,8 @@ export const STRINGS = {
       'Servidor inaccesible: tus votos se quedan en este navegador hasta que vuelva la conexión.',
     'banner.voteFailed':
       'Tu voto no se ha registrado: comprueba la conexión e inténtalo de nuevo.',
+    'banner.stale':
+      'La clasificación no puede actualizarse ahora mismo: esta es la última copia compartida que recibió el sitio. Los votos que emitas ahora se quedan en este navegador.',
 
     'rank.title': 'Clasificación',
     'scope.note': 'Por billete',
@@ -659,6 +673,7 @@ export const STRINGS = {
     'rank.modeShared': 'Clasificación compartida por todos los votantes.',
     'rank.modeLocal':
       'Modo local: esta clasificación solo cuenta tus votos, guardados en este navegador.',
+    'rank.modeStale': 'Última clasificación compartida recibida; no se actualiza ahora mismo.',
     'rank.proposal': 'Diseño {letter}',
     'rank.proposalDenom': 'Diseño {letter} • {denom} €',
     'rank.showMore': 'Mostrar {n} más',

@@ -216,14 +216,46 @@ export class FirestoreStore {
   }
 }
 
+/* ------------------------------------------------------------ ultima copia */
+
+/**
+ * Last shared ranking that actually arrived, kept in this browser.
+ *
+ * It is not a speed optimisation: it is what the page shows when the backend
+ * says no. Without it a visitor whose read fails sees a ranking built from
+ * their own handful of votes — which looks like the collective ranking, but
+ * is not. A saved copy, declared as such, is closer to the truth.
+ */
+const CACHE_KEY = 'ebr:last-shared-stats';
+
+function saveSharedStats(stats) {
+  writeJson(CACHE_KEY, { at: Date.now(), stats });
+}
+
+function loadSharedStats() {
+  const cached = readJson(CACHE_KEY, null);
+  return cached && Array.isArray(cached.stats) ? cached : null;
+}
+
 /* ----------------------------------------------------------------- fabbrica */
 
 /**
- * Sceglie l'implementazione da usare.
+ * Picks the implementation to use, and brings back the statistics it read
+ * while doing so.
  *
- * Se il backend scelto è configurato ma non risponde si ripiega sulla modalità
- * locale segnalandolo, invece di lasciare il sito senza dati: meglio un sito
- * che funziona con una classifica personale che una pagina rotta.
+ * Returning the stats is the point. This function used to load the whole
+ * collection just to see whether the backend answered, throw the result away,
+ * and let the caller ask for it again — so every single visit read all 270
+ * pair documents twice. On Firestore's free tier that is 50,000 reads a day
+ * divided by 540, about ninety visits, and then the quota is gone and the
+ * shared ranking disappears for everyone until midnight. It happened.
+ *
+ * If the backend is configured but refuses, the site falls back to local mode
+ * rather than showing a broken page — but it hands over the last shared
+ * ranking it saw, so the visitor still gets the real standings instead of a
+ * chart of their own six votes.
+ *
+ * @returns {Promise<{store: object, stats: Array, staleSince: number|null}>}
  */
 export async function createStore() {
   let store = null;
@@ -232,13 +264,20 @@ export async function createStore() {
     store = new FirestoreStore(FIREBASE);
   }
 
-  if (!store) return new LocalStore('non configurato');
+  if (!store) {
+    const local = new LocalStore('non configurato');
+    return { store: local, stats: await local.loadPairStats(), staleSince: null };
+  }
 
   try {
-    await store.loadPairStats();
-    return store;
+    const stats = await store.loadPairStats();
+    saveSharedStats(stats);
+    return { store, stats, staleSince: null };
   } catch (err) {
     console.warn('Backend non raggiungibile, si continua in locale.', err);
-    return new LocalStore('backend non raggiungibile');
+    const local = new LocalStore('backend non raggiungibile');
+    const cached = loadSharedStats();
+    if (cached) return { store: local, stats: cached.stats, staleSince: cached.at };
+    return { store: local, stats: await local.loadPairStats(), staleSince: null };
   }
 }

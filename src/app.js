@@ -54,6 +54,9 @@ const state = {
   // Chiave del messaggio in fascia, non il testo già tradotto: cambiando
   // lingua va riscritto, e senza la chiave non si saprebbe in cosa.
   bannerKey: null,
+  // Quando la classifica mostrata è l'ultima copia salvata invece di quella
+  // appena letta: serve a non spacciarla per aggiornata.
+  staleSince: null,
   seen: loadSeenPairs(),
 };
 
@@ -344,7 +347,16 @@ function renderRankings() {
 
   const { families, totalVotes } = state.rankings;
 
-  const mode = t(isShared() ? 'rank.modeShared' : 'rank.modeLocal');
+  // Tre casi, non due: condivisa e aggiornata, condivisa ma vecchia, oppure
+  // soltanto i propri voti. Dire "solo i tuoi voti" davanti a una copia della
+  // classifica vera sarebbe falso quanto il contrario.
+  const mode = t(
+    isShared()
+      ? 'rank.modeShared'
+      : state.staleSince != null
+        ? 'rank.modeStale'
+        : 'rank.modeLocal'
+  );
 
   $('rank-summary').textContent =
     totalVotes === 0
@@ -558,23 +570,25 @@ async function main() {
   wireControls();
   showView(currentView());
 
-  state.store = await createStore();
-
-  try {
-    state.stats = await state.store.loadPairStats();
-  } catch (err) {
-    console.error(err);
-    state.stats = [];
-  }
+  // Una sola lettura, non due: createStore restituisce le statistiche che ha
+  // già scaricato per capire se il backend risponde. Chiederle di nuovo qui
+  // raddoppiava il costo di ogni visita, ed è ciò che ha esaurito la quota
+  // gratuita di Firestore lasciando tutti senza classifica condivisa.
+  const { store, stats, staleSince } = await createStore();
+  state.store = store;
+  state.stats = stats;
+  state.staleSince = staleSince;
 
   recompute();
   nextChallenge();
 
   if (state.store.mode === 'local') {
     showBanner(
-      state.store.reason === 'non configurato'
-        ? 'banner.notConfigured'
-        : 'banner.unreachable'
+      staleSince != null
+        ? 'banner.stale'
+        : state.store.reason === 'non configurato'
+          ? 'banner.notConfigured'
+          : 'banner.unreachable'
     );
   }
 
