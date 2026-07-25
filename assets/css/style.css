@@ -24,8 +24,9 @@
   --wrap: 1220px;
 }
 
+/* Tema scuro di sistema. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --bg: #14161a;
     --bg-raised: #1c1f25;
     --bg-sunken: #101216;
@@ -41,6 +42,46 @@
     --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .35);
     --shadow-lift: 0 2px 4px rgba(0, 0, 0, .35), 0 18px 40px rgba(0, 0, 0, .5);
   }
+}
+
+/* Scelta esplicita dell'utente: deve vincere sulla preferenza di sistema in
+   entrambe le direzioni, quindi i due temi sono ridefiniti per intero. */
+:root[data-theme="dark"] {
+  --bg: #14161a;
+  --bg-raised: #1c1f25;
+  --bg-sunken: #101216;
+  --ink: #eceef2;
+  --ink-soft: #a8aeb9;
+  --ink-faint: #767d89;
+  --line: #2b3038;
+  --accent: #6ea8ff;
+  --accent-soft: #1d2635;
+  --gold: #d9a441;
+  --green: #4fb6a2;
+  --win: #4cc38a;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .35);
+  --shadow-lift: 0 2px 4px rgba(0, 0, 0, .35), 0 18px 40px rgba(0, 0, 0, .5);
+}
+
+:root[data-theme="light"] {
+  --bg: #f7f5f0;
+  --bg-raised: #ffffff;
+  --bg-sunken: #edeae2;
+  --ink: #1c1a17;
+  --ink-soft: #5d574d;
+  --ink-faint: #8d8579;
+  --line: #dcd7cc;
+  --accent: #0b4ea2;          /* blu della bandiera europea */
+  --accent-soft: #e6edf8;
+  --gold: #b8860b;
+  --green: #2e7d6f;
+  --win: #1f7a4d;
+  --shadow: 0 1px 2px rgba(28, 26, 23, .05), 0 8px 24px rgba(28, 26, 23, .07);
+  --shadow-lift: 0 2px 4px rgba(28, 26, 23, .06), 0 18px 40px rgba(28, 26, 23, .14);
+  --radius: 14px;
+  /* Generoso: il contenuto sono le banconote, e vanno viste grandi. I testi
+     restano leggibili perché limitati a una misura propria (62–68ch). */
+  --wrap: 1220px;
 }
 
 * { box-sizing: border-box; }
@@ -235,8 +276,15 @@ code {
    stretti la banconota sfonda la carta. Vale per ogni livello dell'annidamento. */
 .arena > *,
 .note-card,
+.note-sides,
 .note-figure,
 .note-figure img { min-width: 0; }
+
+/* Fronte sopra, retro sotto: si vota la banconota intera. */
+.note-sides {
+  display: grid;
+  gap: 8px;
+}
 
 .note-card {
   appearance: none;
@@ -270,24 +318,30 @@ code {
 /* Riquadro a proporzioni fisse: le proposte hanno formati diversi — c'è anche
    un 200 € verticale — e senza un contenitore stabile le due carte
    ballerebbero di dimensione a ogni sfida. */
+/* L'immagine è posizionata in assoluto dentro il riquadro. È l'unico modo
+   affidabile per dirle "stai dentro": in un contenitore con altezza derivata
+   da aspect-ratio, né max-height:100% né height:100% hanno un riferimento
+   definito da cui calcolarsi, e la banconota finiva tagliata. Con gli inset
+   la scatola è definita, e object-fit fa il resto. */
 .note-figure {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 16 / 9;
+  position: relative;
+  aspect-ratio: 21 / 10;
   background: var(--bg-sunken);
   border-radius: 8px;
   overflow: hidden;
-  padding: 10px;
 }
 
 .note-figure img {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
+  position: absolute;
+  inset: 10px;
+  /* Larghezza e altezza esplicite: su un elemento rimpiazzato posizionato in
+     assoluto, `auto` vale la dimensione intrinseca e gli inset da soli non lo
+     ridimensionano. Le percentuali qui hanno un riferimento definito, perché
+     il contenitore ha altezza fissata da aspect-ratio. */
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
   object-fit: contain;
   border-radius: 3px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
   transition: opacity .18s ease;
 }
 
@@ -411,6 +465,7 @@ kbd {
 .seg {
   display: flex;
   gap: 4px;
+  flex-wrap: wrap;
   background: var(--bg-sunken);
   padding: 4px;
   border-radius: 999px;
@@ -461,17 +516,18 @@ kbd {
 .rank-row.is-first .rank-pos { color: var(--gold); }
 
 .rank-thumb {
+  position: relative;
   aspect-ratio: 2 / 1;
   background: var(--bg-sunken);
   border-radius: 6px;
-  display: grid;
-  place-items: center;
   overflow: hidden;
 }
 
 .rank-thumb img {
-  max-width: 100%;
-  max-height: 100%;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
@@ -605,20 +661,19 @@ kbd {
 }
 
 .design-card > figure {
+  position: relative;
   margin: 0;
   background: var(--bg-sunken);
-  padding: 16px;
-  display: grid;
-  place-items: center;
-  aspect-ratio: 2 / 1;
+  aspect-ratio: 21 / 10;
 }
 
 .design-card > figure img {
-  max-width: 100%;
-  max-height: 100%;
+  position: absolute;
+  inset: 14px;
+  width: calc(100% - 28px);
+  height: calc(100% - 28px);
   object-fit: contain;
   border-radius: 3px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
 }
 
 .design-body { padding: 16px 18px 20px; }
@@ -665,7 +720,31 @@ kbd {
   margin-top: 20px;
 }
 
-.site-footer p {
+.footer-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.footer-controls {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.picker { display: flex; align-items: center; gap: 10px; }
+
+.picker-label {
+  font-size: .74rem;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: var(--ink-faint);
+  font-weight: 600;
+}
+
+.seg-sm .seg-btn { font-size: .82rem; padding: 5px 12px; }
+
+.footer-note {
   color: var(--ink-faint);
   font-size: .82rem;
   max-width: 82ch;
@@ -679,6 +758,10 @@ kbd {
     grid-template-columns: 1fr;
     gap: 12px;
   }
+  /* Con le carte impilate, fronte e retro vanno affiancati: quattro immagini
+     in colonna farebbero uscire dallo schermo la seconda banconota, e un
+     confronto che non si vede tutto insieme non è più un confronto. */
+  .note-sides { grid-template-columns: 1fr 1fr; }
   .versus {
     justify-self: center;
     width: 36px;

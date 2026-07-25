@@ -15,15 +15,15 @@
     <a class="brand" href="#vota">
       <span class="brand-mark">€</span>
       <span class="brand-text">
-        <strong>Banconota d'Europa</strong>
-        <small>le 10 proposte per il futuro euro, una sfida alla volta</small>
+        <strong data-i18n="brand.title"></strong>
+        <small data-i18n="brand.tagline"></small>
       </span>
     </a>
     <nav class="nav">
-      <a href="#vota" data-view="vota">Vota</a>
-      <a href="#classifica" data-view="classifica">Classifica</a>
-      <a href="#design" data-view="design">I design</a>
-      <a href="#metodo" data-view="metodo">Metodo</a>
+      <a href="#vota" data-view="vota" data-i18n="nav.vote"></a>
+      <a href="#classifica" data-view="classifica" data-i18n="nav.ranking"></a>
+      <a href="#design" data-view="design" data-i18n="nav.designs"></a>
+      <a href="#metodo" data-view="metodo" data-i18n="nav.method"></a>
     </nav>
   </div>
 </header>
@@ -34,16 +34,14 @@
   <section id="view-vota" class="view">
 
     <div class="vote-head">
-      <p class="vote-hint">
-        Si confrontano sempre <strong>due banconote dello stesso taglio</strong>.
-        Scegli quella che ti piace di più.
-      </p>
+      <p class="vote-hint" data-i18n-html="vote.hintHtml"></p>
     </div>
 
     <div class="arena" id="arena">
       <button class="note-card" id="card-left" type="button">
-        <span class="note-figure">
-          <img alt="" id="img-left" decoding="async">
+        <span class="note-sides">
+          <span class="note-figure"><img alt="" id="img-left-front" decoding="async"></span>
+          <span class="note-figure"><img alt="" id="img-left-back" decoding="async"></span>
         </span>
         <span class="note-meta">
           <span class="note-letter" id="letter-left"></span>
@@ -54,8 +52,9 @@
       <div class="versus" aria-hidden="true"><span>vs</span></div>
 
       <button class="note-card" id="card-right" type="button">
-        <span class="note-figure">
-          <img alt="" id="img-right" decoding="async">
+        <span class="note-sides">
+          <span class="note-figure"><img alt="" id="img-right-front" decoding="async"></span>
+          <span class="note-figure"><img alt="" id="img-right-back" decoding="async"></span>
         </span>
         <span class="note-meta">
           <span class="note-letter" id="letter-right"></span>
@@ -65,14 +64,11 @@
     </div>
 
     <div class="arena-actions">
-      <button type="button" class="btn ghost" id="btn-skip">Non saprei, passa oltre</button>
-      <button type="button" class="btn ghost" id="btn-flip" hidden>Guarda il retro</button>
+      <button type="button" class="btn ghost" id="btn-skip" data-i18n="vote.skip"></button>
       <p class="vote-count" id="vote-count"></p>
     </div>
 
-    <p class="kbd-hint">
-      Da tastiera: <kbd>←</kbd> o <kbd>→</kbd> per votare, <kbd>spazio</kbd> per saltare.
-    </p>
+    <p class="kbd-hint" data-i18n-html="vote.kbdHtml"></p>
 
     <div class="banner" id="mode-banner" hidden></div>
   </section>
@@ -80,46 +76,35 @@
   <!-- ======================================================= CLASSIFICA -->
   <section id="view-classifica" class="view" hidden>
     <div class="rank-head">
-      <h1>Classifica</h1>
+      <h1 data-i18n="rank.title"></h1>
       <div class="seg" role="group" aria-label="Tipo di classifica">
-        <button type="button" class="seg-btn is-active" data-scope="generale">Generale</button>
-        <button type="button" class="seg-btn" data-scope="famiglie">Per design</button>
-        <button type="button" class="seg-btn" data-scope="tagli">Per taglio</button>
+        <button type="button" class="seg-btn is-active" data-scope="generale" data-i18n="scope.general"></button>
+        <button type="button" class="seg-btn" data-scope="famiglie" data-i18n="scope.design"></button>
+        <button type="button" class="seg-btn" data-scope="tagli" data-i18n="scope.denomination"></button>
       </div>
     </div>
 
     <p class="rank-summary" id="rank-summary"></p>
 
     <div id="rank-generale">
-      <p class="scope-note">
-        Tutte e 60 le banconote in un'unica graduatoria — dieci proposte per sei
-        tagli. I confronti avvengono però sempre fra banconote dello stesso
-        taglio, quindi ogni punteggio dice quanto quella banconota è forte
-        <strong>rispetto alle altre del suo taglio</strong>: la classifica le
-        mette in fila, non afferma che un 5 € batterebbe un 200 €.
-      </p>
+      <p class="scope-note" data-i18n-html="rank.noteGeneralHtml"></p>
       <ol class="ranking" id="ranking-all-list"></ol>
     </div>
 
     <div id="rank-families" hidden>
-      <p class="scope-note">
-        Le dieci proposte, ciascuna con la media delle sue sei banconote.
-      </p>
+      <p class="scope-note" data-i18n="rank.noteDesign"></p>
       <ol class="ranking" id="ranking-list"></ol>
     </div>
 
     <div id="rank-denoms" hidden>
       <div class="denom-picker">
-        <span class="denom-label">Taglio</span>
+        <span class="denom-label" data-i18n="rank.denomLabel"></span>
         <div class="denom-buttons" id="rank-denom-buttons"></div>
       </div>
       <ol class="ranking" id="ranking-denom-list"></ol>
 
-      <h2 class="matrix-title">Chi batte chi</h2>
-      <p class="matrix-note">
-        Probabilità che il design della riga batta quello della colonna, secondo
-        il modello. Le celle più intense sono i pronostici più netti.
-      </p>
+      <h2 class="matrix-title" data-i18n="matrix.title"></h2>
+      <p class="matrix-note" data-i18n="matrix.note"></p>
       <div class="matrix-scroll">
         <table class="matrix" id="matrix"></table>
       </div>
@@ -128,130 +113,32 @@
 
   <!-- ========================================================== DESIGN -->
   <section id="view-design" class="view" hidden>
-    <h1>Le dieci proposte</h1>
-    <p class="lede">
-      La BCE ha selezionato dieci proposte, cinque sul tema <em>cultura europea</em>
-      e cinque sul tema <em>fiumi e uccelli</em>. Ogni proposta copre tutti e sei
-      i tagli, da 5 a 200 euro.
-    </p>
+    <h1 data-i18n="designs.title"></h1>
+    <p class="lede" data-i18n-html="designs.ledeHtml"></p>
     <div class="design-grid" id="design-grid"></div>
   </section>
 
   <!-- ========================================================== METODO -->
   <section id="view-metodo" class="view" hidden>
-    <h1>Come si calcola la classifica</h1>
-
-    <h2>Perché confronti a due</h2>
-    <p>
-      Chiedere un voto da 1 a 10 su cinquanta immagini non funziona: ognuno usa
-      la scala a modo suo, e chi vota per primo condiziona chi vota dopo. Un
-      confronto fra due sole banconote è invece una domanda a cui tutti
-      rispondono nello stesso modo. Il problema si sposta sul come mettere
-      insieme migliaia di confronti sparsi in una classifica unica.
-    </p>
-
-    <h2>Il modello Bradley–Terry</h2>
-    <p>
-      A ogni design si associa una <em>forza</em> <code>p</code>, un numero
-      positivo. La probabilità che il design <code>i</code> venga preferito al
-      design <code>j</code> è
-    </p>
-    <p class="formula">P(i batte j) = p<sub>i</sub> / (p<sub>i</sub> + p<sub>j</sub>)</p>
-    <p>
-      Le forze non si osservano: si stimano cercando i valori che rendono più
-      probabili i voti effettivamente raccolti. Il calcolo usa l'algoritmo MM di
-      Hunter, che parte da forze tutte uguali e le aggiorna con
-    </p>
-    <p class="formula">
-      p<sub>i</sub> &larr; W<sub>i</sub> / &Sigma;<sub>j&ne;i</sub> [ N<sub>ij</sub> / (p<sub>i</sub> + p<sub>j</sub>) ]
-    </p>
-    <p>
-      dove <code>W<sub>i</sub></code> sono le vittorie totali di <code>i</code> e
-      <code>N<sub>ij</sub></code> il numero di confronti fra <code>i</code> e
-      <code>j</code>. Ogni passaggio migliora l'aderenza ai dati, e in poche
-      decine di iterazioni il risultato è stabile.
-    </p>
-    <p>
-      Il vantaggio rispetto alla semplice percentuale di vittorie è che il
-      modello tiene conto di <em>chi</em> hai battuto: vincere contro il design
-      più forte vale più che vincere contro l'ultimo in classifica. E il
-      risultato non dipende dall'ordine in cui arrivano i voti — rimescolandoli
-      la classifica resta identica.
-    </p>
-
-    <h2>Il punteggio mostrato</h2>
-    <p>
-      Le forze si leggono meglio sulla scala Elo, la stessa degli scacchi:
-    </p>
-    <p class="formula">R = 1500 + (400 / ln 10) &middot; ln p</p>
-    <p>
-      Così 1500 è il centro del campo e <strong>100 punti di distacco valgono
-      circa il 64% di probabilità di vittoria</strong>, 400 punti valgono 10 a 1.
-      Il <code>±</code> accanto al punteggio è l'errore standard: finché è
-      grande, la posizione è ancora provvisoria.
-    </p>
-
-    <h2>Chi ha ancora pochi voti</h2>
-    <p>
-      Un design che ha vinto i primi tre confronti avrebbe forza infinita: il
-      modello, da solo, non saprebbe dove fermarsi. Si aggiungono quindi due
-      confronti fittizi per design contro un avversario immaginario di forza
-      media, uno vinto e uno perso. È poca cosa rispetto a centinaia di voti
-      veri, ma basta a tenere tutti i punteggi finiti e a evitare che un design
-      votato tre volte scavalchi uno votato trecento.
-    </p>
-
-    <h2>Dal singolo taglio alla proposta intera</h2>
-    <p>
-      Ogni taglio ha la sua classifica, calcolata solo con i confronti fra
-      banconote di quel taglio. Il punteggio complessivo di una proposta è la
-      media delle sue sei forze, calcolata sui logaritmi — è la scala in cui il
-      modello è lineare, e impedisce che un singolo taglio molto forte trascini
-      da solo tutta la famiglia.
-    </p>
-
-    <h2>Quali coppie ti vengono proposte</h2>
-    <p>
-      Non a caso puro. Il sito privilegia le coppie ancora poco votate e quelle
-      fra design di forza simile, che sono le più informative: sapere come va a
-      finire un confronto già scontato non aggiunge niente. La scelta resta
-      comunque casuale con questi pesi, così votanti diversi non vedono tutti la
-      stessa sfida.
-    </p>
-
-    <h2>Limiti, detti chiaramente</h2>
-    <ul>
-      <li>
-        Il campione è chi capita su questo sito: non è rappresentativo della
-        popolazione europea, e la classifica non va letta come un sondaggio.
-      </li>
-      <li>
-        L'identificativo del votante sta nel browser. Frena i doppioni
-        accidentali e gli script, non un votante determinato a insistere.
-      </li>
-      <li>
-        Si vota il fronte delle banconote (più il retro del 5 €, l'unico
-        pubblicato dalla BCE per tutte le proposte).
-      </li>
-      <li>
-        Questo sito non ha alcun rapporto con la BCE e non influisce sulla
-        scelta ufficiale. Per quella c'è
-        <a href="https://www.ecb.europa.eu/euro/banknotes/future_banknotes/html/design-proposals.en.html" target="_blank" rel="noopener">il sondaggio della BCE</a>.
-      </li>
-    </ul>
+    <h1 data-i18n="method.title"></h1>
+    <div id="method-body"></div>
   </section>
 
 </main>
 
 <footer class="site-footer">
-  <div class="wrap">
-    <p>
-      Le immagini sono <strong>proposte di design</strong> per una possibile
-      futura serie di banconote in euro. Fonte: Banca centrale europea —
-      <a href="https://www.ecb.europa.eu/euro/banknotes/future_banknotes/html/design-proposals.en.html" target="_blank" rel="noopener">Future euro banknote design proposals</a>.
-      Riprodotte a fini informativi. Progetto indipendente, senza alcun legame
-      con la BCE o l'Eurosistema, né alcuna loro approvazione.
-    </p>
+  <div class="wrap footer-inner">
+    <div class="footer-controls">
+      <div class="picker">
+        <span class="picker-label" data-i18n="footer.theme"></span>
+        <div class="seg seg-sm" id="theme-buttons" role="group"></div>
+      </div>
+      <div class="picker">
+        <span class="picker-label" data-i18n="footer.language"></span>
+        <div class="seg seg-sm" id="lang-buttons" role="group"></div>
+      </div>
+    </div>
+    <p class="footer-note" data-i18n-html="footer.attributionHtml"></p>
   </div>
 </footer>
 

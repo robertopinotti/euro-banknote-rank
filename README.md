@@ -224,7 +224,9 @@ src/rating.js                  Bradley–Terry, errori standard, scelta delle co
 src/store.js                   accesso ai dati: Firestore, Supabase o localStorage
 src/app.js                     interfaccia e instradamento
 assets/css/style.css           foglio di stile unico, chiaro e scuro
-assets/banknotes/              70 immagini WebP (60 fronti + 10 retri del 5 €)
+assets/banknotes/              120 immagini WebP (60 fronti + 60 retri)
+src/i18n.js                    testi dell'interfaccia in it/en/fr/de
+src/design-texts.js            testi BCE dei design nelle 4 lingue (generato)
 firebase/firestore.rules       regole di sicurezza Firestore
 supabase/schema.sql            tabelle, RLS, funzione di voto
 test/rating.test.mjs           motore di classifica
@@ -237,9 +239,16 @@ come sono. Le dipendenze in `package.json` servono solo a eseguire i test delle
 regole Firestore.
 
 Le immagini sono ridimensionate a 1000 px sul lato lungo e convertite in WebP:
-5,4 MB in tutto invece dei 22,7 MB degli originali, perché in una schermata di
-voto se ne caricano due alla volta. Gli originali ad alta risoluzione restano sul
-sito della BCE.
+8,8 MB in tutto invece dei 41 MB degli originali, perché in una schermata di
+voto se ne caricano quattro alla volta — fronte e retro di entrambe le
+banconote. Gli originali ad alta risoluzione restano sul sito della BCE.
+
+Il sito è disponibile in **italiano, inglese, francese e tedesco**. Le
+descrizioni dei design non sono tradotte da noi: sono quelle ufficiali della
+BCE, prese dalle rispettive versioni linguistiche della sua pagina, così ai
+designer non vengono attribuite parole che non hanno scritto. Lingua e tema
+(automatico, chiaro, scuro) si scelgono in fondo alla pagina e restano
+memorizzati nel browser.
 
 ---
 
@@ -270,7 +279,7 @@ pubblicato solo per il taglio da 5 €.
 - Il campione è chi capita sul sito: **non è un sondaggio rappresentativo** della
   popolazione europea e non va presentato come tale.
 - L'identificativo del votante sta nel browser: si può aggirare.
-- Si vota il fronte delle banconote, più il retro del 5 €.
+- Si vota la banconota intera: fronte e retro sono mostrati insieme.
 
 ---
 
