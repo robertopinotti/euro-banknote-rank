@@ -269,14 +269,18 @@ test('votes are never deleted', async () => {
 
 /* ------------------------------------------------------ everything else off */
 
-test('the old per-pair collection is readable but frozen', async () => {
+test('the old per-pair collection is closed off entirely', async () => {
+  // Era leggibile durante la migrazione, per non rompere i browser che
+  // giravano ancora la versione precedente. Ora non c'e' piu': lasciarla
+  // aperta significava un endpoint pubblico elencabile, dove una richiesta
+  // sola fatturava fino a 270 letture di dati che nessuno legge.
   await env.withSecurityRulesDisabled(async (ctx) => {
     await setDoc(doc(ctx.firestore(), 'pairStats', '50_a_c'), {
       denomination: 50, designLo: 'a', designHi: 'c', winsLo: 1, winsHi: 0,
     });
   });
   const old = doc(env.unauthenticatedContext().firestore(), 'pairStats', '50_a_c');
-  await assertSucceeds(getDoc(old));
+  await assertFails(getDoc(old));
   await assertFails(updateDoc(old, { winsLo: increment(1) }));
   await assertFails(deleteDoc(old));
 });

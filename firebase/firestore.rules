@@ -82,14 +82,12 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // The old per-pair collection. Kept readable so a browser still running
-    // the previous version from its cache is not broken; writes are closed,
-    // because the counts that matter now live in stats/all. It can be deleted
-    // once the old caches have expired.
-    match /pairStats/{pairId} {
-      allow read: if true;
-      allow write: if false;
-    }
+    // The old per-pair collection is gone, and with it its rule. It was kept
+    // readable for a while so a browser still running the previous version
+    // from its cache would not break. Leaving it would have cost something:
+    // the collection was listable, so one request with pageSize=300 billed up
+    // to 270 reads — a 270x amplifier on a public endpoint, pointing at data
+    // nothing reads any more. The catch-all below now denies it.
 
     // Everything else is closed: if a collection is added one day, that has to
     // be an explicit choice and not a hole left open.

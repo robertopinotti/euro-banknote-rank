@@ -7,6 +7,10 @@
  * live in a single document — one read — and this script carries the votes
  * already collected across, so switching does not throw them away.
  *
+ * That migration has been done, and the old collection deleted. What remains
+ * useful here is seeding a fresh project: with no old collection to read, the
+ * document is created with all 540 counters at zero.
+ *
  * It runs once. The rules deliberately forbid creating stats/all, because a
  * create rule would be a way to overwrite the entire ranking with one write,
  * so the seeding window has to be opened by hand:
@@ -82,12 +86,35 @@ function emptyCounters() {
   return c;
 }
 
+/**
+ * Whether the old per-pair collection is still there to migrate from.
+ *
+ * On a fresh project it never existed; on this one it has been deleted and the
+ * rules deny it. Either way that is not an error — it just means there is
+ * nothing to carry across and the document is seeded with every counter at
+ * zero.
+ */
+async function oldCollectionReadable() {
+  const res = await fetch(`${base}/pairStats?key=${encodeURIComponent(apiKey)}&pageSize=1`, {
+    headers: adminHeaders,
+  });
+  if (res.status === 403 || res.status === 404) return false;
+  if (!res.ok && res.status !== 429) {
+    throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+  }
+  return true;
+}
+
 async function readOldCollection() {
   const counters = emptyCounters();
   let documenti = 0;
   let voti = 0;
   let ignorati = 0;
   let pageToken = '';
+
+  if (!(await oldCollectionReadable())) {
+    return { counters, documenti, voti, ignorati, assente: true };
+  }
 
   do {
     const url =
@@ -121,7 +148,7 @@ async function readOldCollection() {
     pageToken = body.nextPageToken || '';
   } while (pageToken);
 
-  return { counters, documenti, voti, ignorati };
+  return { counters, documenti, voti, ignorati, assente: false };
 }
 
 async function writeAggregate(counters) {
@@ -158,9 +185,12 @@ async function verify(atteso) {
 console.log(`progetto: ${projectId}${host ? `  (emulatore ${host})` : ''}`);
 console.log('lettura della vecchia collezione pairStats…');
 
-const { counters, documenti, voti, ignorati } = await readOldCollection();
+const { counters, documenti, voti, ignorati, assente } = await readOldCollection();
 const nonZero = Object.values(counters).filter((v) => v > 0).length;
 
+if (assente) {
+  console.log('  non c\'e\': si semina da zero (e\' il caso di un progetto nuovo).');
+}
 console.log(`  coppie lette:      ${documenti}`);
 console.log(`  voti totali:       ${voti}`);
 console.log(`  contatori a zero:  ${Object.keys(counters).length - nonZero} su ${Object.keys(counters).length}`);
