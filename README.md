@@ -188,6 +188,14 @@ Il workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) esegue 
 test e pubblica il sito su GitHub Pages a ogni push sul branch di default. Il
 sito è statico e senza build: si pubblica il repository così com'è.
 
+Prima di pubblicare, il workflow esegue
+[`tools/stamp-assets.mjs`](tools/stamp-assets.mjs), che aggiunge a CSS e script
+un `?v=` derivato dal contenuto. GitHub Pages serve ogni file con dieci minuti
+di cache indipendenti l'uno dall'altro: senza questa marcatura, nei minuti dopo
+una pubblicazione un browser può ritrovarsi con l'HTML nuovo e il CSS vecchio, e
+la pagina risulta rotta. Se modifichi CSS o JavaScript in locale puoi allineare
+le impronte con `npm run stamp`, ma non è necessario: ci pensa la CI.
+
 Alla prima esecuzione il workflow attiva Pages da sé
 (`actions/configure-pages` con `enablement: true`), senza passare dalle
 impostazioni.

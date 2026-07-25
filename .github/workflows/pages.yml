@@ -53,6 +53,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Rimarca CSS e script con l'impronta del contenuto. GitHub Pages serve
+      # ogni file con dieci minuti di cache indipendenti l'uno dall'altro:
+      # senza questo, dopo una pubblicazione un browser puo' ritrovarsi con
+      # l'HTML nuovo e il CSS vecchio, e la pagina risulta rotta.
+      - run: node tools/stamp-assets.mjs
+
       # enablement: true crea il sito Pages se non esiste ancora. Con il
       # repository privato falliva ("Resource not accessible by integration"):
       # Pages non era disponibile sul piano, e l'errore arrivava travestito da

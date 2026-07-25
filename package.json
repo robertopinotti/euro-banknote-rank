@@ -7,7 +7,8 @@
   "scripts": {
     "test": "node --test test/rating.test.mjs",
     "test:rules": "firebase emulators:exec --only firestore --project banconota-test \"node --test test/firestore-rules.test.mjs test/firestore-store.test.mjs\"",
-    "start": "python3 -m http.server 8000"
+    "start": "python3 -m http.server 8000",
+    "stamp": "node tools/stamp-assets.mjs"
   },
   "//": "Il sito non ha dipendenze a runtime: e' HTML, CSS e moduli ES serviti cosi' come sono. Quelle qui sotto servono solo a eseguire i test delle regole di sicurezza Firestore contro l'emulatore.",
   "devDependencies": {
