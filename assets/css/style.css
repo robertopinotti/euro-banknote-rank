@@ -173,6 +173,26 @@ code {
 .brand-text strong { font-size: 1.02rem; letter-spacing: -.01em; }
 .brand-text small { color: var(--ink-faint); font-size: .78rem; }
 
+/* Android Chrome paints a translucent block over whatever you tap, and that
+   block is the element's border box — it ignores border-radius. On the pill
+   nav items it showed up as a blue rectangle around the rounded pill, which
+   looked like a rendering fault rather than a tap. Turning it off costs
+   nothing: :active and :focus-visible below still say what was pressed. */
+a,
+button,
+.seg-btn,
+.note-card { -webkit-tap-highlight-color: transparent; }
+
+/* Keyboard users still need to see where they are. No border-radius here on
+   purpose: browsers already draw the outline following each element's own
+   corners, so the ring hugs the pill on a nav item and the card on a banknote.
+   :focus-visible never fires on tap or click, so nothing sticks after a touch. */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .nav { display: flex; gap: 4px; flex-wrap: wrap; }
 
 .nav a {
@@ -236,16 +256,15 @@ code {
 .note-sides,
 .note-sides img { min-width: 0; }
 
-/* Fronte sopra, retro sotto: si vota la banconota intera. */
+/* Front above, reverse below: you vote on the whole banknote. */
 .note-sides {
   display: grid;
   gap: 8px;
 }
 
-/* Tre proposte su dieci sono disegnate in verticale. Impilarne fronte e retro
-   darebbe una carta alta il doppio delle altre, e le due opzioni da confrontare
-   non starebbero piu' nella stessa schermata: affiancandoli, l'altezza torna
-   paragonabile a quella di una proposta orizzontale. */
+/* Three of the ten designs are portrait. Stacking their two sides would make
+   the card twice as tall as the others, so they sit side by side and the
+   height comes back in line with a landscape design. */
 .note-sides.is-portrait {
   grid-template-columns: 1fr 1fr;
   align-items: center;
@@ -306,25 +325,6 @@ code {
 }
 
 .note-sides img.is-loading { opacity: 0; }
-
-.note-meta { display: flex; align-items: baseline; gap: 10px; min-height: 1.5em; }
-
-.note-letter {
-  font-weight: 700;
-  font-size: 1.05rem;
-  letter-spacing: .02em;
-  flex: none;          /* il nome del designer non deve spezzare "Proposta G" */
-  white-space: nowrap;
-}
-
-.note-designer {
-  color: var(--ink-faint);
-  font-size: .86rem;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 
 .versus {
   display: grid;
@@ -642,12 +642,16 @@ kbd {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  /* Con le carte impilate, fronte e retro vanno affiancati: quattro immagini
-     in colonna farebbero uscire dallo schermo la seconda banconota, e un
-     confronto che non si vede tutto insieme non è più un confronto. */
-  .note-sides { grid-template-columns: 1fr 1fr; align-items: center; }
-  .note-sides img { max-height: 170px; }
-  .note-sides.is-portrait img { max-height: 230px; }
+  /* Landscape notes stack, front above reverse, each using the full width of
+     the card. Side by side they were half as wide and the artwork was too
+     small to judge, which is the one thing this screen is for. The cost is
+     that the two options no longer fit in a single phone screen: you scroll
+     between them. Portrait notes keep the two sides side by side — stacked,
+     one card alone would be taller than the whole viewport. */
+  .note-sides.is-portrait { grid-template-columns: 1fr 1fr; align-items: center; }
+  .note-sides.is-portrait img { max-height: 300px; }
+  /* Narrower padding: on a phone every millimetre goes to the banknote. */
+  .note-card { padding: 10px; gap: 10px; }
   .versus {
     justify-self: center;
     width: 36px;
@@ -662,13 +666,33 @@ kbd {
 }
 
 @media (max-width: 560px) {
-  .header-inner { min-height: 0; padding-block: 10px; }
-  .brand-text small { display: none; }
-  /* Le voci si stringono per stare su una riga: in francese, tedesco e
-     spagnolo le parole sono piu' lunghe e la barra andava a capo, spingendo
-     giu' le banconote. */
-  .nav { gap: 2px; }
-  .nav a { padding: 6px 9px; font-size: .86rem; }
+  /* One row, not two. With the title spelled out the nav wrapped underneath and
+     the sticky header took 113px off every screen — more than a third of a
+     banknote. The € mark keeps the way back to the vote screen. */
+  .header-inner { min-height: 0; padding-block: 8px; flex-wrap: nowrap; }
+  .brand-text { display: none; }
+  /* Stacking the two sides made each card twice as tall, so every pixel of
+     chrome above and between them is one the two banknotes do not get. */
+  #view-vota { padding-top: 14px; }
+  .arena { gap: 8px; }
+  .versus { width: 30px; height: 30px; font-size: .66rem; }
+  /* nowrap on .header-inner alone was not enough: .nav wrapped inside itself,
+     "Metodo" dropped to a second row and the header still cost 87px.
+     Forcing one row instead pushed the page sideways in French and German,
+     whose four labels need ~295px against the ~262px available — and a page
+     that scrolls horizontally is worse than a tall header. So the bar itself
+     scrolls: it shrinks to the room it has and slides if the words do not fit.
+     In Italian, English and Spanish they do, and nothing moves. */
+  .header-inner { gap: 8px; }
+  .nav {
+    gap: 0;
+    flex-wrap: nowrap;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav a { padding: 6px 7px; font-size: .78rem; }
   /* Nascondere il solo testo lascerebbe un blocco vuoto con il suo margine. */
   .vote-head { display: none; }
   .kbd-hint { display: none; }

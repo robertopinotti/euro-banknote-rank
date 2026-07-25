@@ -1,7 +1,5 @@
 # Banknote of Europe
 
-*[Versione italiana](README.it.md)*
-
 A voting site for the ten design proposals for the future euro banknotes. You
 vote in pairs — two banknotes **of the same denomination**, head to head — and
 the ranking is derived from those comparisons with the **Bradley–Terry** model.

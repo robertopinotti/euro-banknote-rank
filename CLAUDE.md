@@ -5,8 +5,8 @@ Notes for anyone working on this repository with Claude Code.
 ## What this is
 
 A static pairwise-voting site for the ten design proposals for the future euro
-banknotes, ranked with Bradley–Terry. See [README.md](README.md) (or
-[README.it.md](README.it.md)) for the full picture.
+banknotes, ranked with Bradley–Terry. See [README.md](README.md) for the full
+picture.
 
 ## Language: English
 
@@ -14,9 +14,8 @@ banknotes, ranked with Bradley–Terry. See [README.md](README.md) (or
 
 - **Code comments** — every comment, docstring and inline note.
 - **Commit messages** — subject and body.
-- **Documentation** — `README.md` is the English one and is the primary. Its
-  Italian counterpart `README.it.md` must carry the same content: if you change
-  one, change the other.
+- **Documentation** — `README.md` and this file. There is one README, in
+  English; do not add translated copies.
 - **Identifiers** — variables, functions, CSS classes, element ids, i18n keys.
 
 Two deliberate exceptions:

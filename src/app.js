@@ -179,8 +179,6 @@ function renderArena() {
         side: t(`side.${side}`),
       });
     }
-    $(`letter-${pos}`).textContent = t('rank.proposal', { letter: design.letter });
-    $(`designer-${pos}`).textContent = designText(id).designer;
   }
 
   updateVoteCount();
