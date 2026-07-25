@@ -56,7 +56,6 @@ const state = {
   // lingua va riscritto, e senza la chiave non si saprebbe in cosa.
   bannerKey: null,
   seen: loadSeenPairs(),
-  busy: false,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -178,10 +177,8 @@ function renderArena() {
     }
     $(`letter-${pos}`).textContent = t('rank.proposal', { letter: design.letter });
     $(`designer-${pos}`).textContent = designText(id).designer;
-    $(`card-${pos}`).classList.remove('is-chosen');
   }
 
-  $('arena').classList.remove('is-voting');
   updateVoteCount();
 }
 
@@ -217,43 +214,39 @@ function updateVoteCount() {
   $('vote-count').textContent = t(key, { n: mine });
 }
 
-async function vote(position) {
-  if (state.busy || !state.current) return;
-  state.busy = true;
+/**
+ * Registra il voto e passa subito alla sfida successiva.
+ *
+ * L'invio al server non viene atteso: l'aggiornamento locale è già stato fatto
+ * e far aspettare la rete a ogni voto renderebbe lento chi vota in fretta. Se
+ * la scrittura fallisce si torna indietro e lo si dice, anche se nel frattempo
+ * sono comparse altre banconote.
+ */
+function vote(position) {
+  if (!state.current) return;
 
   const { denomination, left, right, key } = state.current;
   const winner = position === 'left' ? left : right;
   const loser = position === 'left' ? right : left;
 
-  $(`card-${position}`).classList.add('is-chosen');
-  $('arena').classList.add('is-voting');
-
-  // Aggiornamento ottimistico: la classifica si muove subito, la conferma del
-  // server arriva dopo. Se il voto viene rifiutato si torna indietro.
   applyVoteLocally(denomination, winner, loser);
   recompute();
   bumpMyVoteCount();
   state.seen.add(key);
   markPairSeen(key);
 
-  try {
-    await state.store.submitVote({ denomination, winner, loser });
-  } catch (err) {
+  state.store.submitVote({ denomination, winner, loser }).catch((err) => {
     console.error(err);
     undoVoteLocally(denomination, winner, loser);
     recompute();
     showBanner('banner.voteFailed');
-  }
+  });
 
-  // Breve pausa perché il segnale verde di conferma sia percepibile.
-  setTimeout(() => {
-    state.busy = false;
-    nextChallenge();
-  }, 180);
+  nextChallenge();
 }
 
 function skip() {
-  if (state.busy || !state.current) return;
+  if (!state.current) return;
   state.seen.add(state.current.key);
   markPairSeen(state.current.key);
   nextChallenge();
@@ -273,6 +266,14 @@ function themeTag(design) {
   return `<span class="tag ${theme.id}">${t(theme.labelKey)}</span>`;
 }
 
+/** Una miniatura di banconota, con proporzioni note per non far saltare il layout. */
+function noteThumb(designId, denomination, letter) {
+  return `<img src="${imageUrl(designId, denomination)}"
+       style="aspect-ratio:${imageAspect(designId, denomination, 'front')}"
+       alt="${t('alt.note', { letter, denom: denomination, side: t('side.front') })}"
+       loading="lazy">`;
+}
+
 /**
  * Una riga di classifica: posizione, proposta, punteggio e la banconota.
  *
@@ -281,13 +282,17 @@ function themeTag(design) {
  * davanti e a cosa somiglia — e li si trova comunque nella scheda del design.
  *
  * @param {object} entry              riga con elo, rank, designId, denomination
- * @param {number|null} denomination  taglio da mostrare; null = famiglia, si usa il 50 €
+ * @param {number|null} denomination  taglio da mostrare; null = famiglia intera
  */
 function rankRow(entry, denomination) {
   const design = DESIGNS_BY_ID[entry.designId];
-  // Per una famiglia non esiste un taglio: il 50 € sta in mezzo alla serie ed
-  // è quello che la rappresenta meglio.
-  const denom = denomination ?? 50;
+
+  // Per una famiglia non c'è un taglio solo da mostrare: si mostrano tutti e
+  // sei, che è poi ciò di cui il punteggio è la media.
+  const notes =
+    denomination == null
+      ? DENOMINATIONS.map((d) => noteThumb(entry.designId, d, design.letter)).join('')
+      : noteThumb(entry.designId, denomination, design.letter);
 
   return `
     <li class="rank-row ${entry.rank === 1 ? 'is-first' : ''}">
@@ -298,15 +303,7 @@ function rankRow(entry, denomination) {
           : t('rank.proposalDenom', { letter: design.letter, denom: denomination })
       }</div>
       <div class="rank-elo">${Math.round(entry.elo)}</div>
-      <div class="rank-note">
-        <img src="${imageUrl(entry.designId, denom)}"
-             style="aspect-ratio:${imageAspect(entry.designId, denom, 'front')}"
-             alt="${t('alt.note', {
-               letter: design.letter,
-               denom,
-               side: t('side.front'),
-             })}" loading="lazy">
-      </div>
+      <div class="rank-note ${denomination == null ? 'is-family' : ''}">${notes}</div>
     </li>`;
 }
 

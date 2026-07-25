@@ -299,20 +299,19 @@ code {
   color: inherit;
   text-align: left;
   box-shadow: var(--shadow);
-  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  /* Nessuna animazione e nessun colore al passaggio o alla scelta. Sui browser
+     mobili lo stato :hover resta appiccicato dopo il tocco, quindi il bordo
+     acceso sopravviveva al voto e colorava la banconota successiva, che non
+     c'entrava nulla. */
 }
 
-/* Sollevamento e bordo acceso sono l'unico invito a cliccare rimasto: vanno
-   tenuti netti. */
-.note-card:hover,
+/* Solo per chi naviga da tastiera: senza un segno visibile del fuoco la
+   pagina diventa inutilizzabile senza mouse. :focus-visible non scatta mai al
+   tocco né al clic, quindi non lascia bordi appiccicati. */
 .note-card:focus-visible {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lift), 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
-  border-color: color-mix(in srgb, var(--accent) 70%, var(--line));
-  outline: none;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
-
-.note-card:active { transform: translateY(-1px) scale(.995); }
 
 /* Riquadro a proporzioni fisse: le proposte hanno formati diversi — c'è anche
    un 200 € verticale — e senza un contenitore stabile le due carte
@@ -373,14 +372,6 @@ code {
   text-transform: uppercase;
   letter-spacing: .04em;
 }
-
-/* Lampo di conferma al momento del voto. */
-.note-card.is-chosen {
-  border-color: var(--win);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--win) 28%, transparent);
-}
-
-.arena.is-voting { pointer-events: none; }
 
 .arena-actions {
   display: flex;
@@ -522,6 +513,18 @@ kbd {
 }
 
 .rank-note { grid-column: 1 / -1; }
+
+/* Classifica per disegno: la riga rappresenta una famiglia intera, quindi si
+   mostrano tutti e sei i tagli — 3x2 — che sono esattamente quelli di cui il
+   punteggio è la media. */
+.rank-note.is-family {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  max-width: 720px;
+}
+
+.rank-note.is-family img { max-width: none; }
 
 .more-wrap { display: flex; justify-content: center; margin-top: 20px; }
 
@@ -722,5 +725,4 @@ kbd {
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
-  .note-card:hover { transform: none; }
 }
