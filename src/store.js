@@ -145,13 +145,24 @@ export class FirestoreStore {
       `${this.base}/stats/all?key=${encodeURIComponent(this.apiKey)}`
     );
 
-    // Not seeded yet. This is the transition: the aggregate document is
+    // Not available yet. This is the transition: the aggregate document is
     // written once by tools/seed-aggregate.mjs, and until that has happened
     // the counts still only exist as 270 separate documents. Falling back
     // means this code can be deployed before the migration is run without the
-    // ranking showing zero to everyone in between. Delete this — and
-    // loadFromOldCollection — once stats/all is in place.
-    if (res.status === 404) return this.loadFromOldCollection();
+    // ranking showing zero to everyone in between.
+    //
+    // Both codes matter, and only catching 404 was a live bug: while the old
+    // rules are still published, their catch-all denies everything outside
+    // pairStats, so the document that does not exist yet answers 403 and not
+    // 404. The read threw, the site fell back to local mode, and the shared
+    // ranking vanished — which is exactly what this fallback exists to
+    // prevent.
+    //
+    // Delete this, and loadFromOldCollection, once stats/all is in place and
+    // the new rules are published.
+    if (res.status === 404 || res.status === 403) {
+      return this.loadFromOldCollection();
+    }
 
     if (!res.ok) {
       throw new Error(`Lettura statistiche fallita (HTTP ${res.status}): ${await res.text()}`);
