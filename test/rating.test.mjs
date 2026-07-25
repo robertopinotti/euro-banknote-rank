@@ -90,7 +90,6 @@ test('senza alcun voto tutti i design sono in parità a 1500', () => {
     for (const row of byDenomination.get(denom)) {
       assert.ok(Math.abs(row.elo - 1500) < 1e-6, `${row.designId}: ${row.elo}`);
       assert.equal(row.played, 0);
-      assert.equal(row.winRate, null);
     }
   }
   for (const f of families) assert.ok(Math.abs(f.elo - 1500) < 1e-6);
@@ -132,9 +131,15 @@ test('il punteggio di famiglia media i sei tagli in scala logaritmica', () => {
   const a = families.find((f) => f.designId === 'a');
 
   assert.equal(a.rank, 1, 'a deve restare primo pur perdendo un taglio');
-  assert.equal(a.best.denomination !== 200, true);
-  assert.equal(a.worst.denomination, 200);
   assert.equal(a.played, 600);
+
+  // Il 200 € deve restare il suo taglio peggiore: la media non lo nasconde.
+  const forzePerTaglio = denoms.map((d) => ({
+    denom: d,
+    forza: byDenomination.get(d).find((r) => r.designId === 'a').strength,
+  }));
+  const peggiore = [...forzePerTaglio].sort((x, y) => x.forza - y.forza)[0];
+  assert.equal(peggiore.denom, 200);
 
   const meanLog =
     denoms.reduce(
@@ -144,21 +149,24 @@ test('il punteggio di famiglia media i sei tagli in scala logaritmica', () => {
   assert.ok(Math.abs(a.logStrength - meanLog) < 1e-9);
 });
 
-test('l\'errore standard si restringe quando arrivano più voti', () => {
-  const ids = ['a', 'b'];
-  const few = computeRankings(
-    [{ denomination: 5, designLo: 'a', designHi: 'b', winsLo: 6, winsHi: 4 }],
-    ids,
-    [5]
-  );
-  const many = computeRankings(
-    [{ denomination: 5, designLo: 'a', designHi: 'b', winsLo: 600, winsHi: 400 }],
-    ids,
-    [5]
-  );
-  const errFew = few.byDenomination.get(5)[0].eloError;
-  const errMany = many.byDenomination.get(5)[0].eloError;
-  assert.ok(errMany < errFew, `${errMany} dovrebbe essere < ${errFew}`);
+test('la scala Elo mantiene la promessa fatta a chi legge', () => {
+  // La pagina "Metodo" e il README dichiarano due numeri precisi: 100 punti di
+  // distacco valgono circa il 64% di probabilità di vittoria, 400 punti valgono
+  // 10 a 1. Sono la traduzione che il visitatore usa per interpretare i
+  // punteggi, quindi vanno verificati e non solo scritti.
+  const probabilita = (scarto) => {
+    const pB = 1;
+    const pA = Math.exp((scarto * Math.LN10) / 400); // inversa di strengthToElo
+    return pA / (pA + pB);
+  };
+
+  assert.equal(Math.round(strengthToElo(Math.exp(0))), 1500);
+  assert.ok(Math.abs(probabilita(100) - 0.64) < 0.005, probabilita(100));
+  assert.ok(Math.abs(probabilita(400) - 10 / 11) < 1e-9, probabilita(400));
+
+  // E la conversione deve essere coerente con sé stessa: due forze in rapporto
+  // 10 a 1 devono distare esattamente 400 punti.
+  assert.ok(Math.abs(strengthToElo(10) - strengthToElo(1) - 400) < 1e-9);
 });
 
 test('pickPair preferisce le coppie mai votate', () => {

@@ -204,55 +204,12 @@ code {
   margin-top: -.2em;
 }
 
-/* ------------------------------------------ istruzioni e selettore di taglio */
+/* -------------------------------------------------------------- istruzioni */
 
 /* Contiene il solo testo di istruzioni: niente da allineare, serve solo lo
    stacco dall'arena. */
 .vote-head {
   margin-bottom: 22px;
-}
-
-/* Le classi .denom-* qui sotto servono ora alla sola classifica: nella schermata
-   di voto il taglio e' sorteggiato e non c'e' piu' niente da scegliere. */
-
-.denom-picker { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-
-.denom-label {
-  font-size: .74rem;
-  text-transform: uppercase;
-  letter-spacing: .09em;
-  color: var(--ink-faint);
-  font-weight: 600;
-}
-
-.denom-buttons {
-  display: flex;
-  gap: 4px;
-  background: var(--bg-sunken);
-  padding: 4px;
-  border-radius: 999px;
-  flex-wrap: wrap;
-}
-
-.denom-btn {
-  border: 0;
-  background: transparent;
-  color: var(--ink-soft);
-  font: inherit;
-  font-size: .9rem;
-  font-weight: 600;
-  padding: 6px 13px;
-  border-radius: 999px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.denom-btn:hover { color: var(--ink); }
-
-.denom-btn.is-active {
-  background: var(--bg-raised);
-  color: var(--ink);
-  box-shadow: var(--shadow);
 }
 
 .vote-hint {
@@ -525,12 +482,13 @@ kbd {
 
 .rank-note { grid-column: 1 / -1; }
 
-/* Classifica per disegno: la riga rappresenta una famiglia intera, quindi si
+/* Classifica per disegno: la riga rappresenta un disegno intero, quindi si
    mostrano tutti e sei i tagli, ciascuno con le sue due facce — sei coppie,
-   che sono esattamente quelle di cui il punteggio è la media. */
+   che sono esattamente quelle di cui il punteggio è la media. Quattro colonne,
+   cioè due banconote complete per riga: su sei le facce erano francobolli. */
 .rank-note.is-family {
-  grid-template-columns: repeat(6, 1fr);
-  max-width: 860px;
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 720px;
 }
 
 .more-wrap { display: flex; justify-content: center; margin-top: 20px; }
@@ -550,42 +508,6 @@ kbd {
   height: auto;
   border-radius: 4px;
 }
-
-/* ---------------------------------------------------------------- matrice */
-
-.matrix-title { margin-top: 3em; }
-.matrix-note { color: var(--ink-soft); font-size: .9rem; max-width: 60ch; }
-
-.matrix-scroll { overflow-x: auto; margin-top: 18px; }
-
-.matrix {
-  border-collapse: separate;
-  border-spacing: 3px;
-  font-size: .82rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.matrix th {
-  font-weight: 700;
-  color: var(--ink-soft);
-  padding: 4px 8px;
-  position: sticky;
-  left: 0;
-  background: var(--bg);
-}
-
-.matrix thead th { position: static; }
-
-.matrix td {
-  width: 52px;
-  height: 34px;
-  text-align: center;
-  border-radius: 6px;
-  color: var(--ink);
-  background: var(--bg-sunken);
-}
-
-.matrix td.self { background: transparent; color: var(--ink-faint); }
 
 /* ------------------------------------------------------------- i design */
 

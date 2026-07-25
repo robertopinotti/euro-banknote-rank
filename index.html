@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quale sarà la banconota più bella d'Europa?</title>
 <meta name="description" content="Vota a due a due le dieci proposte di design per le future banconote in euro e scopri la classifica calcolata con il modello Bradley–Terry.">
-<link rel="stylesheet" href="assets/css/style.css?v=b5c34f20">
+<link rel="stylesheet" href="assets/css/style.css?v=a7f8039b">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%B6%3C/text%3E%3C/svg%3E">
 </head>
 <body>
@@ -37,7 +37,7 @@
       <p class="vote-hint" data-i18n-html="vote.hintHtml"></p>
     </div>
 
-    <div class="arena" id="arena">
+    <div class="arena">
       <button class="note-card" id="card-left" type="button">
         <span class="note-sides">
           <img alt="" id="img-left-front" decoding="async">
@@ -78,36 +78,21 @@
     <div class="rank-head">
       <h1 data-i18n="rank.title"></h1>
       <div class="seg" role="group" aria-label="Tipo di classifica">
-        <button type="button" class="seg-btn is-active" data-scope="generale" data-i18n="scope.general"></button>
-        <button type="button" class="seg-btn" data-scope="famiglie" data-i18n="scope.design"></button>
-        <button type="button" class="seg-btn" data-scope="tagli" data-i18n="scope.denomination"></button>
+        <button type="button" class="seg-btn is-active" data-scope="banconote" data-i18n="scope.note"></button>
+        <button type="button" class="seg-btn" data-scope="disegni" data-i18n="scope.design"></button>
       </div>
     </div>
 
     <p class="rank-summary" id="rank-summary"></p>
 
-    <div id="rank-generale">
-      <ol class="ranking" id="ranking-all-list"></ol>
+    <div id="rank-notes">
+      <ol class="ranking" id="ranking-notes-list"></ol>
       <div class="more-wrap"><button type="button" class="btn" id="btn-more" hidden></button></div>
     </div>
 
-    <div id="rank-families" hidden>
+    <div id="rank-designs" hidden>
       <p class="scope-note" data-i18n="rank.noteDesign"></p>
-      <ol class="ranking" id="ranking-list"></ol>
-    </div>
-
-    <div id="rank-denoms" hidden>
-      <div class="denom-picker">
-        <span class="denom-label" data-i18n="rank.denomLabel"></span>
-        <div class="denom-buttons" id="rank-denom-buttons"></div>
-      </div>
-      <ol class="ranking" id="ranking-denom-list"></ol>
-
-      <h2 class="matrix-title" data-i18n="matrix.title"></h2>
-      <p class="matrix-note" data-i18n="matrix.note"></p>
-      <div class="matrix-scroll">
-        <table class="matrix" id="matrix"></table>
-      </div>
+      <ol class="ranking" id="ranking-designs-list"></ol>
     </div>
   </section>
 
@@ -146,16 +131,16 @@
 <script type="importmap">
 {
   "imports": {
-    "./src/data.js": "./src/data.js?v=e74d8ae3",
+    "./src/data.js": "./src/data.js?v=aa8b3bae",
     "./src/design-texts.js": "./src/design-texts.js?v=90993af7",
-    "./src/i18n.js": "./src/i18n.js?v=de1222b7",
+    "./src/i18n.js": "./src/i18n.js?v=c9612df3",
     "./src/image-aspects.js": "./src/image-aspects.js?v=bcb9390f",
-    "./src/rating.js": "./src/rating.js?v=6ec9955e",
-    "./src/store.js": "./src/store.js?v=9607d812",
-    "./config.js": "./config.js?v=b00def06"
+    "./src/rating.js": "./src/rating.js?v=333aa031",
+    "./src/store.js": "./src/store.js?v=dd3318fe",
+    "./config.js": "./config.js?v=4da743ae"
   }
 }
 </script>
-<script type="module" src="src/app.js?v=97198bcd"></script>
+<script type="module" src="src/app.js?v=721f8e45"></script>
 </body>
 </html>

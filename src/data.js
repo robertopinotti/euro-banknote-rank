@@ -14,10 +14,6 @@ export const THEMES = {
   nature: { id: 'nature', labelKey: 'themeName.nature', color: '#2e7d6f' },
 };
 
-/** URL della pagina BCE da cui proviene ogni immagine, per l'originale ad alta risoluzione. */
-const ECB_IMG_BASE =
-  'https://www.ecb.europa.eu/euro/banknotes/future_banknotes/shared/img';
-
 /**
  * I dieci design in concorso (A–J). `id` è la lettera minuscola usata anche
  * nei nomi dei file immagine e come chiave nel database dei voti.
@@ -46,21 +42,12 @@ export function imageUrl(designId, denomination, side = 'front') {
   return `assets/banknotes/banknote-design-proposal-${designId}-${denomination}-${side}.webp`;
 }
 
-/** URL dell'originale ad alta risoluzione sul sito della BCE. */
-export function ecbImageUrl(designId, denomination, side = 'front') {
-  return `${ECB_IMG_BASE}/banknote-design-proposal-${designId}-${denomination}-${side}.jpg`;
-}
-
 /**
  * Ogni banconota ha fronte e retro. La pagina della BCE mostra il retro solo
- * per il 5 €, ma le immagini pubblicate coprono tutti e sei i tagli.
+ * per il 5 €, ma i file pubblicati coprono tutti e sei i tagli: il repository
+ * li contiene tutti e 120.
  */
 export const SIDES = ['front', 'back'];
-
-/** Identificativo stabile di una banconota, es. "c-50". */
-export function noteId(designId, denomination) {
-  return `${designId}-${denomination}`;
-}
 
 /**
  * Tutte le coppie non ordinate di design, con la lettera minore per prima.
@@ -75,10 +62,4 @@ export function allPairs() {
     }
   }
   return pairs;
-}
-
-/** Chiave canonica di una coppia, indipendente dall'ordine di presentazione. */
-export function pairKey(denomination, designA, designB) {
-  const [lo, hi] = designA < designB ? [designA, designB] : [designB, designA];
-  return `${denomination}|${lo}|${hi}`;
 }

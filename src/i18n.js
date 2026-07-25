@@ -61,28 +61,18 @@ export const STRINGS = {
       'Il voto non è stato registrato: controlla la connessione e riprova.',
 
     'rank.title': 'Classifica',
-    'scope.general': 'Generale',
+    'scope.note': 'Per banconota',
     'scope.design': 'Per disegno',
-    'scope.denomination': 'Per taglio',
     'rank.noteDesign':
-      'Le dieci proposte, ciascuna con la media delle sue sei banconote.',
+      'I dieci disegni, ciascuno con la media delle sue sei banconote.',
     'rank.summaryNone': 'Nessun voto ancora. {mode}',
     'rank.summarySome': '{n} confronti raccolti. {mode}',
     'rank.modeShared': 'Classifica condivisa da tutti i votanti.',
     'rank.modeLocal':
       'Modalità locale: questa classifica conta solo i tuoi voti, salvati in questo browser.',
-    'rank.denomLabel': 'Taglio',
     'rank.proposal': 'Disegno {letter}',
     'rank.proposalDenom': 'Disegno {letter} • {denom} €',
-    'rank.recordOne': '1 vittoria su {n} · {p}%',
-    'rank.recordMany': '{w} vittorie su {n} · {p}%',
-    'rank.recordNone': 'nessun voto',
     'rank.showMore': 'Mostra altre {n}',
-
-    'matrix.title': 'Chi batte chi',
-    'matrix.note':
-      'Probabilità che il design della riga batta quello della colonna, secondo ' +
-      'il modello. Le celle più intense sono i pronostici più netti.',
 
     'designs.title': 'Le dieci proposte',
     'designs.ledeHtml':
@@ -215,28 +205,18 @@ export const STRINGS = {
       'Your vote was not recorded: check your connection and try again.',
 
     'rank.title': 'Ranking',
-    'scope.general': 'Overall',
+    'scope.note': 'By banknote',
     'scope.design': 'By design',
-    'scope.denomination': 'By denomination',
     'rank.noteDesign':
-      'The ten proposals, each averaged across its six banknotes.',
+      'The ten designs, each averaged across its six banknotes.',
     'rank.summaryNone': 'No votes yet. {mode}',
     'rank.summarySome': '{n} comparisons collected. {mode}',
     'rank.modeShared': 'Ranking shared by all voters.',
     'rank.modeLocal':
       'Local mode: this ranking counts only your own votes, stored in this browser.',
-    'rank.denomLabel': 'Denomination',
     'rank.proposal': 'Design {letter}',
     'rank.proposalDenom': 'Design {letter} • €{denom}',
-    'rank.recordOne': '1 win out of {n} · {p}%',
-    'rank.recordMany': '{w} wins out of {n} · {p}%',
-    'rank.recordNone': 'no votes',
     'rank.showMore': 'Show {n} more',
-
-    'matrix.title': 'Who beats whom',
-    'matrix.note':
-      'Probability that the design in the row beats the one in the column, ' +
-      'according to the model. Stronger cells are the more one-sided calls.',
 
     'designs.title': 'The ten proposals',
     'designs.ledeHtml':
@@ -370,28 +350,18 @@ export const STRINGS = {
       "Votre vote n'a pas été enregistré : vérifiez votre connexion et réessayez.",
 
     'rank.title': 'Classement',
-    'scope.general': 'Général',
+    'scope.note': 'Par billet',
     'scope.design': 'Par graphisme',
-    'scope.denomination': 'Par coupure',
     'rank.noteDesign':
-      'Les dix propositions, chacune avec la moyenne de ses six billets.',
+      'Les dix graphismes, chacun avec la moyenne de ses six billets.',
     'rank.summaryNone': 'Aucun vote pour le moment. {mode}',
     'rank.summarySome': '{n} comparaisons recueillies. {mode}',
     'rank.modeShared': 'Classement partagé par tous les votants.',
     'rank.modeLocal':
       'Mode local : ce classement ne compte que vos propres votes, enregistrés dans ce navigateur.',
-    'rank.denomLabel': 'Coupure',
     'rank.proposal': 'Graphisme {letter}',
     'rank.proposalDenom': 'Graphisme {letter} • {denom} €',
-    'rank.recordOne': '1 victoire sur {n} · {p} %',
-    'rank.recordMany': '{w} victoires sur {n} · {p} %',
-    'rank.recordNone': 'aucun vote',
     'rank.showMore': 'Afficher {n} de plus',
-
-    'matrix.title': 'Qui bat qui',
-    'matrix.note':
-      'Probabilité que le graphisme de la ligne batte celui de la colonne, ' +
-      'selon le modèle. Les cases les plus intenses sont les pronostics les plus nets.',
 
     'designs.title': 'Les dix propositions',
     'designs.ledeHtml':
@@ -528,28 +498,18 @@ export const STRINGS = {
       'Ihre Stimme wurde nicht gespeichert: Prüfen Sie die Verbindung und versuchen Sie es erneut.',
 
     'rank.title': 'Rangliste',
-    'scope.general': 'Gesamt',
+    'scope.note': 'Nach Banknote',
     'scope.design': 'Nach Design',
-    'scope.denomination': 'Nach Stückelung',
     'rank.noteDesign':
-      'Die zehn Vorschläge, jeweils als Mittel ihrer sechs Banknoten.',
+      'Die zehn Designs, jeweils als Mittel ihrer sechs Banknoten.',
     'rank.summaryNone': 'Noch keine Stimmen. {mode}',
     'rank.summarySome': '{n} Vergleiche gesammelt. {mode}',
     'rank.modeShared': 'Rangliste, die alle Abstimmenden teilen.',
     'rank.modeLocal':
       'Lokaler Modus: Diese Rangliste zählt nur Ihre eigenen, in diesem Browser gespeicherten Stimmen.',
-    'rank.denomLabel': 'Stückelung',
     'rank.proposal': 'Design {letter}',
     'rank.proposalDenom': 'Design {letter} • {denom} €',
-    'rank.recordOne': '1 Sieg von {n} · {p} %',
-    'rank.recordMany': '{w} Siege von {n} · {p} %',
-    'rank.recordNone': 'keine Stimmen',
     'rank.showMore': 'Weitere {n} anzeigen',
-
-    'matrix.title': 'Wer schlägt wen',
-    'matrix.note':
-      'Wahrscheinlichkeit, dass der Entwurf der Zeile den der Spalte schlägt, ' +
-      'laut Modell. Kräftigere Felder sind die eindeutigeren Prognosen.',
 
     'designs.title': 'Die zehn Vorschläge',
     'designs.ledeHtml':
@@ -685,28 +645,18 @@ export const STRINGS = {
       'Tu voto no se ha registrado: comprueba la conexión e inténtalo de nuevo.',
 
     'rank.title': 'Clasificación',
-    'scope.general': 'General',
+    'scope.note': 'Por billete',
     'scope.design': 'Por diseño',
-    'scope.denomination': 'Por denominación',
     'rank.noteDesign':
-      'Las diez propuestas, cada una con la media de sus seis billetes.',
+      'Los diez diseños, cada uno con la media de sus seis billetes.',
     'rank.summaryNone': 'Todavía no hay votos. {mode}',
     'rank.summarySome': '{n} comparaciones recogidas. {mode}',
     'rank.modeShared': 'Clasificación compartida por todos los votantes.',
     'rank.modeLocal':
       'Modo local: esta clasificación solo cuenta tus votos, guardados en este navegador.',
-    'rank.denomLabel': 'Denominación',
     'rank.proposal': 'Diseño {letter}',
     'rank.proposalDenom': 'Diseño {letter} • {denom} €',
-    'rank.recordOne': '1 victoria de {n} · {p} %',
-    'rank.recordMany': '{w} victorias de {n} · {p} %',
-    'rank.recordNone': 'sin votos',
     'rank.showMore': 'Mostrar {n} más',
-
-    'matrix.title': 'Quién gana a quién',
-    'matrix.note':
-      'Probabilidad de que el diseño de la fila gane al de la columna, según ' +
-      'el modelo. Las celdas más intensas son los pronósticos más claros.',
 
     'designs.title': 'Las diez propuestas',
     'designs.ledeHtml':

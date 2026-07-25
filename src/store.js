@@ -1,15 +1,12 @@
 /**
  * Accesso ai dati dei voti.
  *
- * Tre implementazioni dietro la stessa interfaccia:
+ * Due implementazioni dietro la stessa interfaccia:
  *
  *  - FirestoreStore: classifica condivisa su Firebase. Legge la collezione
  *    `pairStats` e registra i voti con un incremento atomico. Le regole di
  *    sicurezza (firebase/firestore.rules) impongono che un voto possa solo
  *    aggiungere 1 a un contatore.
- *  - SupabaseStore: classifica condivisa su Supabase. Legge la tabella
- *    aggregata `pair_stats` e vota tramite la funzione `cast_vote`, che valida
- *    e incrementa in modo atomico. Il client non scrive mai nelle tabelle.
  *  - LocalStore: tutto in localStorage. È la modalità di prova quando nessun
  *    backend è configurato, ed è anche la rete di sicurezza se il backend è
  *    irraggiungibile: il sito resta usabile invece di mostrare una pagina rotta.
@@ -20,25 +17,11 @@
  * altro che contare.
  */
 
-import { BACKEND, FIREBASE, SUPABASE } from '../config.js';
+import { BACKEND, FIREBASE } from '../config.js';
 
-const VOTER_KEY = 'ebr:voter-id';
 const LOCAL_STATS_KEY = 'ebr:pair-stats';
 const SEEN_KEY = 'ebr:seen-pairs';
 const MY_VOTES_KEY = 'ebr:my-votes';
-
-/** Identificativo anonimo e persistente del votante, generato nel browser. */
-export function voterId() {
-  let id = localStorage.getItem(VOTER_KEY);
-  if (!id) {
-    id =
-      typeof crypto !== 'undefined' && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `v-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    localStorage.setItem(VOTER_KEY, id);
-  }
-  return id;
-}
 
 function readJson(key, fallback) {
   try {
@@ -115,58 +98,6 @@ class LocalStore {
     const cur = raw[key] || [0, 0];
     raw[key] = winnerIsLo ? [cur[0] + 1, cur[1]] : [cur[0], cur[1] + 1];
     writeJson(LOCAL_STATS_KEY, raw);
-  }
-}
-
-/* --------------------------------------------------------------- supabase */
-
-class SupabaseStore {
-  constructor(url, key) {
-    this.mode = 'supabase';
-    this.url = url.replace(/\/+$/, '');
-    this.key = key;
-  }
-
-  get headers() {
-    return {
-      apikey: this.key,
-      Authorization: `Bearer ${this.key}`,
-      'Content-Type': 'application/json',
-    };
-  }
-
-  async loadPairStats() {
-    const res = await fetch(
-      `${this.url}/rest/v1/pair_stats?select=denomination,design_lo,design_hi,wins_lo,wins_hi`,
-      { headers: this.headers }
-    );
-    if (!res.ok) {
-      throw new Error(`Lettura statistiche fallita (HTTP ${res.status}): ${await res.text()}`);
-    }
-    const rows = await res.json();
-    return rows.map((r) => ({
-      denomination: Number(r.denomination),
-      designLo: r.design_lo,
-      designHi: r.design_hi,
-      winsLo: Number(r.wins_lo),
-      winsHi: Number(r.wins_hi),
-    }));
-  }
-
-  async submitVote({ denomination, winner, loser }) {
-    const res = await fetch(`${this.url}/rest/v1/rpc/cast_vote`, {
-      method: 'POST',
-      headers: this.headers,
-      body: JSON.stringify({
-        p_denomination: denomination,
-        p_winner: winner,
-        p_loser: loser,
-        p_voter: voterId(),
-      }),
-    });
-    if (!res.ok) {
-      throw new Error(`Voto rifiutato (HTTP ${res.status}): ${await res.text()}`);
-    }
   }
 }
 
@@ -299,8 +230,6 @@ export async function createStore() {
 
   if (BACKEND === 'firebase' && FIREBASE.projectId && FIREBASE.apiKey) {
     store = new FirestoreStore(FIREBASE);
-  } else if (BACKEND === 'supabase' && SUPABASE.url && SUPABASE.anonKey) {
-    store = new SupabaseStore(SUPABASE.url, SUPABASE.anonKey);
   }
 
   if (!store) return new LocalStore('non configurato');

@@ -38,11 +38,6 @@ export function strengthToElo(p) {
   return ELO_BASE + ELO_SCALE * Math.log(p);
 }
 
-/** Probabilità che il primo design batta il secondo, dalle forze stimate. */
-export function winProbability(pA, pB) {
-  return pA / (pA + pB);
-}
-
 /**
  * Stima Bradley–Terry per un singolo girone (un taglio di banconota).
  *
@@ -112,31 +107,6 @@ export function bradleyTerry(items, wins, pairN, opts = {}) {
   }
 
   return { strength: p, iterations, converged };
-}
-
-/**
- * Errore standard approssimato di ln(p_i), dalla diagonale dell'informazione di
- * Fisher. Per la coppia (i,j) con n_ij confronti l'informazione vale
- * n_ij · p_i·p_j / (p_i+p_j)². Si ignorano i termini fuori diagonale, quindi il
- * valore va letto come indicatore di quanto un punteggio è ancora provvisorio,
- * non come intervallo di confidenza esatto.
- */
-export function standardErrors(items, pairN, strength, prior = 1) {
-  const se = new Map();
-  for (const i of items) {
-    const pi = strength.get(i);
-    let info = 0;
-    for (const j of items) {
-      if (i === j) continue;
-      const n = pairN.get(pairKeyOf(i, j)) || 0;
-      if (n === 0) continue;
-      const pj = strength.get(j);
-      info += (n * pi * pj) / ((pi + pj) * (pi + pj));
-    }
-    info += (2 * prior * pi * 1) / ((pi + 1) * (pi + 1));
-    se.set(i, info > 0 ? 1 / Math.sqrt(info) : Infinity);
-  }
-  return se;
 }
 
 function pairKeyOf(a, b) {
@@ -219,26 +189,20 @@ export function computeRankings(pairStats, designIds, denominations, opts = {}) 
       losses.set(s.designHi, (losses.get(s.designHi) || 0) + s.winsLo);
     }
 
-    const { strength, converged } = bradleyTerry(designIds, wins, pairN, { prior });
-    const se = standardErrors(designIds, pairN, strength, prior);
+    const { strength } = bradleyTerry(designIds, wins, pairN, { prior });
 
     const rows = designIds.map((id) => {
       const w = wins.get(id) || 0;
       const l = losses.get(id) || 0;
-      const played = w + l;
       return {
         designId: id,
         denomination: denom,
         strength: strength.get(id),
         logStrength: Math.log(strength.get(id)),
         elo: strengthToElo(strength.get(id)),
-        // ±1 errore standard riportato sulla scala Elo
-        eloError: se.get(id) * ELO_SCALE,
         wins: w,
         losses: l,
-        played,
-        winRate: played > 0 ? w / played : null,
-        converged,
+        played: w + l,
       };
     });
 
@@ -247,7 +211,7 @@ export function computeRankings(pairStats, designIds, denominations, opts = {}) 
     byDenomination.set(denom, rows);
   }
 
-  // Classifica delle famiglie: media delle log-forze sui 6 tagli.
+  // Classifica dei disegni interi: media delle log-forze sui 6 tagli.
   // Si media in scala logaritmica (non sulle forze grezze) perché è la scala in
   // cui il modello è lineare; la media aritmetica delle forze premierebbe in
   // modo sproporzionato un singolo taglio molto forte.
@@ -257,27 +221,17 @@ export function computeRankings(pairStats, designIds, denominations, opts = {}) 
     );
     const meanLog =
       perNote.reduce((acc, r) => acc + r.logStrength, 0) / perNote.length;
-    const varSum = perNote.reduce((acc, r) => {
-      const seLog = r.eloError / ELO_SCALE;
-      return acc + seLog * seLog;
-    }, 0);
     const wins = perNote.reduce((a, r) => a + r.wins, 0);
     const losses = perNote.reduce((a, r) => a + r.losses, 0);
-    const played = wins + losses;
 
     return {
       designId: id,
       elo: ELO_BASE + ELO_SCALE * meanLog,
-      eloError: (Math.sqrt(varSum) / perNote.length) * ELO_SCALE,
       logStrength: meanLog,
       strength: Math.exp(meanLog),
       wins,
       losses,
-      played,
-      winRate: played > 0 ? wins / played : null,
-      best: [...perNote].sort((a, b) => b.strength - a.strength)[0],
-      worst: [...perNote].sort((a, b) => a.strength - b.strength)[0],
-      perNote,
+      played: wins + losses,
     };
   });
 

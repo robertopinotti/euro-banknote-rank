@@ -5,14 +5,13 @@
  * salvati solo nel browser di chi vota (modalità "locale"): utile per provare,
  * inutile per una classifica collettiva.
  *
- * Le chiavi qui sotto sono pubbliche per definizione — sia quella di Firebase
- * sia la "anon" di Supabase sono pensate per stare nel codice di un sito
- * statico. Non sono loro a proteggere i dati: a farlo sono le regole di
- * sicurezza (`firebase/firestore.rules` oppure `supabase/schema.sql`).
- * Non mettere mai qui una chiave di servizio o di amministrazione.
+ * La chiave qui sotto è pubblica per definizione: quella di Firebase è pensata
+ * per stare nel codice di un sito statico. Non è lei a proteggere i dati, a
+ * farlo sono le regole di sicurezza (`firebase/firestore.rules`). Non mettere
+ * mai qui una chiave di servizio o le credenziali dell'Admin SDK.
  */
 
-/** Quale backend usare: 'firebase' | 'supabase' | 'local' */
+/** Quale backend usare: 'firebase' | 'local' */
 export const BACKEND = 'firebase';
 
 /**
@@ -27,12 +26,4 @@ export const FIREBASE = {
   // possono provare le regole di sicurezza senza toccare i dati veri.
   // Lasciare vuoto in produzione.
   host: '',
-};
-
-/**
- * Supabase. Da Project Settings → API: Project URL e chiave anon/public.
- */
-export const SUPABASE = {
-  url: '',
-  anonKey: '',
 };

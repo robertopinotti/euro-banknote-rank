@@ -24,7 +24,7 @@ import {
   translate,
 } from './i18n.js';
 
-import { computeRankings, pickPair, winProbability } from './rating.js';
+import { computeRankings, pickPair } from './rating.js';
 
 import {
   createStore,
@@ -43,10 +43,9 @@ const state = {
   store: null,
   stats: [],          // [{denomination, designLo, designHi, winsLo, winsHi}]
   rankings: null,
-  rankDenom: 5,       // taglio scelto nella classifica per taglio
-  rankScope: 'generale',   // 'generale' | 'famiglie' | 'tagli'
-  // Quante righe della classifica generale sono state disegnate finora. Le 60
-  // banconote formano una pagina alta sedici metri: se ne mostrano venti alla
+  rankScope: 'banconote',  // 'banconote' | 'disegni'
+  // Quante righe della classifica per banconota sono state disegnate finora. Le
+  // 60 banconote formano una pagina alta sedici metri: se ne mostrano venti alla
   // volta, che stanno in due o tre schermate e si scorrono senza perdersi.
   visibleRows: PAGE_SIZE,
   current: null,      // sfida in corso
@@ -285,20 +284,20 @@ function notePair(designId, denomination, letter) {
 }
 
 /**
- * Una riga di classifica: posizione, proposta, punteggio e la banconota.
+ * Una riga di classifica: posizione, disegno, punteggio e la banconota.
  *
- * Nient'altro. Designer, tema, record di vittorie ed errore standard erano
- * rumore in una lista che serve a rispondere a una domanda sola — chi sta
- * davanti e a cosa somiglia — e li si trova comunque nella scheda del design.
+ * Nient'altro. Designer, tema e record di vittorie erano rumore in una lista
+ * che serve a rispondere a una domanda sola — chi sta davanti e a cosa somiglia
+ * — e li si trova comunque nella scheda del disegno.
  *
  * @param {object} entry              riga con elo, rank, designId, denomination
- * @param {number|null} denomination  taglio da mostrare; null = famiglia intera
+ * @param {number|null} denomination  taglio da mostrare; null = disegno intero
  */
 function rankRow(entry, denomination) {
   const design = DESIGNS_BY_ID[entry.designId];
 
-  // Per una famiglia non c'è un taglio solo da mostrare: si mostrano tutti e
-  // sei, che è poi ciò di cui il punteggio è la media.
+  // Per un disegno intero non c'è un taglio solo da mostrare: si mostrano tutti
+  // e sei, che è poi ciò di cui il punteggio è la media.
   // Si mostra sempre la banconota intera, fronte e retro: e' quello che si vota.
   const notes =
     denomination == null
@@ -319,15 +318,14 @@ function rankRow(entry, denomination) {
 }
 
 /**
- * Le 60 banconote (10 proposte × 6 tagli) in un'unica graduatoria.
+ * Le 60 banconote (10 disegni × 6 tagli) in un'unica graduatoria.
  *
  * Il punteggio di ciascuna resta quello calcolato dentro il proprio taglio: non
  * esiste alcun voto che confronti un 5 € con un 200 €, quindi il modello non ha
  * modo di collegarli. Le forze sono comunque ancorate alla stessa scala —
  * l'avversario virtuale della regolarizzazione vale 1 in ogni taglio — e questo
  * rende i numeri accostabili: dicono quanto una banconota svetta sul campo del
- * suo taglio. Metterle in fila ha senso a patto di leggerle così, ed è quello
- * che la nota in cima alla vista spiega a chi guarda.
+ * suo taglio.
  */
 function allNotesRanking() {
   const rows = [];
@@ -355,10 +353,10 @@ function renderRankings() {
       ? t('rank.summaryNone', { mode })
       : t('rank.summarySome', { n: totalVotes.toLocaleString(state.lang), mode });
 
-  // Generale: si disegnano solo le righe già richieste.
+  // Per banconota: si disegnano solo le righe già richieste.
   const all = allNotesRanking();
   const shown = Math.min(state.visibleRows, all.length);
-  $('ranking-all-list').innerHTML = all
+  $('ranking-notes-list').innerHTML = all
     .slice(0, shown)
     .map((r) => rankRow(r, r.denomination))
     .join('');
@@ -370,42 +368,8 @@ function renderRankings() {
     more.textContent = t('rank.showMore', { n: Math.min(PAGE_SIZE, remaining) });
   }
 
-  // Per design
-  $('ranking-list').innerHTML = families.map((f) => rankRow(f, null)).join('');
-
-  // Per taglio
-  const rows = state.rankings.byDenomination.get(state.rankDenom);
-  $('ranking-denom-list').innerHTML = rows
-    .map((r) => rankRow(r, state.rankDenom))
-    .join('');
-
-  renderMatrix(rows);
-}
-
-function renderMatrix(rows) {
-  const ordered = rows; // già ordinate per forza decrescente
-  const head = `<thead><tr><th></th>${ordered
-    .map((r) => `<th>${DESIGNS_BY_ID[r.designId].letter}</th>`)
-    .join('')}</tr></thead>`;
-
-  const body = ordered
-    .map((r) => {
-      const cells = ordered
-        .map((c) => {
-          if (r.designId === c.designId) return '<td class="self">—</td>';
-          const p = winProbability(r.strength, c.strength);
-          // Intensità proporzionale allo scostamento dal 50%: una cella al 50%
-          // resta neutra, una al 90% è ben visibile.
-          const intensity = Math.round(Math.abs(p - 0.5) * 2 * 55);
-          const color = p >= 0.5 ? 'var(--win)' : 'var(--gold)';
-          return `<td style="background:color-mix(in srgb, ${color} ${intensity}%, var(--bg-sunken))">${Math.round(p * 100)}%</td>`;
-        })
-        .join('');
-      return `<tr><th>${DESIGNS_BY_ID[r.designId].letter}</th>${cells}</tr>`;
-    })
-    .join('');
-
-  $('matrix').innerHTML = `${head}<tbody>${body}</tbody>`;
+  // Per disegno
+  $('ranking-designs-list').innerHTML = families.map((f) => rankRow(f, null)).join('');
 }
 
 /* ------------------------------------------------------------- i design */
@@ -431,26 +395,6 @@ function renderDesignGallery() {
         </div>
       </article>`;
   }).join('');
-}
-
-/* ------------------------------------------------------------- controlli */
-
-function buildDenomButtons(container, { selected, onPick }) {
-  container.innerHTML = DENOMINATIONS
-    .map(
-      (d) =>
-        `<button type="button" class="denom-btn ${d === selected ? 'is-active' : ''}" data-value="${d}">${d} €</button>`
-    )
-    .join('');
-
-  container.addEventListener('click', (e) => {
-    const btn = e.target.closest('.denom-btn');
-    if (!btn) return;
-    for (const b of container.querySelectorAll('.denom-btn')) {
-      b.classList.toggle('is-active', b === btn);
-    }
-    onPick(Number(btn.dataset.value));
-  });
 }
 
 /* ------------------------------------------------------- tema e lingua */
@@ -529,11 +473,10 @@ function buildSegButtons(container, options, onPick) {
   });
 }
 
-/** Mostra il livello di classifica scelto: generale, per design o per taglio. */
+/** Mostra il livello di classifica scelto: per banconota o per disegno. */
 function showRankScope() {
-  $('rank-generale').hidden = state.rankScope !== 'generale';
-  $('rank-families').hidden = state.rankScope !== 'famiglie';
-  $('rank-denoms').hidden = state.rankScope !== 'tagli';
+  $('rank-notes').hidden = state.rankScope !== 'banconote';
+  $('rank-designs').hidden = state.rankScope !== 'disegni';
 }
 
 function wireControls() {
@@ -546,14 +489,6 @@ function wireControls() {
     renderRankings();
   });
 
-  buildDenomButtons($('rank-denom-buttons'), {
-    selected: state.rankDenom,
-    onPick: (value) => {
-      state.rankDenom = value;
-      renderRankings();
-    },
-  });
-
   // Solo le schede della classifica, non ogni elemento con la classe .seg-btn:
   // tema e lingua nel footer usano lo stesso stile, e con un selettore generico
   // finivano per far girare anche questo codice. Cambiando lingua, `data-scope`
@@ -562,8 +497,8 @@ function wireControls() {
   for (const btn of scopeButtons) {
     btn.addEventListener('click', () => {
       state.rankScope = btn.dataset.scope;
-      // Tornando alla generale si riparte dall'alto: chi cambia vista vuole
-      // rivedere la testa della classifica, non riprendere da dov'era.
+      // Cambiando scheda si riparte dall'alto: chi cambia vista vuole rivedere
+      // la testa della classifica, non riprendere da dov'era.
       state.visibleRows = PAGE_SIZE;
       renderRankings();
       for (const b of scopeButtons) {

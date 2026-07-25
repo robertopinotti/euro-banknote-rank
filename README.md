@@ -1,284 +1,182 @@
 # Banconota d'Europa
 
+*[English version](README.en.md)*
+
 Sito di voto sulle dieci proposte di design per le future banconote in euro.
 Si vota a coppie — due banconote **dello stesso taglio**, una contro l'altra — e
 la classifica si ricava dai confronti con il modello **Bradley–Terry**.
 
-Sito statico, nessun processo di build, nessuna dipendenza da installare.
+Sito statico: nessun processo di build, nessuna dipendenza a runtime.
+
+🔗 **[robertopinotti.github.io/euro-banknote-rank](https://robertopinotti.github.io/euro-banknote-rank/)**
 
 ---
 
 ## Come funziona
 
 **Perché lo stesso taglio.** Confrontare un 5 € con un 200 € non ha senso: sono
-disegni pensati per ruoli diversi, con colori e formati diversi. Si confrontano
-quindi solo banconote pari grado, e dalle sei classifiche per taglio si ricava
-per aggregazione anche la classifica delle dieci proposte complete. Il contrario
-non sarebbe possibile: votando le proposte intere si otterrebbe una classifica
-sola, perdendo il dettaglio su quale taglio funziona e quale no.
+disegni pensati per ruoli diversi. Si confrontano quindi solo banconote pari
+grado, e dalle sei classifiche per taglio si ricava per aggregazione la
+classifica dei dieci disegni completi.
 
-**Da 270 confronti a una classifica.** Con 10 proposte e 6 tagli le coppie
-possibili sono 45 per taglio, 270 in tutto. A ogni proposta si associa una
-*forza* `p` e si assume
+**Da 270 confronti a una classifica.** Con 10 disegni e 6 tagli le coppie
+possibili sono 45 per taglio, 270 in tutto. A ogni disegno si associa una
+*forza* `p` e si assume `P(i batte j) = p_i / (p_i + p_j)`. Le forze si stimano
+con l'algoritmo MM di Hunter. Rispetto alla percentuale di vittorie il modello
+pesa la qualità dell'avversario — battere il primo vale più che battere
+l'ultimo — e non dipende dall'ordine in cui arrivano i voti.
 
-```
-P(i batte j) = p_i / (p_i + p_j)
-```
+Il punteggio mostrato è la forza sulla scala Elo,
+`R = 1500 + (400/ln 10) · ln p`: 100 punti di distacco valgono circa il 64% di
+probabilità di vittoria, 400 punti valgono 10 a 1.
 
-Le forze si stimano con l'algoritmo MM di Hunter, che cerca i valori che rendono
-più probabili i voti raccolti. Rispetto alla semplice percentuale di vittorie il
-modello pesa la qualità dell'avversario — battere il primo in classifica vale
-più che battere l'ultimo — e non dipende dall'ordine di arrivo dei voti.
-
-Il punteggio mostrato è la forza riportata sulla scala Elo,
-`R = 1500 + (400/ln 10) · ln p`, così 100 punti di distacco valgono circa il 64%
-di probabilità di vittoria e 400 punti valgono 10 a 1.
-
-Spiegazione estesa nella pagina **Metodo** del sito.
+La classifica ha due livelli: **per banconota** (tutte e 60) e **per disegno**
+(i 10 disegni, ciascuno con la media dei suoi sei tagli). Spiegazione estesa
+nella pagina **Metodo** del sito.
 
 ---
 
 ## Avviare in locale
 
-I file usano i moduli ES, che il browser non carica da `file://`. Serve un
-server statico qualsiasi:
+I moduli ES non si caricano da `file://`: serve un server statico qualsiasi.
 
 ```bash
-python3 -m http.server 8000
-# poi apri http://localhost:8000
+python3 -m http.server 8000   # poi apri http://localhost:8000
 ```
 
 Senza backend configurato il sito funziona lo stesso: i voti restano nel
-`localStorage` del browser e la classifica è personale. Utile per provare, non
-per raccogliere opinioni.
+`localStorage` e la classifica è personale.
 
 ## Test
 
-Il motore di classifica non ha dipendenze e si prova subito:
-
 ```bash
-npm test
+npm test                      # 9 test del motore di classifica, nessuna dipendenza
+npm install && npm run test:rules   # 25 test contro l'emulatore Firestore (serve Java)
 ```
 
-Nove test: recupero delle forze da confronti simulati, comportamento con un
-design imbattuto, indipendenza fra i tagli, aggregazione per famiglia,
-restringimento dell'errore standard, selezione delle coppie.
-
-Le regole di sicurezza Firestore si provano contro l'emulatore ufficiale, che
-gira in locale (serve Java, e `npm install` una volta sola per le dipendenze di
-sviluppo):
-
-```bash
-npm install
-npm run test:rules
-```
-
-Ventitré test in due gruppi. I primi quindici colpiscono le regole con l'SDK
-Firebase: scrivere un punteggio arbitrario, incrementare di 1000, togliere voti
-agli altri, muovere entrambi i contatori insieme, creare una coppia inesistente,
-riscrivere l'identità di una coppia, cancellare. Devono fallire tutti.
-
-Gli altri otto fanno girare il codice vero di `src/store.js` contro l'emulatore.
-Servono perché i due lati potrebbero non incastrarsi: le regole sono scritte
-pensando all'SDK, mentre il sito parla REST con `updateMask` e
-`updateTransforms`, che è una forma di scrittura diversa. Fra questi c'è il caso
-che conta di più — venti voti simultanei sulla stessa coppia devono dare venti
-voti contati, non uno perso.
+I test delle regole sono in due gruppi. Diciassette colpiscono le regole con l'SDK
+Firebase — scrivere un punteggio arbitrario, incrementare di 1000, togliere voti
+agli altri, cancellare — e devono fallire tutti. Gli altri otto fanno girare il
+codice vero di `src/store.js` contro l'emulatore, perché le regole sono scritte
+pensando all'SDK mentre il sito parla REST con `updateMask` e `updateTransforms`.
+Fra questi c'è il caso che conta di più: venti voti simultanei sulla stessa
+coppia devono dare venti voti contati, non uno perso.
 
 ---
 
-## Attivare la classifica condivisa
+## Classifica condivisa (Firebase)
 
-Senza backend il sito funziona ma ogni visitatore vede solo i propri voti. Sono
-supportati Firebase e Supabase; si sceglie con `BACKEND` in
-[`config.js`](config.js).
-
-### Firebase (Firestore)
+Senza backend ogni visitatore vede solo i propri voti. Per una classifica
+collettiva serve Firestore:
 
 1. Crea un progetto su [console.firebase.google.com](https://console.firebase.google.com)
    e, al suo interno, un **database Firestore** (modalità produzione).
 2. Registra un'**app Web** (Impostazioni progetto → Le tue app → `</>`). Dei
    valori mostrati servono solo `projectId` e `apiKey`.
-3. Pubblica le regole di sicurezza di
-   [`firebase/firestore.rules`](firebase/firestore.rules). Dalla console
-   (Firestore → Regole → incolla → Pubblica), oppure:
+3. Pubblica le regole di [`firebase/firestore.rules`](firebase/firestore.rules),
+   dalla console (Firestore → Regole) oppure con
+   `npx firebase deploy --only firestore:rules`.
 
-   ```bash
-   npx firebase deploy --only firestore:rules
-   ```
-
-   **Non saltare questo passaggio.** Le regole predefinite di Firestore sono
-   "nega tutto" (il sito non funzionerebbe) oppure "consenti tutto" per 30
-   giorni (chiunque potrebbe cancellare la classifica).
-
-4. Compila [`config.js`](config.js):
-
-```js
-export const BACKEND = 'firebase';
-export const FIREBASE = {
-  projectId: 'nome-del-progetto',
-  apiKey: 'AIza...',
-  host: '',
-};
-```
+   **Non saltare questo passaggio.** Le regole predefinite sono "nega tutto" (il
+   sito non funziona) oppure "consenti tutto" per 30 giorni (chiunque può
+   cancellare la classifica).
+4. Scrivi `projectId` e `apiKey` in [`config.js`](config.js).
 
 Il piano gratuito **Spark** basta: si usano solo Firestore e le sue regole,
-niente Cloud Functions. I limiti gratuiti sono 50.000 letture e 20.000
-scritture al giorno — un voto è una scrittura, e caricare la classifica costa
+niente Cloud Functions. Un voto è una scrittura; caricare la classifica costa
 una lettura per coppia già votata (al massimo 270).
-
-### Supabase
-
-1. Crea un progetto su [supabase.com](https://supabase.com).
-2. Apri **SQL Editor** ed esegui [`supabase/schema.sql`](supabase/schema.sql):
-   crea le tabelle, le policy e la funzione di voto.
-3. Da **Project Settings → API** copia *Project URL* e la chiave **anon /
-   public**, poi in [`config.js`](config.js):
-
-```js
-export const BACKEND = 'supabase';
-export const SUPABASE = { url: 'https://xxxx.supabase.co', anonKey: 'eyJhbGci...' };
-```
 
 ### Come sono protetti i dati
 
-Le chiavi di entrambi i backend sono pubbliche per definizione: stanno nel
-codice di un sito statico e non proteggono niente. A proteggere i dati sono le
-regole di sicurezza. **Non usare mai una chiave di servizio** (`service_role` su
-Supabase, le credenziali Admin SDK su Firebase): hanno pieni poteri e
-scavalcherebbero ogni regola.
-
-Le due architetture arrivano allo stesso risultato per strade diverse.
-
-Su **Supabase** il browser non scrive mai nelle tabelle: chiama `cast_vote`, che
-valida, applica un limite di frequenza e incrementa in modo atomico. Le policy
-RLS e i GRANT lasciano al client anonimo un solo permesso, leggere gli
-aggregati.
-
-Su **Firebase**, senza Cloud Functions (che richiedono il piano a pagamento), il
-browser scrive direttamente e sono le regole a fare il lavoro. Impongono che una
+La chiave Firebase è pubblica per definizione: sta nel codice di un sito statico
+e non protegge niente. A proteggere i dati sono le regole, che impongono che una
 scrittura possa solo aggiungere 1 a un contatore, che l'id del documento
-corrisponda alla coppia, che taglio e design esistano, e che niente si possa
-cancellare.
+corrisponda alla coppia, che taglio e disegno esistano, e che niente si possa
+cancellare. **Non mettere mai in `config.js` una chiave di servizio o le
+credenziali dell'Admin SDK:** scavalcherebbero ogni regola.
 
-| operazione | Firebase | Supabase |
-| --- | --- | --- |
-| leggere la classifica | sì | sì |
-| aggiungere 1 a un contatore | sì | sì, tramite `cast_vote` |
-| scrivere un punteggio arbitrario | no | no |
-| togliere voti | no | no |
-| cancellare dati | no | no |
-| leggere il registro dei singoli voti | non esiste | no |
+| operazione | consentita |
+| --- | --- |
+| leggere la classifica | sì |
+| aggiungere 1 a un contatore | sì |
+| scrivere un punteggio arbitrario | no |
+| togliere voti | no |
+| cancellare dati | no |
 
-Su entrambi resta una cosa che le regole non possono fare: impedire a uno script
-di inviare molti voti legittimi da +1. Il limite di frequenza di Supabase si
-appoggia a un identificativo generato nel browser, quindi si aggira
-rigenerandolo. Se la cosa diventasse un problema, la risposta su Firebase è
-[App Check](https://firebase.google.com/docs/app-check) con reCAPTCHA, che
-verifica la provenienza delle richieste ed è disponibile sul piano gratuito.
+Resta una cosa che le regole non possono fare: impedire a uno script di inviare
+molti voti legittimi da +1. Se diventasse un problema, la risposta è
+[App Check](https://firebase.google.com/docs/app-check) con reCAPTCHA,
+disponibile sul piano gratuito.
 
-Se il backend è configurato ma irraggiungibile, il sito ripiega sulla modalità
+Se il backend è configurato ma irraggiungibile il sito ripiega sulla modalità
 locale e lo dichiara, invece di mostrare una pagina rotta.
 
 ---
 
 ## Pubblicare
 
-Il workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) esegue i
-test e pubblica il sito su GitHub Pages a ogni push sul branch di default. Il
-sito è statico e senza build: si pubblica il repository così com'è.
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml) esegue i test e
+pubblica su GitHub Pages a ogni push. Non c'è build: si pubblica il repository
+così com'è.
 
-Prima di pubblicare, il workflow esegue
-[`tools/stamp-assets.mjs`](tools/stamp-assets.mjs), che aggiunge a CSS e script
-un `?v=` derivato dal contenuto. GitHub Pages serve ogni file con dieci minuti
-di cache indipendenti l'uno dall'altro: senza questa marcatura, nei minuti dopo
-una pubblicazione un browser può ritrovarsi con l'HTML nuovo e il CSS vecchio, e
-la pagina risulta rotta. Se modifichi CSS o JavaScript in locale puoi allineare
-le impronte con `npm run stamp`, ma non è necessario: ci pensa la CI.
+Prima di pubblicare gira [`tools/stamp-assets.mjs`](tools/stamp-assets.mjs), che
+aggiunge a CSS e script un `?v=` derivato dal contenuto. GitHub Pages serve ogni
+file con dieci minuti di cache indipendenti: senza marcatura, nei minuti dopo una
+pubblicazione un browser può ritrovarsi l'HTML nuovo e il CSS vecchio. Marcare
+l'HTML non basta per i moduli — `import './i18n.js'` si risolve rispetto a chi
+importa e scarta la query — quindi lo script genera anche un
+`<script type="importmap">` che rimappa ogni modulo alla sua versione. In locale
+si allinea con `npm run stamp`, ma non è necessario: ci pensa la CI.
 
-Marcare l'HTML non basta per i moduli: `import './i18n.js'` si risolve rispetto
-a chi importa e scarta la query, quindi i moduli importati da `app.js`
-resterebbero senza versione. È già capitato: HTML e `app.js` nuovi con `i18n.js`
-vecchio, e il footer mostrava la chiave `footer.creditHtml` invece del testo.
-Lo script genera perciò anche un `<script type="importmap">` che rimappa ogni
-modulo alla propria versione — l'unico modo per marcarli senza riscrivere gli
-import nei sorgenti, cioè senza introdurre un passo di compilazione.
+Perché l'attivazione automatica di Pages funzioni il repository deve essere
+pubblico, oppure privato con piano **GitHub Pro o Team**. Altrimenti fallisce con
+un errore che sembra di permessi (`Resource not accessible by integration`) ma è
+di disponibilità.
 
-Alla prima esecuzione il workflow attiva Pages da sé
-(`actions/configure-pages` con `enablement: true`), senza passare dalle
-impostazioni.
-
-**Serve però che Pages sia disponibile per il repository:** pubblico, oppure
-privato con piano **GitHub Pro o Team**. Su un repository privato con piano
-gratuito l'attivazione fallisce con un errore che sembra di permessi
-(`Resource not accessible by integration`) ma è in realtà di disponibilità.
-Per rendere pubblico il repository: **Settings → General → Danger Zone → Change
-visibility**.
-
-Se l'attivazione automatica non dovesse funzionare, la si fa una volta a mano da
-**Settings → Pages → Source: GitHub Actions**, poi si rilancia il workflow da
-**Actions → Pubblica su GitHub Pages → Run workflow**.
-
-Il sito sarà su `https://<utente>.github.io/euro-banknote-rank/`.
-
-Va bene anche qualunque altro hosting statico: non c'è build, si servono i file
-così come sono.
-
-Attenzione: `config.js` contiene la chiave `anon` ed è pensato per essere
-pubblico, ma resta un file versionato — se in futuro rigeneri le chiavi del
-progetto, ricordati di aggiornarlo.
+Va bene anche qualunque altro hosting statico.
 
 ---
 
 ## Struttura
 
 ```
-index.html                     le quattro viste (vota, classifica, design, metodo)
-config.js                      scelta del backend e relative chiavi
-src/data.js                    le 10 proposte: designer, tema, descrizioni, immagini
-src/rating.js                  Bradley–Terry, errori standard, scelta delle coppie
-src/store.js                   accesso ai dati: Firestore, Supabase o localStorage
+index.html                     le quattro viste (vota, classifica, disegni, metodo)
+config.js                      progetto Firebase e chiave pubblica
+src/data.js                    i 10 disegni, i 6 tagli, i percorsi delle immagini
+src/rating.js                  Bradley–Terry, scala Elo, scelta delle coppie
+src/store.js                   accesso ai dati: Firestore o localStorage
 src/app.js                     interfaccia e instradamento
+src/i18n.js                    testi dell'interfaccia in it/en/fr/de/es
+src/design-texts.js            testi BCE dei disegni nelle 5 lingue (generato)
+src/image-aspects.js           proporzioni delle 120 immagini (generato)
 assets/css/style.css           foglio di stile unico, chiaro e scuro
 assets/banknotes/              120 immagini WebP (60 fronti + 60 retri)
-src/i18n.js                    testi dell'interfaccia in it/en/fr/de/es
-src/design-texts.js            testi BCE dei design nelle 5 lingue (generato)
-src/image-aspects.js           proporzioni delle 120 immagini (generato)
-tools/stamp-assets.mjs         impronte anti-cache su CSS e script
+tools/stamp-assets.mjs         impronte anti-cache e import map
 firebase/firestore.rules       regole di sicurezza Firestore
-supabase/schema.sql            tabelle, RLS, funzione di voto
-test/rating.test.mjs           motore di classifica
-test/firestore-rules.test.mjs  regole di sicurezza, contro l'emulatore
-test/firestore-store.test.mjs  adattatore Firestore, contro l'emulatore
+test/                          motore di classifica, regole ed adattatore Firestore
 ```
 
-Il sito **non ha dipendenze a runtime**: è HTML, CSS e moduli ES serviti così
-come sono. Le dipendenze in `package.json` servono solo a eseguire i test delle
-regole Firestore.
+Le dipendenze in `package.json` servono solo a eseguire i test delle regole
+Firestore: il sito non ne ha nessuna.
 
-**Tre proposte su dieci — D, I e J — sono disegnate in verticale**, ma la BCE
-pubblica quasi tutti i loro file in orizzontale, con il contenuto ruotato di
-90°: mostrarli così com'erano significava presentare quei disegni coricati. Le
-immagini nel repository sono già raddrizzate. Il criterio non è a occhio: la
-bandiera europea è sempre 3:2, quindi se in un'immagine risulta più alta che
-larga il file è ruotato. L'unica eccezione è il fronte del 200 € della proposta
-D, che la BCE pubblica già in verticale.
+**Tre disegni su dieci — D, I e J — sono verticali**, ma la BCE pubblica quasi
+tutti i loro file in orizzontale, con il contenuto ruotato di 90°. Le immagini
+nel repository sono già raddrizzate. Il criterio non è a occhio: la bandiera
+europea è sempre 3:2, quindi se in un'immagine risulta più alta che larga il file
+è ruotato. L'unica eccezione già verticale è il fronte del 200 € del disegno D.
 
 Le immagini sono ridimensionate a 1000 px sul lato lungo e convertite in WebP:
-8,8 MB in tutto invece dei 41 MB degli originali, perché in una schermata di
-voto se ne caricano quattro alla volta — fronte e retro di entrambe le
-banconote. Gli originali ad alta risoluzione restano sul sito della BCE.
+8,8 MB invece dei 41 MB degli originali, perché una schermata di voto ne carica
+quattro alla volta. Gli originali restano sul sito della BCE.
 
-Il sito è disponibile in **italiano, inglese, francese, tedesco e spagnolo**. Le
-descrizioni dei design non sono tradotte da noi: sono quelle ufficiali della
-BCE, prese dalle rispettive versioni linguistiche della sua pagina, così ai
-designer non vengono attribuite parole che non hanno scritto. Lingua e tema
-(automatico, chiaro, scuro) si scelgono in fondo alla pagina e restano
-memorizzati nel browser.
+Il sito è in **italiano, inglese, francese, tedesco e spagnolo**. Le descrizioni
+dei disegni non sono tradotte da noi: sono quelle ufficiali della BCE, prese
+dalle rispettive versioni linguistiche della sua pagina, così ai designer non
+vengono attribuite parole che non hanno scritto.
 
 ---
 
-## Le dieci proposte
+## I dieci disegni
 
 Cinque sul tema **cultura europea**, cinque sul tema **fiumi e uccelli**.
 
@@ -295,8 +193,8 @@ Cinque sul tema **cultura europea**, cinque sul tema **fiumi e uccelli**.
 | I | Isabelle Daëron | fiumi e uccelli |
 | J | Ville Tietäväinen | fiumi e uccelli |
 
-Ogni proposta copre tutti e sei i tagli (5, 10, 20, 50, 100, 200 €). Il retro è
-pubblicato solo per il taglio da 5 €.
+Ogni disegno copre tutti e sei i tagli (5, 10, 20, 50, 100, 200 €), fronte e
+retro: 120 immagini in tutto.
 
 ---
 
@@ -324,8 +222,7 @@ o dell'Eurosistema, senza autorizzazione scritta preventiva. Le immagini vanno
 sempre identificate come proposte di design, citando la BCE come fonte.
 
 Questo progetto è indipendente, non ha alcun rapporto con la BCE e non influisce
-in alcun modo sulla scelta ufficiale del design. La consultazione ufficiale è
-[il sondaggio della BCE](https://www.ecb.europa.eu/euro/banknotes/future_banknotes/html/design-proposals.en.html).
+sulla scelta ufficiale del design.
 
 Il codice è dei rispettivi autori; le immagini restano soggette alle condizioni
 d'uso della BCE sopra riportate.
