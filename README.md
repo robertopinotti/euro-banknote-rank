@@ -233,8 +233,10 @@ src/store.js                   accesso ai dati: Firestore, Supabase o localStora
 src/app.js                     interfaccia e instradamento
 assets/css/style.css           foglio di stile unico, chiaro e scuro
 assets/banknotes/              120 immagini WebP (60 fronti + 60 retri)
-src/i18n.js                    testi dell'interfaccia in it/en/fr/de
-src/design-texts.js            testi BCE dei design nelle 4 lingue (generato)
+src/i18n.js                    testi dell'interfaccia in it/en/fr/de/es
+src/design-texts.js            testi BCE dei design nelle 5 lingue (generato)
+src/image-aspects.js           proporzioni delle 120 immagini (generato)
+tools/stamp-assets.mjs         impronte anti-cache su CSS e script
 firebase/firestore.rules       regole di sicurezza Firestore
 supabase/schema.sql            tabelle, RLS, funzione di voto
 test/rating.test.mjs           motore di classifica
@@ -251,7 +253,7 @@ Le immagini sono ridimensionate a 1000 px sul lato lungo e convertite in WebP:
 voto se ne caricano quattro alla volta — fronte e retro di entrambe le
 banconote. Gli originali ad alta risoluzione restano sul sito della BCE.
 
-Il sito è disponibile in **italiano, inglese, francese e tedesco**. Le
+Il sito è disponibile in **italiano, inglese, francese, tedesco e spagnolo**. Le
 descrizioni dei design non sono tradotte da noi: sono quelle ufficiali della
 BCE, prese dalle rispettive versioni linguistiche della sua pagina, così ai
 designer non vengono attribuite parole che non hanno scritto. Lingua e tema

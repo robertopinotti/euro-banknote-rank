@@ -34,6 +34,8 @@ import {
   bumpMyVoteCount,
 } from './store.js';
 
+const PAGE_SIZE = 20;
+
 const PAIRS = allPairs();
 const DESIGN_IDS = DESIGNS.map((d) => d.id);
 
@@ -43,6 +45,10 @@ const state = {
   rankings: null,
   rankDenom: 5,       // taglio scelto nella classifica per taglio
   rankScope: 'generale',   // 'generale' | 'famiglie' | 'tagli'
+  // Quante righe della classifica generale sono state disegnate finora. Le 60
+  // banconote formano una pagina alta sedici metri: se ne mostrano venti alla
+  // volta, che stanno in due o tre schermate e si scorrono senza perdersi.
+  visibleRows: PAGE_SIZE,
   current: null,      // sfida in corso
   lang: DEFAULT_LANG,
   theme: 'auto',      // 'auto' | 'light' | 'dark'
@@ -281,7 +287,11 @@ function rankRow(entry, denomination) {
   return `
     <li class="rank-row ${entry.rank === 1 ? 'is-first' : ''}">
       <div class="rank-pos">${entry.rank}</div>
-      <div class="rank-name">${t('rank.proposal', { letter: design.letter })}</div>
+      <div class="rank-name">${
+        denomination == null
+          ? t('rank.proposal', { letter: design.letter })
+          : t('rank.proposalDenom', { letter: design.letter, denom: denomination })
+      }</div>
       <div class="rank-elo">${Math.round(entry.elo)}</div>
       <div class="rank-note">
         <img src="${imageUrl(entry.designId, denom)}"
@@ -332,10 +342,20 @@ function renderRankings() {
       ? t('rank.summaryNone', { mode })
       : t('rank.summarySome', { n: totalVotes.toLocaleString(state.lang), mode });
 
-  // Generale: tutte e 60 le banconote
-  $('ranking-all-list').innerHTML = allNotesRanking()
+  // Generale: si disegnano solo le righe già richieste.
+  const all = allNotesRanking();
+  const shown = Math.min(state.visibleRows, all.length);
+  $('ranking-all-list').innerHTML = all
+    .slice(0, shown)
     .map((r) => rankRow(r, r.denomination))
     .join('');
+
+  const more = $('btn-more');
+  const remaining = all.length - shown;
+  more.hidden = remaining === 0;
+  if (remaining > 0) {
+    more.textContent = t('rank.showMore', { n: Math.min(PAGE_SIZE, remaining) });
+  }
 
   // Per design
   $('ranking-list').innerHTML = families.map((f) => rankRow(f, null)).join('');
@@ -526,6 +546,11 @@ function wireControls() {
   $('card-right').addEventListener('click', () => vote('right'));
   $('btn-skip').addEventListener('click', skip);
 
+  $('btn-more').addEventListener('click', () => {
+    state.visibleRows += PAGE_SIZE;
+    renderRankings();
+  });
+
   buildDenomButtons($('rank-denom-buttons'), {
     selected: state.rankDenom,
     onPick: (value) => {
@@ -537,6 +562,10 @@ function wireControls() {
   for (const btn of document.querySelectorAll('.seg-btn')) {
     btn.addEventListener('click', () => {
       state.rankScope = btn.dataset.scope;
+      // Tornando alla generale si riparte dall'alto: chi cambia vista vuole
+      // rivedere la testa della classifica, non riprendere da dov'era.
+      state.visibleRows = PAGE_SIZE;
+      renderRankings();
       for (const b of document.querySelectorAll('.seg-btn')) {
         b.classList.toggle('is-active', b === btn);
       }

@@ -16,6 +16,7 @@ export const LANGUAGES = [
   { code: 'en', label: 'English' },
   { code: 'fr', label: 'Français' },
   { code: 'de', label: 'Deutsch' },
+  { code: 'es', label: 'Español' },
 ];
 
 export const DEFAULT_LANG = 'it';
@@ -60,12 +61,6 @@ export const STRINGS = {
     'scope.general': 'Generale',
     'scope.design': 'Per design',
     'scope.denomination': 'Per taglio',
-    'rank.noteGeneralHtml':
-      "Tutte e 60 le banconote in un'unica graduatoria — dieci proposte per sei " +
-      'tagli. I confronti avvengono però sempre fra banconote dello stesso ' +
-      'taglio, quindi ogni punteggio dice quanto quella banconota è forte ' +
-      '<strong>rispetto alle altre del suo taglio</strong>: la classifica le ' +
-      'mette in fila, non afferma che un 5 € batterebbe un 200 €.',
     'rank.noteDesign':
       'Le dieci proposte, ciascuna con la media delle sue sei banconote.',
     'rank.summaryNone': 'Nessun voto ancora. {mode}',
@@ -75,9 +70,11 @@ export const STRINGS = {
       'Modalità locale: questa classifica conta solo i tuoi voti, salvati in questo browser.',
     'rank.denomLabel': 'Taglio',
     'rank.proposal': 'Proposta {letter}',
+    'rank.proposalDenom': 'Proposta {letter} • {denom} €',
     'rank.recordOne': '1 vittoria su {n} · {p}%',
     'rank.recordMany': '{w} vittorie su {n} · {p}%',
     'rank.recordNone': 'nessun voto',
+    'rank.showMore': 'Mostra altre {n}',
 
     'matrix.title': 'Chi batte chi',
     'matrix.note':
@@ -140,8 +137,9 @@ export const STRINGS = {
       <p class="formula">R = 1500 + (400 / ln 10) &middot; ln p</p>
       <p>Così 1500 è il centro del campo e <strong>100 punti di distacco valgono
       circa il 64% di probabilità di vittoria</strong>, 400 punti valgono 10 a 1.
-      Il <code>±</code> accanto al punteggio è l'errore standard: finché è
-      grande, la posizione è ancora provvisoria.</p>
+      Il punteggio va letto insieme al numero di confronti raccolti, scritto in
+      cima alla classifica: con poche decine di voti le posizioni si ribaltano
+      facilmente, e solo dopo qualche centinaio diventano stabili.</p>
 
       <h2>Chi ha ancora pochi voti</h2>
       <p>Un design che ha vinto i primi tre confronti avrebbe forza infinita: il
@@ -213,12 +211,6 @@ export const STRINGS = {
     'scope.general': 'Overall',
     'scope.design': 'By design',
     'scope.denomination': 'By denomination',
-    'rank.noteGeneralHtml':
-      'All 60 banknotes in a single ranking — ten proposals across six ' +
-      'denominations. Comparisons always happen between banknotes of the same ' +
-      'denomination, so each score says how strong that banknote is ' +
-      '<strong>against the others of its own denomination</strong>: the ranking ' +
-      'lines them up, it does not claim a €5 note would beat a €200 one.',
     'rank.noteDesign':
       'The ten proposals, each averaged across its six banknotes.',
     'rank.summaryNone': 'No votes yet. {mode}',
@@ -228,9 +220,11 @@ export const STRINGS = {
       'Local mode: this ranking counts only your own votes, stored in this browser.',
     'rank.denomLabel': 'Denomination',
     'rank.proposal': 'Design {letter}',
+    'rank.proposalDenom': 'Design {letter} • €{denom}',
     'rank.recordOne': '1 win out of {n} · {p}%',
     'rank.recordMany': '{w} wins out of {n} · {p}%',
     'rank.recordNone': 'no votes',
+    'rank.showMore': 'Show {n} more',
 
     'matrix.title': 'Who beats whom',
     'matrix.note':
@@ -293,8 +287,9 @@ export const STRINGS = {
       <p class="formula">R = 1500 + (400 / ln 10) &middot; ln p</p>
       <p>So 1500 is the middle of the field and <strong>a 100-point gap is worth
       about a 64% chance of winning</strong>, while 400 points are worth 10 to 1.
-      The <code>±</code> next to the score is the standard error: while it is
-      large, the position is still provisional.</p>
+      Read the score together with the number of comparisons shown at the top of
+      the ranking: with a few dozen votes positions flip easily, and only after a
+      few hundred do they settle.</p>
 
       <h2>Designs with few votes so far</h2>
       <p>A design that won its first three comparisons would have infinite
@@ -367,12 +362,6 @@ export const STRINGS = {
     'scope.general': 'Général',
     'scope.design': 'Par graphisme',
     'scope.denomination': 'Par coupure',
-    'rank.noteGeneralHtml':
-      'Les 60 billets dans un classement unique — dix propositions pour six ' +
-      'coupures. Les comparaisons se font cependant toujours entre billets de la ' +
-      'même coupure : chaque score dit donc la force de ce billet ' +
-      '<strong>face aux autres de sa coupure</strong>. Le classement les met en ' +
-      "file, il n'affirme pas qu'un billet de 5 € battrait un 200 €.",
     'rank.noteDesign':
       'Les dix propositions, chacune avec la moyenne de ses six billets.',
     'rank.summaryNone': 'Aucun vote pour le moment. {mode}',
@@ -382,9 +371,11 @@ export const STRINGS = {
       'Mode local : ce classement ne compte que vos propres votes, enregistrés dans ce navigateur.',
     'rank.denomLabel': 'Coupure',
     'rank.proposal': 'Graphisme {letter}',
+    'rank.proposalDenom': 'Graphisme {letter} • {denom} €',
     'rank.recordOne': '1 victoire sur {n} · {p} %',
     'rank.recordMany': '{w} victoires sur {n} · {p} %',
     'rank.recordNone': 'aucun vote',
+    'rank.showMore': 'Afficher {n} de plus',
 
     'matrix.title': 'Qui bat qui',
     'matrix.note':
@@ -449,8 +440,9 @@ export const STRINGS = {
       <p class="formula">R = 1500 + (400 / ln 10) &middot; ln p</p>
       <p>1500 est ainsi le centre du peloton et <strong>100 points d'écart valent
       environ 64 % de chances de l'emporter</strong>, 400 points valent 10 contre
-      1. Le <code>±</code> à côté du score est l'erreur type : tant qu'elle est
-      grande, la position reste provisoire.</p>
+      1. Le score se lit avec le nombre de comparaisons indiqué en haut du
+      classement : avec quelques dizaines de votes les positions basculent
+      facilement, et elles ne se stabilisent qu'après quelques centaines.</p>
 
       <h2>Ceux qui ont encore peu de votes</h2>
       <p>Un graphisme ayant gagné ses trois premières comparaisons aurait une
@@ -524,12 +516,6 @@ export const STRINGS = {
     'scope.general': 'Gesamt',
     'scope.design': 'Nach Entwurf',
     'scope.denomination': 'Nach Stückelung',
-    'rank.noteGeneralHtml':
-      'Alle 60 Banknoten in einer einzigen Rangliste — zehn Vorschläge in sechs ' +
-      'Stückelungen. Verglichen wird jedoch immer nur innerhalb derselben ' +
-      'Stückelung. Jede Punktzahl sagt also, wie stark diese Banknote ' +
-      '<strong>gegenüber den anderen ihrer Stückelung</strong> ist: Die Rangliste ' +
-      'reiht sie auf, sie behauptet nicht, ein 5-€-Schein schlüge einen 200-€-Schein.',
     'rank.noteDesign':
       'Die zehn Vorschläge, jeweils als Mittel ihrer sechs Banknoten.',
     'rank.summaryNone': 'Noch keine Stimmen. {mode}',
@@ -539,9 +525,11 @@ export const STRINGS = {
       'Lokaler Modus: Diese Rangliste zählt nur Ihre eigenen, in diesem Browser gespeicherten Stimmen.',
     'rank.denomLabel': 'Stückelung',
     'rank.proposal': 'Entwurf {letter}',
+    'rank.proposalDenom': 'Entwurf {letter} • {denom} €',
     'rank.recordOne': '1 Sieg von {n} · {p} %',
     'rank.recordMany': '{w} Siege von {n} · {p} %',
     'rank.recordNone': 'keine Stimmen',
+    'rank.showMore': 'Weitere {n} anzeigen',
 
     'matrix.title': 'Wer schlägt wen',
     'matrix.note':
@@ -606,8 +594,9 @@ export const STRINGS = {
       <p class="formula">R = 1500 + (400 / ln 10) &middot; ln p</p>
       <p>1500 ist damit die Mitte des Feldes, und <strong>100 Punkte Abstand
       entsprechen rund 64 % Siegwahrscheinlichkeit</strong>, 400 Punkte
-      entsprechen 10 zu 1. Das <code>±</code> neben der Punktzahl ist der
-      Standardfehler: Solange er groß ist, bleibt die Position vorläufig.</p>
+      entsprechen 10 zu 1. Die Punktzahl ist zusammen mit der Zahl der oben
+      angezeigten Vergleiche zu lesen: Bei einigen Dutzend Stimmen kippen die
+      Platzierungen leicht, erst nach einigen Hundert werden sie stabil.</p>
 
       <h2>Entwürfe mit noch wenigen Stimmen</h2>
       <p>Ein Entwurf, der seine ersten drei Vergleiche gewonnen hat, hätte
@@ -644,6 +633,160 @@ export const STRINGS = {
         <a href="${ECB_URL}" target="_blank" rel="noopener">die Umfrage der EZB</a>.</li>
       </ul>`,
   },
+  /* ------------------------------------------------------------- spagnolo */
+  es: {
+    'meta.title': '¿Cuál será el billete más bonito de Europa?',
+    'meta.description':
+      'Vota de dos en dos las diez propuestas de diseño para los futuros billetes en euros y descubre la clasificación calculada con el modelo de Bradley–Terry.',
+
+    'brand.title': 'Billete de Europa',
+    'brand.tagline': 'las 10 propuestas para el futuro euro, un duelo cada vez',
+
+    'nav.vote': 'Votar',
+    'nav.ranking': 'Clasificación',
+    'nav.designs': 'Los diseños',
+    'nav.method': 'Método',
+
+    'vote.hintHtml':
+      'Siempre se comparan <strong>dos billetes del mismo valor</strong>, ' +
+      'anverso y reverso. Elige el que más te guste.',
+    'vote.skip': 'No sabría decidir, saltar',
+    'vote.countOne': 'Has emitido 1 voto',
+    'vote.countMany': 'Has emitido {n} votos',
+    'vote.kbdHtml':
+      'Con el teclado: <kbd>←</kbd> o <kbd>→</kbd> para votar, <kbd>espacio</kbd> para saltar.',
+    'side.front': 'anverso',
+    'side.back': 'reverso',
+
+    'banner.notConfigured':
+      'Sin servidor configurado: tus votos se quedan en este navegador y la clasificación es solo tuya.',
+    'banner.unreachable':
+      'Servidor inaccesible: tus votos se quedan en este navegador hasta que vuelva la conexión.',
+    'banner.voteFailed':
+      'Tu voto no se ha registrado: comprueba la conexión e inténtalo de nuevo.',
+
+    'rank.title': 'Clasificación',
+    'scope.general': 'General',
+    'scope.design': 'Por diseño',
+    'scope.denomination': 'Por valor',
+    'rank.noteDesign':
+      'Las diez propuestas, cada una con la media de sus seis billetes.',
+    'rank.summaryNone': 'Todavía no hay votos. {mode}',
+    'rank.summarySome': '{n} comparaciones recogidas. {mode}',
+    'rank.modeShared': 'Clasificación compartida por todos los votantes.',
+    'rank.modeLocal':
+      'Modo local: esta clasificación solo cuenta tus votos, guardados en este navegador.',
+    'rank.denomLabel': 'Valor',
+    'rank.proposal': 'Diseño {letter}',
+    'rank.proposalDenom': 'Diseño {letter} • {denom} €',
+    'rank.recordOne': '1 victoria de {n} · {p} %',
+    'rank.recordMany': '{w} victorias de {n} · {p} %',
+    'rank.recordNone': 'sin votos',
+    'rank.showMore': 'Mostrar {n} más',
+
+    'matrix.title': 'Quién gana a quién',
+    'matrix.note':
+      'Probabilidad de que el diseño de la fila gane al de la columna, según ' +
+      'el modelo. Las celdas más intensas son los pronósticos más claros.',
+
+    'designs.title': 'Las diez propuestas',
+    'designs.ledeHtml':
+      'El BCE ha seleccionado diez propuestas, cinco sobre el tema <em>cultura europea</em> ' +
+      'y cinco sobre <em>ríos y aves</em>. Cada propuesta abarca los seis ' +
+      'valores, de 5 a 200 euros, anverso y reverso.',
+
+    'themeName.culture': 'Cultura europea',
+    'themeName.nature': 'Ríos y aves',
+
+    'alt.note': 'Diseño {letter}, billete de {denom} euros, {side}',
+
+    'footer.theme': 'Tema',
+    'theme.auto': 'Auto',
+    'theme.light': 'Claro',
+    'theme.dark': 'Oscuro',
+    'footer.language': 'Idioma',
+    'footer.attributionHtml':
+      'Las imágenes son <strong>propuestas de diseño</strong> para una posible ' +
+      'futura serie de billetes en euros. Fuente: Banco Central Europeo — ' +
+      `<a href="${ECB_URL}" target="_blank" rel="noopener">Future euro banknote design proposals</a>. ` +
+      'Reproducidas con fines informativos. Proyecto independiente, sin vínculo ' +
+      'alguno con el BCE ni el Eurosistema, ni respaldo por su parte.',
+
+    'method.title': 'Cómo se calcula la clasificación',
+    'method.bodyHtml': `
+      <h2>Por qué comparaciones de dos en dos</h2>
+      <p>Pedir una nota del 1 al 10 sobre sesenta imágenes no funciona: cada
+      persona usa la escala a su manera, y quien vota primero condiciona a quien
+      vota después. Una comparación entre solo dos billetes es, en cambio, una
+      pregunta que todos responden igual. El problema se traslada a cómo reunir
+      miles de comparaciones dispersas en una única clasificación.</p>
+
+      <h2>El modelo de Bradley–Terry</h2>
+      <p>A cada diseño se le asocia una <em>fuerza</em> <code>p</code>, un número
+      positivo. La probabilidad de que el diseño <code>i</code> sea preferido al
+      diseño <code>j</code> es</p>
+      <p class="formula">P(i gana a j) = p<sub>i</sub> / (p<sub>i</sub> + p<sub>j</sub>)</p>
+      <p>Las fuerzas no se observan: se estiman buscando los valores que hacen
+      más probables los votos realmente recogidos. El cálculo emplea el
+      algoritmo MM de Hunter, que parte de fuerzas iguales y las actualiza con</p>
+      <p class="formula">p<sub>i</sub> &larr; W<sub>i</sub> / &Sigma;<sub>j&ne;i</sub> [ N<sub>ij</sub> / (p<sub>i</sub> + p<sub>j</sub>) ]</p>
+      <p>donde <code>W<sub>i</sub></code> son las victorias totales de
+      <code>i</code> y <code>N<sub>ij</sub></code> el número de comparaciones
+      entre <code>i</code> y <code>j</code>. Cada pasada mejora el ajuste a los
+      datos, y en unas pocas decenas de iteraciones el resultado es estable.</p>
+      <p>La ventaja frente al simple porcentaje de victorias es que el modelo
+      tiene en cuenta <em>a quién</em> has ganado: ganar al diseño más fuerte
+      vale más que ganar al último de la clasificación. Y el resultado no depende
+      del orden en que llegan los votos — al barajarlos, la clasificación no
+      cambia.</p>
+
+      <h2>La puntuación mostrada</h2>
+      <p>Las fuerzas se leen mejor en la escala Elo, la misma del ajedrez:</p>
+      <p class="formula">R = 1500 + (400 / ln 10) &middot; ln p</p>
+      <p>Así 1500 es el centro del grupo y <strong>100 puntos de diferencia
+      equivalen a alrededor del 64 % de probabilidad de ganar</strong>, 400
+      puntos equivalen a 10 contra 1. La puntuación debe leerse junto con el
+      número de comparaciones indicado arriba: con unas decenas de votos las
+      posiciones cambian con facilidad, y solo tras unos cientos se
+      estabilizan.</p>
+
+      <h2>Los que aún tienen pocos votos</h2>
+      <p>Un diseño que hubiera ganado sus tres primeras comparaciones tendría
+      fuerza infinita: el modelo, por sí solo, no sabría dónde detenerse. Por eso
+      se añaden dos comparaciones ficticias por diseño frente a un adversario
+      imaginario de fuerza media, una ganada y otra perdida. Es poca cosa frente
+      a cientos de votos reales, pero basta para mantener finitas todas las
+      puntuaciones y evitar que un diseño votado tres veces adelante a uno votado
+      trescientas.</p>
+
+      <h2>Del valor concreto a la propuesta entera</h2>
+      <p>Cada valor tiene su propia clasificación, calculada solo con las
+      comparaciones entre billetes de ese valor. La puntuación global de una
+      propuesta es la media de sus seis fuerzas, tomada sobre los logaritmos —
+      es la escala en la que el modelo es lineal, e impide que un único valor muy
+      fuerte arrastre por sí solo a toda la familia.</p>
+
+      <h2>Qué parejas se te muestran</h2>
+      <p>No al azar puro. El sitio prioriza las parejas aún poco votadas y las
+      formadas por diseños de fuerza parecida, que son las más informativas:
+      conocer el desenlace de una comparación cantada no aporta nada. La elección
+      sigue siendo aleatoria con esos pesos, de modo que no todos los votantes
+      ven el mismo duelo.</p>
+
+      <h2>Límites, dichos con claridad</h2>
+      <ul>
+        <li>La muestra es quien llega a este sitio: no es representativa de la
+        población europea, y la clasificación no debe leerse como una
+        encuesta.</li>
+        <li>El identificador del votante vive en el navegador. Frena los
+        duplicados accidentales y los scripts, no a quien se empeñe en
+        insistir.</li>
+        <li>Este sitio no tiene relación alguna con el BCE ni influye en la
+        elección oficial. Para eso está
+        <a href="${ECB_URL}" target="_blank" rel="noopener">la encuesta del BCE</a>.</li>
+      </ul>`,
+  },
+
 };
 
 /* --------------------------------------------------------------- runtime */

@@ -1,5 +1,5 @@
 /**
- * Testi dei dieci design nelle quattro lingue del sito.
+ * Testi dei dieci design nelle lingue del sito.
  *
  * GENERATO, NON SCRIVERE A MANO. Le descrizioni e i nomi dei designer sono
  * quelli pubblicati dalla Banca centrale europea, presi dalle rispettive
@@ -563,6 +563,149 @@ export const DESIGN_TEXTS = {
         'Infografik, die in das erzählerische Konzept der Banknotenserie einführt. ' +
         'Selbst die EU-Gebäude auf der Rückseite der Banknoten verschmelzen mit dem ' +
         'Flügel des jeweiligen Vogels auf der Vorderseite.',
+    },
+  },
+  es: {
+    a: {
+      designer: 'Studio Joost Grootens',
+      description:
+        'El diseño puede interpretarse como una reflexión sobre cómo se crea la ' +
+        'cultura. Los ojos representan la observación, la percepción y la reflexión, ' +
+        'mientras que la boca simboliza la expresión, el diálogo y el intercambio. Al ' +
+        'centrarse en estos elementos, los retratos trascienden la identidad ' +
+        'individual para poner de relieve una capacidad humana compartida: la ' +
+        'creación cultural. En el reverso, espacios culturales contemporáneos ' +
+        'muestran a personas de distintas procedencias y edades que se reúnen e ' +
+        'interactúan. Juntas, ambas caras vinculan la percepción y la expresión ' +
+        'individuales con el intercambio colectivo, invitando al público a ver los ' +
+        'billetes como representaciones de la cultura, entendida como un proceso vivo ' +
+        'y compartido.',
+    },
+    b: {
+      designer: 'PunktFormStrich',
+      description:
+        'La serie de billetes «Ríos y aves» comunica su concepto mediante una ' +
+        'relación directa entre los elementos visuales y su significado. Cada billete ' +
+        'presenta una especie de ave específica en relación con su hábitat, ' +
+        'estableciendo un vínculo entre la biodiversidad y los paisajes europeos. Las ' +
+        'estructuras de barras horizontales presentan de forma visual el canto ' +
+        'característico de cada ave, mientras que una escala vertical indica su ' +
+        'velocidad de vuelo, lo que permite una lectura intuitiva de la información. ' +
+        'En el anverso se incluyen datos concisos que contextualizan la especie ' +
+        'representada. En el reverso, los edificios de la UE y el mapa de Europa ' +
+        'establecen un vínculo entre los entornos naturales y la identidad cultural ' +
+        'compartida.',
+    },
+    c: {
+      designer: 'Neue Gestaltung GmbH',
+      description:
+        'El diseño cuenta una historia sencilla: Europa es un espacio cultural ' +
+        'compartido. Cada billete se identifica de inmediato por su color ' +
+        'predominante y por su motivo central distintivo; cada uno presenta a una ' +
+        'figura cuya vida y obra conectan a los europeos a través de los siglos. En ' +
+        'el reverso, un mapa de Europa, sutilmente superpuesto a las constelaciones ' +
+        'que durante siglos han guiado a los viajeros, se combina con una escena ' +
+        'contemporánea del espacio cultural representado en el billete: artes ' +
+        'escénicas, música, escuelas, bibliotecas, museos y plazas públicas. Las ' +
+        'personas se presentan sin rasgos específicos para que los ciudadanos puedan ' +
+        'reconocerse en ellas.',
+    },
+    d: {
+      designer: 'Rudy Guedj y François Girard-Meunier',
+      description:
+        'Seis aves aparecen sobre paisajes abstractos, conectados por el curso ' +
+        'ininterrumpido de un río, desde un manantial de montaña hasta una mar ' +
+        'embravecida. La luz acompaña a esta progresión, pasando de una presencia ' +
+        'tenue a una fuerza dinámica e incisiva cargada de significado simbólico. Las ' +
+        'escenas invitan a una observación minuciosa y sitúan al espectador en el ' +
+        'lugar de un observador de aves que sigue las huellas de cada especie. En el ' +
+        'reverso, las instituciones de la UE se representan mediante gestos humanos y ' +
+        'una malla textil en constante transformación. Las manos sostienen, ' +
+        'estabilizan, alinean y debaten, sugiriendo la cooperación en acción, ' +
+        'mientras se irradia luz desde cada edificio al conjunto del territorio de la ' +
+        'UE.',
+    },
+    e: {
+      designer: 'Myrsini Vardopoulou',
+      description:
+        'El enfoque comunicativo se centra en el valor universal de la obra de cada ' +
+        'figura y no en su personalidad. El círculo y los símbolos actúan como un ' +
+        'mensaje visual que evoca un espacio intelectual. Este espacio ofrece al ' +
+        'espectador una referencia visual inmediata y familiar. Al mismo tiempo, los ' +
+        'detalles simbólicos añaden referencias sutiles que invitan a una ' +
+        'interpretación conceptual más profunda. De este modo, el diseño transmite la ' +
+        'idea de que, pese a la diversidad de las figuras representadas, su ' +
+        'contribución constituye una fuente común de inspiración y un medio para ' +
+        'volver a conectar con valores culturales conocidos, pero en constante ' +
+        'evolución.',
+    },
+    f: {
+      designer: 'Jan Robert Dünnweller',
+      description:
+        'El diseño pretende ilustrar el lema oficial de la UE: «Unidos en la ' +
+        'diversidad». Europa está unida por su rica historia y patrimonio cultural ' +
+        'compartidos, representados por retratos de figuras emblemáticas europeas. ' +
+        'También está unida por valores comunes y un sentimiento de pertenencia, ' +
+        'reforzados por la diversidad de sus identidades culturales. Esta diversidad ' +
+        'se plasma en un collage de formas y texturas que, al combinarse, crean un ' +
+        'todo nuevo, uniendo sus distintos elementos. El collage sirve de fondo para ' +
+        'los retratos dibujados a mano y las representaciones de los espacios ' +
+        'culturales compartidos como manifestaciones concretas de estas ideas.',
+    },
+    g: {
+      designer: 'Rubio & del Amo y Cruz más Cruz',
+      description:
+        'Una mirada cautivadora encuentra al espectador desde el centro del billete. ' +
+        'Encierra una propuesta, una idea y un diálogo entre quienes forjaron nuestra ' +
+        'identidad cultural y quienes hoy contribuimos a que Europa siga a la ' +
+        'vanguardia del pensamiento, manteniendo vivo el espíritu de esas figuras en ' +
+        'nuestra vida cotidiana. Un color predominante, coherente y fácilmente ' +
+        'reconocible responde a un patrón lineal que aporta una textura común, dentro ' +
+        'de una estructura que da cohesión al conjunto. Si giramos los billetes en ' +
+        'sentido horizontal, aparecen cuatro bloques verticales, cada uno inspirado ' +
+        'en una letra: «E», «U», «R» y «O».',
+    },
+    h: {
+      designer: 'Atelier Goppel-Toperngpong',
+      description:
+        'El agua fluye. Es la base misma de la vida, ya que modela nuestro entorno y ' +
+        'los hábitats de la rica avifauna europea representada en los billetes. ' +
+        'Además, el agua puede adoptar múltiples cualidades, como el equilibrio o la ' +
+        'constancia. El uso de estas cualidades como metáforas de las instituciones ' +
+        'de la UE contribuye a generar confianza y a comprender mejor sus funciones. ' +
+        'Una gota puede parecer insignificante, pero una corriente de agua tiene la ' +
+        'fuerza suficiente para esculpir cadenas montañosas a lo largo de los siglos. ' +
+        'Una persona podría parecer insignificante, pero millones de personas unidas ' +
+        'por un objetivo común son resilientes y poderosas. Desde esta perspectiva, ' +
+        'el agua es una analogía adecuada para la UE.',
+    },
+    i: {
+      designer: 'Isabelle Daëron',
+      description:
+        'Desde el batir de las alas de un ave, hasta el fluir de los ríos, el ' +
+        'movimiento ocupa un lugar central en esta propuesta, que trata de plasmar ' +
+        'tanto el dinamismo de la UE, como las corrientes tangibles e intangibles que ' +
+        'atraviesan su territorio. Como verdadera mensajera, el ave —representada en ' +
+        'solitario en el anverso y en grupo en el reverso— simboliza el diálogo y la ' +
+        'interdependencia de nuestras sociedades y la naturaleza. Desde el nacimiento ' +
+        'de un río, hasta su desembocadura en el océano, el vuelo del ave revela el ' +
+        'paisaje que recorre mediante la interacción de dos patrones —uno dibujado a ' +
+        'mano con rotulador y otro basado en vectores—, que encarnan la cohesión a ' +
+        'través de la diversidad.',
+    },
+    j: {
+      designer: 'Ville Tietäväinen',
+      description:
+        'Esta serie de billetes en euros narra la historia visual del curso de los ' +
+        'ríos europeos, desde su nacimiento en manantiales de montaña hasta su ' +
+        'desembocadura en el mar. Los protagonistas son las aves europeas ' +
+        'representadas en sus hábitats naturales. Cuanto más alta es la denominación ' +
+        'del billete, más cercanas al mar son las imágenes representadas. Los ' +
+        'elementos holográficos muestran una etapa del curso de un río y su ave ' +
+        'correspondiente, y funcionan como un recurso infográfico que introduce el ' +
+        'concepto narrativo de la serie de billetes. Incluso los edificios de la UE ' +
+        'que aparecen en el reverso de los billetes se funden con las alas de las ' +
+        'aves del anverso.',
     },
   },
 };
