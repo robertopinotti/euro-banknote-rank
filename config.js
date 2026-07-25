@@ -26,7 +26,9 @@
  * condizioni d'uso di reCAPTCHA.
  */
 export const APP_CHECK = {
-  siteKey: '',
+  siteKey: '6Lf1R2UtAAAAABDhZmMxcrfH15OTg6ydfvVEePzG',
+  // Manca ancora: Impostazioni progetto → Le tue app → app Web → ID app.
+  // Finche' e' vuoto App Check resta spento e il sito non carica reCAPTCHA.
   appId: '',
 };
 
