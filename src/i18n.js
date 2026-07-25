@@ -108,6 +108,11 @@ export const STRINGS = {
       'Riprodotte a fini informativi. Progetto indipendente, senza alcun legame ' +
       "con la BCE o l'Eurosistema, né alcuna loro approvazione.",
 
+    'footer.recaptchaHtml':
+      'Questo sito è protetto da reCAPTCHA: si applicano la ' +
+      '<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">privacy policy</a> e i ' +
+      '<a href="https://policies.google.com/terms" target="_blank" rel="noopener">termini di servizio</a> di Google.',
+
     'method.title': 'Come si calcola la classifica',
     'method.bodyHtml': `
       <h2>Perché confronti a due</h2>
@@ -259,6 +264,11 @@ export const STRINGS = {
       `<a href="${ECB_URL}" target="_blank" rel="noopener">Future euro banknote design proposals</a>. ` +
       'Reproduced for information purposes. Independent project, with no link to ' +
       'and no endorsement from the ECB or the Eurosystem.',
+
+    'footer.recaptchaHtml':
+      'This site is protected by reCAPTCHA and the Google ' +
+      '<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy Policy</a> and ' +
+      '<a href="https://policies.google.com/terms" target="_blank" rel="noopener">Terms of Service</a> apply.',
 
     'method.title': 'How the ranking is computed',
     'method.bodyHtml': `
@@ -412,6 +422,11 @@ export const STRINGS = {
       `européenne — <a href="${ECB_URL}" target="_blank" rel="noopener">Future euro banknote design proposals</a>. ` +
       "Reproduites à titre d'information. Projet indépendant, sans aucun lien " +
       "avec la BCE ou l'Eurosystème, ni aucune approbation de leur part.",
+
+    'footer.recaptchaHtml':
+      'Ce site est protégé par reCAPTCHA : la ' +
+      '<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">politique de confidentialité</a> et les ' +
+      "<a href=\"https://policies.google.com/terms\" target=\"_blank\" rel=\"noopener\">conditions d'utilisation</a> de Google s'appliquent.",
 
     'method.title': 'Comment le classement est calculé',
     'method.bodyHtml': `
@@ -569,6 +584,11 @@ export const STRINGS = {
       'Wiedergabe zu Informationszwecken. Unabhängiges Projekt, ohne Verbindung ' +
       'zur EZB oder zum Eurosystem und ohne deren Billigung.',
 
+    'footer.recaptchaHtml':
+      'Diese Website ist durch reCAPTCHA geschützt; es gelten die ' +
+      '<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Datenschutzerklärung</a> und die ' +
+      '<a href="https://policies.google.com/terms" target="_blank" rel="noopener">Nutzungsbedingungen</a> von Google.',
+
     'method.title': 'Wie die Rangliste berechnet wird',
     'method.bodyHtml': `
       <h2>Warum paarweise Vergleiche</h2>
@@ -723,6 +743,11 @@ export const STRINGS = {
       `<a href="${ECB_URL}" target="_blank" rel="noopener">Future euro banknote design proposals</a>. ` +
       'Reproducidas con fines informativos. Proyecto independiente, sin vínculo ' +
       'alguno con el BCE ni el Eurosistema, ni respaldo por su parte.',
+
+    'footer.recaptchaHtml':
+      'Este sitio está protegido por reCAPTCHA: se aplican la ' +
+      '<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">política de privacidad</a> y las ' +
+      '<a href="https://policies.google.com/terms" target="_blank" rel="noopener">condiciones del servicio</a> de Google.',
 
     'method.title': 'Cómo se calcula la clasificación',
     'method.bodyHtml': `

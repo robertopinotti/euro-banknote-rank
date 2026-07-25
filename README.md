@@ -126,9 +126,54 @@ requires `is int`, the reader accepts both types so an already-poisoned counter
 is still read, and both are covered by tests.
 
 One thing the rules cannot do is stop a script from sending many legitimate +1
-votes. If that became a problem, the answer is
-[App Check](https://firebase.google.com/docs/app-check) with reCAPTCHA, available
-on the free plan.
+votes. They can tell that a vote is well formed; they cannot tell who sent it.
+That is what App Check is for, and the site supports it — see below.
+
+### App Check
+
+Off by default. With `APP_CHECK` empty in [`config.js`](config.js) the site
+loads nothing from Google and behaves exactly as it did before. Filling in the
+two values turns it on: the browser solves a reCAPTCHA v3 challenge, exchanges
+the result for a short-lived App Check token, and sends that token with every
+Firestore request.
+
+Implemented over REST in [`src/app-check.js`](src/app-check.js), without the
+Firebase SDK — the site has no runtime dependencies and adding one for this
+would have cost more than it bought. It is roughly a hundred lines: load
+reCAPTCHA, one POST to exchange the token, one header on the Firestore calls,
+and a cache so a token is fetched once an hour rather than once a vote.
+
+**It fails open.** If reCAPTCHA does not load or the exchange fails, requests go
+out without a token instead of not at all. In monitoring mode that is exactly
+right. Under enforcement Firestore refuses them, and the site already knows how
+to say so. Failing closed would mean an outage at Google takes the site down
+twice over.
+
+Setting it up:
+
+1. **Enable the Firebase App Check API** on the project (Google Cloud console →
+   APIs & Services). Without it the token exchange answers `403 … has not been
+   used in project … before or it is disabled`.
+2. Create a **reCAPTCHA v3** key for the site's domain at
+   [google.com/recaptcha/admin](https://www.google.com/recaptcha/admin). Keep
+   the *site* key; the secret key goes to Firebase, never into this repository.
+3. Firebase console → **App Check** → register the Web app with the reCAPTCHA v3
+   provider, pasting the secret key there.
+4. Put the site key and the app ID (Project settings → Your apps, of the form
+   `1:123456789:web:abc123`) into `APP_CHECK` in [`config.js`](config.js). Both
+   are public values that ship in the page; neither is a secret.
+5. Leave App Check in **monitoring** mode for a few days. The console shows how
+   many requests arrive verified. Turning on enforcement while that number is
+   below 100% would lock out real visitors.
+6. Only then enforce, on Cloud Firestore.
+
+Two things worth knowing before you switch it on. The app ID goes into the URL
+path with its colons **unencoded** — percent-encoding them routes the request
+somewhere else and it fails with an unrelated error, which is why the code
+validates the shape instead of escaping it. And reCAPTCHA means Google runs a
+script on every visit and sees your visitors: for a site with no accounts, no
+cookies and no analytics, that is a real change, and it is the reason the
+footer carries the disclosure that reCAPTCHA's terms require.
 
 If the backend is configured but unreachable, the site falls back to local mode
 and says so, rather than showing a broken page.

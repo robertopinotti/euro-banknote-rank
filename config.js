@@ -11,6 +11,25 @@
  * mai qui una chiave di servizio o le credenziali dell'Admin SDK.
  */
 
+/**
+ * App Check. Prova che una richiesta arriva da questo sito e non da uno
+ * script: le regole di sicurezza sanno dire se un voto è ben formato, non da
+ * dove viene. Lasciando questi due valori vuoti il sito funziona esattamente
+ * come prima, senza caricare niente da Google.
+ *
+ * `siteKey` è la chiave del sito reCAPTCHA v3, `appId` l'identificativo
+ * dell'app Web (Impostazioni progetto → Le tue app, nella forma
+ * 1:123456789:web:abc123). Istruzioni passo passo nel README.
+ *
+ * Attenzione: attivandolo il sito carica reCAPTCHA, cioè uno script di Google
+ * su ogni visita. Il piè di pagina lo dichiara da solo, come richiesto dalle
+ * condizioni d'uso di reCAPTCHA.
+ */
+export const APP_CHECK = {
+  siteKey: '',
+  appId: '',
+};
+
 /** Quale backend usare: 'firebase' | 'local' */
 export const BACKEND = 'firebase';
 

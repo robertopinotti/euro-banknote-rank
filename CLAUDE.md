@@ -61,7 +61,8 @@ npm run stamp                 # realign the cache-busting fingerprints in index.
 | `src/store.js` | Firestore over REST (one document, `stats/all`), or `localStorage` |
 | `src/data.js` | the 10 designs, the 6 denominations, image paths |
 | `src/i18n.js` | all interface text in it/en/fr/de/es |
-| `config.js` | Firebase project and public key |
+| `config.js` | Firebase project, public key, optional App Check |
+| `src/app-check.js` | reCAPTCHA → App Check token, over REST, no SDK |
 | `tools/stamp-assets.mjs` | `?v=` fingerprints and the import map |
 
 **Generated files, never hand-edit:** `src/design-texts.js` (official ECB texts)
