@@ -567,14 +567,19 @@ function wireControls() {
     },
   });
 
-  for (const btn of document.querySelectorAll('.seg-btn')) {
+  // Solo le schede della classifica, non ogni elemento con la classe .seg-btn:
+  // tema e lingua nel footer usano lo stesso stile, e con un selettore generico
+  // finivano per far girare anche questo codice. Cambiando lingua, `data-scope`
+  // era indefinito, nessun contenitore corrispondeva e la classifica spariva.
+  const scopeButtons = document.querySelectorAll('.seg-btn[data-scope]');
+  for (const btn of scopeButtons) {
     btn.addEventListener('click', () => {
       state.rankScope = btn.dataset.scope;
       // Tornando alla generale si riparte dall'alto: chi cambia vista vuole
       // rivedere la testa della classifica, non riprendere da dov'era.
       state.visibleRows = PAGE_SIZE;
       renderRankings();
-      for (const b of document.querySelectorAll('.seg-btn')) {
+      for (const b of scopeButtons) {
         b.classList.toggle('is-active', b === btn);
       }
       showRankScope();
