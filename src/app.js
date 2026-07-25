@@ -14,6 +14,7 @@ import {
 } from './data.js';
 
 import { DESIGN_TEXTS } from './design-texts.js';
+import { imageAspect } from './image-aspects.js';
 
 import {
   LANGUAGES,
@@ -156,6 +157,9 @@ function renderArena() {
       const img = $(`img-${pos}-${side}`);
       img.classList.add('is-loading');
       img.onload = () => img.classList.remove('is-loading');
+      // Le proporzioni vere prima della sorgente: così l'altezza è nota subito
+      // e la carta non collassa nell'attesa che l'immagine arrivi.
+      img.style.aspectRatio = String(imageAspect(id, denomination, side));
       img.src = imageUrl(id, denomination, side);
       img.alt = t('alt.note', {
         letter: design.letter,
