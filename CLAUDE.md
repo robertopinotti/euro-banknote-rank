@@ -65,8 +65,8 @@ npm run stamp                 # realign the cache-busting fingerprints in index.
 | `tools/stamp-assets.mjs` | `?v=` fingerprints and the import map |
 
 **Generated files, never hand-edit:** `src/design-texts.js` (official ECB texts)
-and `src/image-aspects.js` (aspect ratios of the 120 images). If the content
-needs to change, regenerate it.
+and `src/image-aspects.js` — regenerate the latter with
+`node tools/measure-images.mjs` after touching any banknote image.
 
 ## Conventions
 
@@ -109,9 +109,14 @@ win in both directions.
 - **Counting DOM nodes does not tell you they are visible.** A bug where the
   ranking vanished went undetected because the rows were there — it was the
   container that was hidden. Measure rendered height.
-- **ECB images are not all oriented the way the design is.** Three designs
-  (D, I, J) are portrait but published rotated. The objective test is the
-  European flag, always 3:2.
+- **ECB images are not all oriented the way the design is.** Four designs
+  (D, G, I, J) are portrait but published rotated. Do not trust the file's
+  aspect ratio: it says how the file was saved, not how the design was drawn.
+  The European flag — always 3:2 — is a good first pass, but it missed G, whose
+  portrait composition places the flag on its side. The ECB's own description of
+  each design is the authority; G's says "if we turn the banknotes
+  horizontally". Rotation direction is not uniform either: D, I and J needed
+  clockwise, G needed anticlockwise. Look at the result before committing it.
 
 ## Before handing work over
 

@@ -184,6 +184,7 @@ assets/css/style.css           single stylesheet, light and dark
 assets/banknotes/              120 WebP images (60 fronts + 60 reverses)
 tools/stamp-assets.mjs         cache-busting fingerprints and import map
 tools/seed-aggregate.mjs       one-off migration to the single-document schema
+tools/measure-images.mjs       regenerates src/image-aspects.js from the images
 firebase/firestore.rules       Firestore security rules
 test/                          rating engine, rules, and the Firestore adapter
 ```
@@ -191,11 +192,21 @@ test/                          rating engine, rules, and the Firestore adapter
 The dependencies in `package.json` exist only to run the Firestore rules tests;
 the site itself has none.
 
-**Three of the ten designs — D, I and J — are portrait**, but the ECB publishes
-almost all of their files in landscape, with the content rotated 90°. The images
-in this repository are already upright. The test is not by eye: the European flag
-is always 3:2, so if it measures taller than wide in an image, the file is
-rotated. The only file already published upright is the €200 front of design D.
+**Four of the ten designs — D, G, I and J — are portrait**, but the ECB
+publishes almost all of their files in landscape, with the content rotated 90°.
+The images in this repository are already upright, and
+[`tools/measure-images.mjs`](tools/measure-images.mjs) derives
+`src/image-aspects.js` from what is actually on disk.
+
+Finding them is harder than it looks. The first attempt read the aspect ratio of
+the file, which only says how the file was saved, not how the design was drawn.
+The second measured the European flag — always 3:2, so a flag taller than wide
+means a rotated file — and that found D, I and J. It missed G, because in G's
+portrait composition the flag itself is placed on its side, so the file looked
+upright by that test. What settled G was the ECB's own description of it: "if we
+turn the banknotes horizontally, we see four vertical blocks". There is no
+single mechanical test; the flag is a good first pass and the text is the
+authority. D's €200 front is the one file the ECB already publishes upright.
 
 Images are resized to 1000 px on the long side and converted to WebP: 8.8 MB
 instead of the originals' 41 MB, because one voting screen loads four at a time.
