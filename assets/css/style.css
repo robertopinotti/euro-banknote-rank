@@ -709,6 +709,11 @@ kbd {
 @media (max-width: 560px) {
   .header-inner { min-height: 0; padding-block: 10px; }
   .brand-text small { display: none; }
+  /* Le voci si stringono per stare su una riga: in francese, tedesco e
+     spagnolo le parole sono piu' lunghe e la barra andava a capo, spingendo
+     giu' le banconote. */
+  .nav { gap: 2px; }
+  .nav a { padding: 6px 9px; font-size: .86rem; }
   /* Nascondere il solo testo lascerebbe un blocco vuoto con il suo margine. */
   .vote-head { display: none; }
   .kbd-hint { display: none; }

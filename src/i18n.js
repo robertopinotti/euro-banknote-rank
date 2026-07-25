@@ -36,13 +36,14 @@ export const STRINGS = {
 
     'nav.vote': 'Vota',
     'nav.ranking': 'Classifica',
-    'nav.designs': 'I disegni',
+    'nav.designs': 'Disegni',
     'nav.method': 'Metodo',
 
     'vote.hintHtml':
       'Si confrontano sempre <strong>due banconote dello stesso taglio</strong>, ' +
       'fronte e retro. Scegli quella che ti piace di più.',
     'vote.skip': 'Non saprei, passa oltre',
+    'vote.countZero': 'Non hai ancora votato',
     'vote.countOne': 'Hai espresso 1 voto',
     'vote.countMany': 'Hai espresso {n} voti',
     'vote.kbdHtml':
@@ -186,13 +187,14 @@ export const STRINGS = {
 
     'nav.vote': 'Vote',
     'nav.ranking': 'Ranking',
-    'nav.designs': 'The designs',
+    'nav.designs': 'Designs',
     'nav.method': 'Method',
 
     'vote.hintHtml':
       'You always compare <strong>two banknotes of the same denomination</strong>, ' +
       'front and back. Pick the one you like more.',
     'vote.skip': "Can't decide, skip this one",
+    'vote.countZero': "You haven't voted yet",
     'vote.countOne': 'You have cast 1 vote',
     'vote.countMany': 'You have cast {n} votes',
     'vote.kbdHtml':
@@ -337,13 +339,14 @@ export const STRINGS = {
 
     'nav.vote': 'Voter',
     'nav.ranking': 'Classement',
-    'nav.designs': 'Les graphismes',
+    'nav.designs': 'Graphismes',
     'nav.method': 'Méthode',
 
     'vote.hintHtml':
       'On compare toujours <strong>deux billets de la même coupure</strong>, ' +
       'recto et verso. Choisissez celui qui vous plaît le plus.',
-    'vote.skip': 'Je ne saurais dire, passer',
+    'vote.skip': 'Je ne sais pas, passer',
+    'vote.countZero': "Vous n'avez pas encore voté",
     'vote.countOne': 'Vous avez exprimé 1 vote',
     'vote.countMany': 'Vous avez exprimé {n} votes',
     'vote.kbdHtml':
@@ -491,13 +494,14 @@ export const STRINGS = {
 
     'nav.vote': 'Abstimmen',
     'nav.ranking': 'Rangliste',
-    'nav.designs': 'Die Entwürfe',
+    'nav.designs': 'Entwürfe',
     'nav.method': 'Methode',
 
     'vote.hintHtml':
       'Verglichen werden immer <strong>zwei Banknoten derselben Stückelung</strong>, ' +
       'Vorder- und Rückseite. Wählen Sie die, die Ihnen besser gefällt.',
     'vote.skip': 'Unentschieden, überspringen',
+    'vote.countZero': 'Sie haben noch nicht abgestimmt',
     'vote.countOne': 'Sie haben 1 Stimme abgegeben',
     'vote.countMany': 'Sie haben {n} Stimmen abgegeben',
     'vote.kbdHtml':
@@ -644,13 +648,14 @@ export const STRINGS = {
 
     'nav.vote': 'Votar',
     'nav.ranking': 'Clasificación',
-    'nav.designs': 'Los diseños',
+    'nav.designs': 'Diseños',
     'nav.method': 'Método',
 
     'vote.hintHtml':
       'Siempre se comparan <strong>dos billetes de la misma denominación</strong>, ' +
       'anverso y reverso. Elige el que más te guste.',
     'vote.skip': 'No sabría decidir, saltar',
+    'vote.countZero': 'Aún no has votado',
     'vote.countOne': 'Has emitido 1 voto',
     'vote.countMany': 'Has emitido {n} votos',
     'vote.kbdHtml':

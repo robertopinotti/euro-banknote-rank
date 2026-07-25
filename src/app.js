@@ -52,6 +52,9 @@ const state = {
   current: null,      // sfida in corso
   lang: DEFAULT_LANG,
   theme: 'auto',      // 'auto' | 'light' | 'dark'
+  // Chiave del messaggio in fascia, non il testo già tradotto: cambiando
+  // lingua va riscritto, e senza la chiave non si saprebbe in cosa.
+  bannerKey: null,
   seen: loadSeenPairs(),
   busy: false,
 };
@@ -209,8 +212,9 @@ function updateVoteCount() {
   // aggiornato si trova nella classifica, che è il posto dove si va a
   // guardare i numeri.
   const mine = myVoteCount();
-  $('vote-count').textContent =
-    mine === 1 ? t('vote.countOne') : t('vote.countMany', { n: mine });
+  const key =
+    mine === 0 ? 'vote.countZero' : mine === 1 ? 'vote.countOne' : 'vote.countMany';
+  $('vote-count').textContent = t(key, { n: mine });
 }
 
 async function vote(position) {
@@ -238,7 +242,7 @@ async function vote(position) {
     console.error(err);
     undoVoteLocally(denomination, winner, loser);
     recompute();
-    showBanner(t('banner.voteFailed'));
+    showBanner('banner.voteFailed');
   }
 
   // Breve pausa perché il segnale verde di conferma sia percepibile.
@@ -255,9 +259,10 @@ function skip() {
   nextChallenge();
 }
 
-function showBanner(text) {
+function showBanner(key) {
+  state.bannerKey = key;
   const el = $('mode-banner');
-  el.textContent = text;
+  el.textContent = t(key);
   el.hidden = false;
 }
 
@@ -518,6 +523,7 @@ function applyLanguage() {
   }
 
   // Il testo generato dal codice non ha attributi da rileggere: va rifatto.
+  if (state.bannerKey) showBanner(state.bannerKey);
   if (state.current) renderArena();
   if (state.rankings) renderRankings();
   renderDesignGallery();
@@ -633,9 +639,9 @@ async function main() {
 
   if (state.store.mode === 'local') {
     showBanner(
-      t(state.store.reason === 'non configurato'
+      state.store.reason === 'non configurato'
         ? 'banner.notConfigured'
-        : 'banner.unreachable')
+        : 'banner.unreachable'
     );
   }
 
