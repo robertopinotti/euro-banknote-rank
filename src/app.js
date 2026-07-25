@@ -14,7 +14,7 @@ import {
 } from './data.js';
 
 import { DESIGN_TEXTS } from './design-texts.js';
-import { imageAspect } from './image-aspects.js';
+import { imageAspect, isPortrait } from './image-aspects.js';
 
 import {
   LANGUAGES,
@@ -160,6 +160,11 @@ function renderArena() {
 
   for (const [pos, id] of [['left', left], ['right', right]]) {
     const design = DESIGNS_BY_ID[id];
+    // Le proposte verticali mettono fronte e retro affiancati: impilate
+    // occuperebbero due schermate e non si vedrebbero le due carte insieme.
+    $(`card-${pos}`)
+      .querySelector('.note-sides')
+      .classList.toggle('is-portrait', isPortrait(id));
     // Fronte e retro insieme: si vota la banconota intera, non una sua faccia.
     for (const side of SIDES) {
       const img = $(`img-${pos}-${side}`);

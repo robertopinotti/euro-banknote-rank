@@ -5,8 +5,8 @@
  *
  * Servono a riservare lo spazio della banconota prima che l'immagine sia
  * scaricata: senza, a ogni sfida la carta collasserebbe e si riespanderebbe.
- * Sono le proporzioni vere, non una media, perché variano da un taglio
- * all'altro e una proposta ha il 200 € in verticale.
+ * Sono le proporzioni vere, non una media: tre proposte su dieci — D, I e J —
+ * sono disegnate in verticale.
  */
 
 export const IMAGE_ASPECTS = {
@@ -46,18 +46,18 @@ export const IMAGE_ASPECTS = {
   'c-5-front': 1.9342,
   'c-50-back': 1.8182,
   'c-50-front': 1.8182,
-  'd-10-back': 1.8939,
-  'd-10-front': 1.8939,
-  'd-100-back': 1.9084,
-  'd-100-front': 1.9084,
-  'd-20-back': 1.845,
-  'd-20-front': 1.845,
-  'd-200-back': 1.9841,
+  'd-10-back': 0.528,
+  'd-10-front': 0.528,
+  'd-100-back': 0.524,
+  'd-100-front': 0.524,
+  'd-20-back': 0.542,
+  'd-20-front': 0.542,
+  'd-200-back': 0.504,
   'd-200-front': 0.504,
-  'd-5-back': 1.9342,
-  'd-5-front': 1.9342,
-  'd-50-back': 1.8182,
-  'd-50-front': 1.8182,
+  'd-5-back': 0.517,
+  'd-5-front': 0.517,
+  'd-50-back': 0.55,
+  'd-50-front': 0.55,
   'e-10-back': 1.8939,
   'e-10-front': 1.9011,
   'e-100-back': 1.9084,
@@ -106,33 +106,42 @@ export const IMAGE_ASPECTS = {
   'h-5-front': 1.9342,
   'h-50-back': 1.8182,
   'h-50-front': 1.8182,
-  'i-10-back': 1.8939,
-  'i-10-front': 1.9011,
-  'i-100-back': 1.9048,
-  'i-100-front': 1.9084,
-  'i-20-back': 1.845,
-  'i-20-front': 1.8519,
-  'i-200-back': 1.992,
-  'i-200-front': 1.9881,
-  'i-5-back': 1.9342,
-  'i-5-front': 1.938,
-  'i-50-back': 1.8149,
-  'i-50-front': 1.8215,
-  'j-10-back': 1.8975,
-  'j-10-front': 1.8975,
-  'j-100-back': 1.9084,
-  'j-100-front': 1.9084,
-  'j-20-back': 1.8484,
-  'j-20-front': 1.845,
-  'j-200-back': 1.992,
-  'j-200-front': 1.992,
-  'j-5-back': 1.938,
-  'j-5-front': 1.938,
-  'j-50-back': 1.8182,
-  'j-50-front': 1.8215,
+  'i-10-back': 0.528,
+  'i-10-front': 0.526,
+  'i-100-back': 0.525,
+  'i-100-front': 0.524,
+  'i-20-back': 0.542,
+  'i-20-front': 0.54,
+  'i-200-back': 0.502,
+  'i-200-front': 0.503,
+  'i-5-back': 0.517,
+  'i-5-front': 0.516,
+  'i-50-back': 0.551,
+  'i-50-front': 0.549,
+  'j-10-back': 0.527,
+  'j-10-front': 0.527,
+  'j-100-back': 0.524,
+  'j-100-front': 0.524,
+  'j-20-back': 0.541,
+  'j-20-front': 0.542,
+  'j-200-back': 0.502,
+  'j-200-front': 0.502,
+  'j-5-back': 0.516,
+  'j-5-front': 0.516,
+  'j-50-back': 0.55,
+  'j-50-front': 0.549,
 };
 
 /** Proporzioni di un'immagine; 1.94 è la media delle banconote orizzontali. */
 export function imageAspect(designId, denomination, side) {
   return IMAGE_ASPECTS[`${designId}-${denomination}-${side}`] ?? 1.94;
+}
+
+/**
+ * Vero per le proposte disegnate in verticale. La BCE pubblica quasi tutti i
+ * loro file in orizzontale, con il contenuto ruotato di 90°: qui le immagini
+ * sono gia' state raddrizzate, quindi basta guardare le proporzioni.
+ */
+export function isPortrait(designId) {
+  return imageAspect(designId, 50, 'front') < 1;
 }

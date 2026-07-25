@@ -285,6 +285,17 @@ code {
   gap: 8px;
 }
 
+/* Tre proposte su dieci sono disegnate in verticale. Impilarne fronte e retro
+   darebbe una carta alta il doppio delle altre, e le due opzioni da confrontare
+   non starebbero piu' nella stessa schermata: affiancandoli, l'altezza torna
+   paragonabile a quella di una proposta orizzontale. */
+.note-sides.is-portrait {
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+}
+
+.note-sides.is-portrait img { max-height: 460px; }
+
 .note-card {
   appearance: none;
   border: 1px solid var(--line);
@@ -696,6 +707,7 @@ kbd {
      confronto che non si vede tutto insieme non è più un confronto. */
   .note-sides { grid-template-columns: 1fr 1fr; align-items: center; }
   .note-sides img { max-height: 170px; }
+  .note-sides.is-portrait img { max-height: 230px; }
   .versus {
     justify-self: center;
     width: 36px;

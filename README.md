@@ -248,6 +248,14 @@ Il sito **non ha dipendenze a runtime**: è HTML, CSS e moduli ES serviti così
 come sono. Le dipendenze in `package.json` servono solo a eseguire i test delle
 regole Firestore.
 
+**Tre proposte su dieci — D, I e J — sono disegnate in verticale**, ma la BCE
+pubblica quasi tutti i loro file in orizzontale, con il contenuto ruotato di
+90°: mostrarli così com'erano significava presentare quei disegni coricati. Le
+immagini nel repository sono già raddrizzate. Il criterio non è a occhio: la
+bandiera europea è sempre 3:2, quindi se in un'immagine risulta più alta che
+larga il file è ruotato. L'unica eccezione è il fronte del 200 € della proposta
+D, che la BCE pubblica già in verticale.
+
 Le immagini sono ridimensionate a 1000 px sul lato lungo e convertite in WebP:
 8,8 MB in tutto invece dei 41 MB degli originali, perché in una schermata di
 voto se ne caricano quattro alla volta — fronte e retro di entrambe le
