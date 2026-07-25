@@ -48,13 +48,13 @@ and the ranking is your own.
 
 ```bash
 npm test                            # 9 rating-engine tests, no dependencies
-npm install && npm run test:rules   # 37 tests against the Firestore emulator (needs Java)
+npm install && npm run test:rules   # 35 tests against the Firestore emulator (needs Java)
 ```
 
 The rules tests come in two groups. Twenty-three attack the rules through the
 Firebase SDK — writing an arbitrary score, incrementing by 1000, taking votes
 away from others, declaring one counter while inflating another, deleting — and
-all of them must fail. The other fourteen run the real `src/store.js` code
+all of them must fail. The other twelve run the real `src/store.js` code
 against the emulator, because the rules are written with the SDK in mind while
 the site speaks REST with `updateMask` and `updateTransforms`. Among those is
 the case that matters most: twenty simultaneous votes on the same pair must
@@ -127,8 +127,10 @@ and says so, rather than showing a broken page.
 
 `stats/all` is created once, by hand, and the rules forbid creating it from the
 browser — a create rule would be a way to overwrite the whole ranking with one
-write. [`tools/seed-aggregate.mjs`](tools/seed-aggregate.mjs) writes it, carrying
-across whatever votes the old per-pair collection already held:
+write. This has already been done for the live site;
+[`tools/seed-aggregate.mjs`](tools/seed-aggregate.mjs) is kept for a fresh
+deployment, and writes the document carrying across whatever votes an old
+per-pair collection already held:
 
 1. In the Firebase console, publish the rules with `allow create: if true` on
    `stats/all` instead of `if false`.

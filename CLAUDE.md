@@ -47,7 +47,7 @@ In practice:
 ```bash
 python3 -m http.server 8000   # serve the site locally
 npm test                      # 9 rating-engine tests
-npm run test:rules            # 25 tests against the Firestore emulator (needs Java)
+npm run test:rules            # 35 tests against the Firestore emulator (needs Java)
 npm run stamp                 # realign the cache-busting fingerprints in index.html
 ```
 
@@ -58,7 +58,7 @@ npm run stamp                 # realign the cache-busting fingerprints in index.
 | `index.html` | the four views; every visible string is a `data-i18n` key |
 | `src/app.js` | controller: routing, the head-to-head, ranking rendering |
 | `src/rating.js` | Bradley–Terry (Hunter's MM), Elo scale, pair selection |
-| `src/store.js` | Firestore over REST, or `localStorage` |
+| `src/store.js` | Firestore over REST (one document, `stats/all`), or `localStorage` |
 | `src/data.js` | the 10 designs, the 6 denominations, image paths |
 | `src/i18n.js` | all interface text in it/en/fr/de/es |
 | `config.js` | Firebase project and public key |
@@ -101,9 +101,11 @@ win in both directions.
 
 ## Traps already hit
 
-- **Block replacements that swallow adjacent code.** It has happened three times
-  (a lost function, three lost `localStorage` constants). After a wide edit,
-  reload the page in a real browser: unit tests will not catch it.
+- **Block replacements that swallow adjacent code.** Four times now: a lost
+  function, three lost `localStorage` constants, and a whole file duplicated
+  because a search for `async submitVote` matched the wrong class first. Anchor
+  edits on something unique, and after a wide edit reload the page in a real
+  browser — unit tests will not catch it.
 - **Counting DOM nodes does not tell you they are visible.** A bug where the
   ranking vanished went undetected because the rows were there — it was the
   container that was hidden. Measure rendered height.

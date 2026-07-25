@@ -145,24 +145,15 @@ export class FirestoreStore {
       `${this.base}/stats/all?key=${encodeURIComponent(this.apiKey)}`
     );
 
-    // Not available yet. This is the transition: the aggregate document is
-    // written once by tools/seed-aggregate.mjs, and until that has happened
-    // the counts still only exist as 270 separate documents. Falling back
-    // means this code can be deployed before the migration is run without the
-    // ranking showing zero to everyone in between.
+    // A fresh install with nothing seeded yet: an empty ranking, not an error.
     //
-    // Both codes matter, and only catching 404 was a live bug: while the old
-    // rules are still published, their catch-all denies everything outside
-    // pairStats, so the document that does not exist yet answers 403 and not
-    // 404. The read threw, the site fell back to local mode, and the shared
-    // ranking vanished — which is exactly what this fallback exists to
-    // prevent.
-    //
-    // Delete this, and loadFromOldCollection, once stats/all is in place and
-    // the new rules are published.
-    if (res.status === 404 || res.status === 403) {
-      return this.loadFromOldCollection();
-    }
+    // 404 only, deliberately. A 403 falls through and throws: it means the
+    // rules are refusing the read, and the caller turns that into the "last
+    // shared copy, not being refreshed" state, which says so out loud. During
+    // the migration this branch also fell back to the old per-pair collection;
+    // that fallback is gone, because now that stats/all exists it would have
+    // served frozen counts as if they were live, and said nothing.
+    if (res.status === 404) return [];
 
     if (!res.ok) {
       throw new Error(`Lettura statistiche fallita (HTTP ${res.status}): ${await res.text()}`);
@@ -191,42 +182,6 @@ export class FirestoreStore {
     // Pairs nobody has voted on yet carry no information: dropping them keeps
     // the array small and matches what the caller used to receive.
     return [...byPair.values()].filter((r) => r.winsLo + r.winsHi > 0);
-  }
-
-  /**
-   * The old shape: one document per pair, 270 reads. Only reached while the
-   * aggregate document does not exist yet. Temporary — see the caller.
-   */
-  async loadFromOldCollection() {
-    const stats = [];
-    let pageToken = '';
-
-    do {
-      const url =
-        `${this.base}/pairStats?key=${encodeURIComponent(this.apiKey)}&pageSize=300` +
-        (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '');
-
-      const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error(`Lettura statistiche fallita (HTTP ${res.status}): ${await res.text()}`);
-      }
-
-      const body = await res.json();
-      // Collezione vuota: Firestore risponde `{}`, senza la chiave documents.
-      for (const doc of body.documents || []) {
-        const f = doc.fields || {};
-        stats.push({
-          denomination: Number(f.denomination?.integerValue ?? 0),
-          designLo: f.designLo?.stringValue ?? '',
-          designHi: f.designHi?.stringValue ?? '',
-          winsLo: Number(f.winsLo?.integerValue ?? 0),
-          winsHi: Number(f.winsHi?.integerValue ?? 0),
-        });
-      }
-      pageToken = body.nextPageToken || '';
-    } while (pageToken);
-
-    return stats;
   }
 
   async submitVote({ denomination, winner, loser }) {

@@ -87,46 +87,6 @@ test('a document that is not there yet is not an error', async () => {
   assert.deepEqual(await store.loadPairStats(), []);
 });
 
-test('before the migration it still reads the old collection', async () => {
-  // Percorso di transizione: il codice puo' essere pubblicato prima che
-  // stats/all esista senza che la classifica vada a zero per tutti.
-  await clear();
-  const res = await fetch(`http://${HOST}/v1/${ROOT}/pairStats?documentId=50_a_c`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer owner' },
-    body: JSON.stringify({ fields: {
-      denomination: { integerValue: '50' },
-      designLo: { stringValue: 'a' }, designHi: { stringValue: 'c' },
-      winsLo: { integerValue: '11' }, winsHi: { integerValue: '4' },
-    } }),
-  });
-  assert.ok(res.ok);
-
-  const stats = await store.loadPairStats();
-  assert.equal(stats.length, 1);
-  assert.equal(stats[0].winsLo, 11);
-  assert.equal(stats[0].winsHi, 4);
-});
-
-test('once seeded, the old collection is ignored', async () => {
-  // Se leggesse entrambe le fonti i voti verrebbero contati due volte.
-  const res = await fetch(`http://${HOST}/v1/${ROOT}/pairStats?documentId=50_a_c`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer owner' },
-    body: JSON.stringify({ fields: {
-      denomination: { integerValue: '50' },
-      designLo: { stringValue: 'a' }, designHi: { stringValue: 'c' },
-      winsLo: { integerValue: '999' }, winsHi: { integerValue: '999' },
-    } }),
-  });
-  assert.ok(res.ok);
-
-  await store.submitVote({ denomination: 50, winner: 'a', loser: 'c' });
-  const row = find(await store.loadPairStats(), 50, 'a', 'c');
-  assert.equal(row.winsLo, 1, 'deve contare solo il documento aggregato');
-  assert.equal(row.winsHi, 0);
-});
-
 test('a seeded but unvoted ranking reads as empty', async () => {
   // I 540 contatori esistono tutti, ma nessuno è stato votato: le coppie a zero
   // non portano informazione e non devono comparire.
@@ -306,35 +266,3 @@ test('the rules refuse a pair that does not exist', async () => {
   assert.deepEqual(await store.loadPairStats(), []);
 });
 
-test('a 403 on the aggregate document falls back too, not just a 404', async () => {
-  // Il bug che questo test blocca: in produzione, finche' sono pubblicate le
-  // regole vecchie, il loro catch-all nega tutto fuori da pairStats. Il
-  // documento non ancora creato risponde quindi 403 e non 404. Ripiegando solo
-  // sul 404 la lettura sollevava, il sito passava in modalita' locale e la
-  // classifica condivisa spariva.
-  await clear();
-  const res = await fetch(`http://${HOST}/v1/${ROOT}/pairStats?documentId=5_a_b`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer owner' },
-    body: JSON.stringify({ fields: {
-      denomination: { integerValue: '5' },
-      designLo: { stringValue: 'a' }, designHi: { stringValue: 'b' },
-      winsLo: { integerValue: '6' }, winsHi: { integerValue: '2' },
-    } }),
-  });
-  assert.ok(res.ok);
-
-  // L'emulatore qui concede la lettura di stats/all, quindi il 403 va simulato.
-  const vera = globalThis.fetch;
-  globalThis.fetch = (url, ...rest) =>
-    String(url).includes('/stats/all')
-      ? Promise.resolve(new Response('{"error":{"code":403}}', { status: 403 }))
-      : vera(url, ...rest);
-  try {
-    const stats = await store.loadPairStats();
-    assert.equal(stats.length, 1, 'deve aver letto la vecchia collezione');
-    assert.equal(stats[0].winsLo, 6);
-  } finally {
-    globalThis.fetch = vera;
-  }
-});
