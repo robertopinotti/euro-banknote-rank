@@ -9,13 +9,21 @@
   --bg-sunken: #edeae2;
   --ink: #1c1a17;
   --ink-soft: #5d574d;
-  --ink-faint: #8d8579;
+  --ink-faint: #736c60;
   --line: #dcd7cc;
   --accent: #0b4ea2;          /* blu della bandiera europea */
+  /* Testo che sta sopra --accent. Nel tema scuro l'accento e' schiarito per
+     restare leggibile sui link, e il bianco sopra ci finiva a 2,4:1. */
+  --on-accent: #ffffff;
   --accent-soft: #e6edf8;
   --gold: #b8860b;
   --green: #2e7d6f;
   --win: #1f7a4d;
+  --tag-culture-ink: #7d5b07;
+  --tag-nature-ink: #256459;
+  /* L'oro del primo posto su carta bianca sta a 3,25:1 a 18,4px: sotto la
+     soglia del testo grande, quindi serve il 4,5:1 pieno. */
+  --rank-first: #8a6408;
   --shadow: 0 1px 2px rgba(28, 26, 23, .05), 0 8px 24px rgba(28, 26, 23, .07);
   --shadow-lift: 0 2px 4px rgba(28, 26, 23, .06), 0 18px 40px rgba(28, 26, 23, .14);
   --radius: 14px;
@@ -32,13 +40,17 @@
     --bg-sunken: #101216;
     --ink: #eceef2;
     --ink-soft: #a8aeb9;
-    --ink-faint: #767d89;
+    --ink-faint: #858c99;
     --line: #2b3038;
     --accent: #6ea8ff;
+    --on-accent: #101216;
     --accent-soft: #1d2635;
     --gold: #d9a441;
     --green: #4fb6a2;
     --win: #4cc38a;
+    --tag-culture-ink: #d9a441;
+    --tag-nature-ink: #4fb6a2;
+    --rank-first: #d9a441;
     --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .35);
     --shadow-lift: 0 2px 4px rgba(0, 0, 0, .35), 0 18px 40px rgba(0, 0, 0, .5);
   }
@@ -52,13 +64,17 @@
   --bg-sunken: #101216;
   --ink: #eceef2;
   --ink-soft: #a8aeb9;
-  --ink-faint: #767d89;
+  --ink-faint: #858c99;
   --line: #2b3038;
   --accent: #6ea8ff;
+  --on-accent: #101216;
   --accent-soft: #1d2635;
   --gold: #d9a441;
   --green: #4fb6a2;
   --win: #4cc38a;
+  --tag-culture-ink: #d9a441;
+  --tag-nature-ink: #4fb6a2;
+  --rank-first: #d9a441;
   --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .35);
   --shadow-lift: 0 2px 4px rgba(0, 0, 0, .35), 0 18px 40px rgba(0, 0, 0, .5);
 }
@@ -69,13 +85,21 @@
   --bg-sunken: #edeae2;
   --ink: #1c1a17;
   --ink-soft: #5d574d;
-  --ink-faint: #8d8579;
+  --ink-faint: #736c60;
   --line: #dcd7cc;
   --accent: #0b4ea2;          /* blu della bandiera europea */
+  /* Testo che sta sopra --accent. Nel tema scuro l'accento e' schiarito per
+     restare leggibile sui link, e il bianco sopra ci finiva a 2,4:1. */
+  --on-accent: #ffffff;
   --accent-soft: #e6edf8;
   --gold: #b8860b;
   --green: #2e7d6f;
   --win: #1f7a4d;
+  --tag-culture-ink: #7d5b07;
+  --tag-nature-ink: #256459;
+  /* L'oro del primo posto su carta bianca sta a 3,25:1 a 18,4px: sotto la
+     soglia del testo grande, quindi serve il 4,5:1 pieno. */
+  --rank-first: #8a6408;
   --shadow: 0 1px 2px rgba(28, 26, 23, .05), 0 8px 24px rgba(28, 26, 23, .07);
   --shadow-lift: 0 2px 4px rgba(28, 26, 23, .06), 0 18px 40px rgba(28, 26, 23, .14);
   --radius: 14px;
@@ -106,6 +130,39 @@ body {
 }
 
 a { color: var(--accent); }
+
+/* Fuori dalla vista ma dentro l'albero di accessibilita': serve ai titoli e
+   agli annunci che a schermo sarebbero ridondanti o costerebbero spazio. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Cinque tabulazioni per arrivare al contenuto, a ogni cambio di vista.
+   Questo link e' il primo elemento focalizzabile e le salta tutte. */
+.skip-link {
+  position: absolute;
+  left: 8px;
+  top: -60px;
+  z-index: 50;
+  background: var(--bg-raised);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top .12s ease;
+}
+
+.skip-link:focus { top: 8px; }
 
 h1 {
   font-size: clamp(1.7rem, 1.2rem + 2vw, 2.4rem);
@@ -163,7 +220,7 @@ code {
   height: 38px;
   border-radius: 10px;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 1.3rem;
   font-weight: 700;
   flex: none;
@@ -209,7 +266,7 @@ button:focus-visible {
 
 .nav a.is-active {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 /* -------------------------------------------------------------------- viste */
@@ -435,10 +492,16 @@ kbd {
   cursor: pointer;
 }
 
+/* La differenza fra --bg-raised e --bg-sunken e' 1,2:1 nel tema chiaro e
+   1,14:1 nello scuro: chi ha poca sensibilita' al contrasto non vedeva quale
+   opzione fosse selezionata. Il contorno la rende visibile senza cambiare i
+   colori del tema. */
 .seg-btn.is-active {
   background: var(--bg-raised);
   color: var(--ink);
   box-shadow: var(--shadow);
+  outline: 1px solid var(--ink-faint);
+  outline-offset: -1px;
 }
 
 .rank-summary { color: var(--ink-soft); font-size: .93rem; margin: 14px 0 26px; }
@@ -469,7 +532,7 @@ kbd {
   font-variant-numeric: tabular-nums;
 }
 
-.rank-row.is-first .rank-pos { color: var(--gold); }
+.rank-row.is-first .rank-pos { color: var(--rank-first); }
 
 .rank-name { font-weight: 650; letter-spacing: -.01em; }
 
@@ -549,7 +612,7 @@ kbd {
 .design-notes.is-portrait { grid-template-columns: repeat(6, 1fr); }
 
 .design-body { padding: 16px 18px 20px; }
-.design-body h3 { margin: 0 0 2px; font-size: 1.05rem; }
+.design-body h2 { margin: 0 0 2px; font-size: 1.05rem; }
 
 /* Etichetta del tema accanto alla lettera. Viveva nella sezione delle
    classifiche ed e' sparita quando quella e' stata riscritta: le classifiche
@@ -566,8 +629,11 @@ kbd {
   margin-left: 8px;
 }
 
-.tag.culture { background: color-mix(in srgb, var(--gold) 18%, transparent); color: var(--gold); }
-.tag.nature  { background: color-mix(in srgb, var(--green) 18%, transparent); color: var(--green); }
+/* Il colore di sfondo del tema e quello del testo non possono essere lo
+   stesso: --gold su una sua velatura al 18% dava 2,69:1. Il testo ha quindi un
+   token proprio, piu' scuro, mentre lo sfondo resta la velatura. */
+.tag.culture { background: color-mix(in srgb, var(--gold) 18%, transparent); color: var(--tag-culture-ink); }
+.tag.nature  { background: color-mix(in srgb, var(--green) 18%, transparent); color: var(--tag-nature-ink); }
 .design-body .who { color: var(--ink-faint); font-size: .88rem; margin: 0 0 10px; }
 .design-body p.desc { margin: 0; font-size: .9rem; color: var(--ink-soft); }
 
@@ -693,9 +759,20 @@ kbd {
   }
   .nav::-webkit-scrollbar { display: none; }
   .nav a { padding: 6px 7px; font-size: .78rem; }
-  /* Nascondere il solo testo lascerebbe un blocco vuoto con il suo margine. */
-  .vote-head { display: none; }
-  .kbd-hint { display: none; }
+  /* Fuori dagli occhi ma non fuori dall'albero di accessibilita': su un
+     telefono queste due righe sono spazio tolto alle banconote, ma erano anche
+     l'unico testo della schermata, e toglierle del tutto lasciava uno screen
+     reader con due bottoni e nient'altro. */
+  .vote-head,
+  .kbd-hint {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
   .rank-elo { font-size: 1.05rem; }
 }
 

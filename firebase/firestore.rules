@@ -63,6 +63,15 @@ service cloud.firestore {
         && request.resource.data.c.diff(resource.data.c)
              .affectedKeys().hasOnly([request.resource.data.last])
 
+        // A counter is a whole number, and this line is not decoration.
+        // Without it the rule below compares values and ignores types, and in
+        // CEL 4.0 == 3 + 1 is true — so a write could turn the counter into a
+        // double. The REST API lets the caller pick the type, and the reader
+        // asks for integerValue, which on a double is undefined and reads back
+        // as zero. One accepted request per counter, and the votes vanish from
+        // the ranking while sitting untouched in the database.
+        && request.resource.data.c[request.resource.data.last] is int
+
         // One vote is one vote. Reading the old value through the same key
         // also means a counter that does not already exist cannot be created:
         // the comparison has nothing to read and the rule fails.

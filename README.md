@@ -48,13 +48,13 @@ and the ranking is your own.
 
 ```bash
 npm test                            # 9 rating-engine tests, no dependencies
-npm install && npm run test:rules   # 35 tests against the Firestore emulator (needs Java)
+npm install && npm run test:rules   # 38 tests against the Firestore emulator (needs Java)
 ```
 
 The rules tests come in two groups. Twenty-three attack the rules through the
 Firebase SDK — writing an arbitrary score, incrementing by 1000, taking votes
 away from others, declaring one counter while inflating another, deleting — and
-all of them must fail. The other twelve run the real `src/store.js` code
+all of them must fail. The other fifteen run the real `src/store.js` code
 against the emulator, because the rules are written with the SDK in mind while
 the site speaks REST with `updateMask` and `updateTransforms`. Among those is
 the case that matters most: twenty simultaneous votes on the same pair must
@@ -112,8 +112,18 @@ tests prove it works rather than take it on faith.
 | add 1 to two counters at once | no |
 | write an arbitrary score | no |
 | take votes away | no |
+| change a counter's type | no |
 | invent a counter name | no |
 | create or delete the document | no |
+
+That "change a counter's type" row is there because it was once missing, and
+the gap was real. The rule compared values and ignored types, and in CEL
+`4.0 == 3 + 1` is true — so a single REST request could turn a counter into a
+floating-point number. The reader asks for `integerValue`, which on a double is
+undefined and reads back as zero: the votes stayed in the database and vanished
+from the ranking. 540 requests would have blanked the whole thing. The rule now
+requires `is int`, the reader accepts both types so an already-poisoned counter
+is still read, and both are covered by tests.
 
 One thing the rules cannot do is stop a script from sending many legitimate +1
 votes. If that became a problem, the answer is

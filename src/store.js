@@ -18,6 +18,9 @@
 
 import { BACKEND, FIREBASE } from '../config.js';
 
+/** I sei tagli che esistono davvero, per non fidarsi solo delle regole. */
+const VALID_DENOMINATIONS = new Set([5, 10, 20, 50, 100, 200]);
+
 const LOCAL_STATS_KEY = 'ebr:pair-stats';
 const SEEN_KEY = 'ebr:seen-pairs';
 const MY_VOTES_KEY = 'ebr:my-votes';
@@ -170,13 +173,29 @@ export class FirestoreStore {
       const m = /^d(\d+)_([a-j])_([a-j])_(lo|hi)$/.exec(name);
       if (!m) continue;
       const [, denom, lo, hi, side] = m;
+
+      // The rules already refuse a reversed pair, a design against itself, or
+      // a denomination that does not exist. Checking again here is not
+      // redundancy for its own sake: if one ever slipped through, it would be
+      // read as a genuine result and would quietly distort the ranking. The
+      // rules and the reader should fail independently.
+      if (lo >= hi) continue;
+      if (!VALID_DENOMINATIONS.has(Number(denom))) continue;
+
       const key = `${denom}|${lo}|${hi}`;
       let row = byPair.get(key);
       if (!row) {
         row = { denomination: Number(denom), designLo: lo, designHi: hi, winsLo: 0, winsHi: 0 };
         byPair.set(key, row);
       }
-      row[side === 'lo' ? 'winsLo' : 'winsHi'] = Number(value.integerValue ?? 0);
+      // doubleValue as well as integerValue. The rules now require an int, but
+      // a counter poisoned before that fix would come back as a double, and
+      // asking only for integerValue would read it as zero — silently dropping
+      // real votes instead of showing them.
+      row[side === 'lo' ? 'winsLo' : 'winsHi'] = Math.max(
+        0,
+        Math.round(Number(value.integerValue ?? value.doubleValue ?? 0))
+      );
     }
 
     // Pairs nobody has voted on yet carry no information: dropping them keeps

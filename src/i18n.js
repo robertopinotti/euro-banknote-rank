@@ -37,6 +37,7 @@ export const STRINGS = {
     'brand.tagline': 'le 10 proposte per il futuro euro, una sfida alla volta',
 
     'nav.vote': 'Vota',
+    'vote.title': 'Vota le banconote',
     'nav.ranking': 'Classifica',
     'nav.designs': 'Disegni',
     'nav.method': 'Metodo',
@@ -88,6 +89,9 @@ export const STRINGS = {
     'themeName.nature': 'Fiumi e uccelli',
 
     'alt.note': 'Disegno {letter}, banconota da {denom} euro, {side}',
+    'vote.cardLabel': 'Vota il disegno {letter}, banconota da {denom} euro',
+    'a11y.newChallenge': 'Nuova sfida: disegno {a} contro disegno {b}, banconota da {denom} euro',
+    'a11y.skip': 'Vai al contenuto',
 
     'footer.theme': 'Tema',
     'theme.auto': 'Auto',
@@ -185,6 +189,7 @@ export const STRINGS = {
     'brand.tagline': 'the 10 proposals for the future euro, one duel at a time',
 
     'nav.vote': 'Vote',
+    'vote.title': 'Vote on the banknotes',
     'nav.ranking': 'Ranking',
     'nav.designs': 'Designs',
     'nav.method': 'Method',
@@ -236,6 +241,9 @@ export const STRINGS = {
     'themeName.nature': 'Rivers and birds',
 
     'alt.note': 'Design {letter}, €{denom} banknote, {side}',
+    'vote.cardLabel': 'Vote for design {letter}, {denom} euro banknote',
+    'a11y.newChallenge': 'New pair: design {a} against design {b}, {denom} euro banknote',
+    'a11y.skip': 'Skip to content',
 
     'footer.theme': 'Theme',
     'theme.auto': 'Auto',
@@ -334,6 +342,7 @@ export const STRINGS = {
     'brand.tagline': "les 10 propositions pour le futur euro, un duel à la fois",
 
     'nav.vote': 'Voter',
+    'vote.title': 'Votez pour les billets',
     'nav.ranking': 'Classement',
     'nav.designs': 'Graphismes',
     'nav.method': 'Méthode',
@@ -385,6 +394,9 @@ export const STRINGS = {
     'themeName.nature': 'Fleuves et oiseaux',
 
     'alt.note': 'Graphisme {letter}, billet de {denom} euros, {side}',
+    'vote.cardLabel': 'Voter pour le graphisme {letter}, billet de {denom} euros',
+    'a11y.newChallenge': 'Nouveau duel : graphisme {a} contre graphisme {b}, billet de {denom} euros',
+    'a11y.skip': 'Aller au contenu',
 
     'footer.theme': 'Thème',
     'theme.auto': 'Auto',
@@ -486,6 +498,7 @@ export const STRINGS = {
     'brand.tagline': 'die 10 Vorschläge für den künftigen Euro, ein Duell nach dem anderen',
 
     'nav.vote': 'Abstimmen',
+    'vote.title': 'Über die Banknoten abstimmen',
     'nav.ranking': 'Rangliste',
     'nav.designs': 'Entwürfe',
     'nav.method': 'Methode',
@@ -537,6 +550,9 @@ export const STRINGS = {
     'themeName.nature': 'Flüsse und Vögel',
 
     'alt.note': 'Design {letter}, {denom}-Euro-Banknote, {side}',
+    'vote.cardLabel': 'Für Design {letter} stimmen, {denom}-Euro-Banknote',
+    'a11y.newChallenge': 'Neues Duell: Design {a} gegen Design {b}, {denom}-Euro-Banknote',
+    'a11y.skip': 'Zum Inhalt springen',
 
     'footer.theme': 'Darstellung',
     'theme.auto': 'Auto',
@@ -637,6 +653,7 @@ export const STRINGS = {
     'brand.tagline': 'las 10 propuestas para el futuro euro, un duelo cada vez',
 
     'nav.vote': 'Votar',
+    'vote.title': 'Vota los billetes',
     'nav.ranking': 'Clasificación',
     'nav.designs': 'Diseños',
     'nav.method': 'Método',
@@ -688,6 +705,9 @@ export const STRINGS = {
     'themeName.nature': 'Ríos y aves',
 
     'alt.note': 'Diseño {letter}, billete de {denom} euros, {side}',
+    'vote.cardLabel': 'Votar el diseño {letter}, billete de {denom} euros',
+    'a11y.newChallenge': 'Nuevo duelo: diseño {a} contra diseño {b}, billete de {denom} euros',
+    'a11y.skip': 'Ir al contenido',
 
     'footer.theme': 'Tema',
     'theme.auto': 'Auto',

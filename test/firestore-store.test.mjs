@@ -266,3 +266,73 @@ test('the rules refuse a pair that does not exist', async () => {
   assert.deepEqual(await store.loadPairStats(), []);
 });
 
+
+test('a double cannot be smuggled in where an integer belongs', async () => {
+  // La falla che questo test blocca: in CEL 4.0 == 3 + 1 e' vero, quindi la
+  // regola che confrontava solo i valori accettava un doubleValue. Il lettore
+  // chiede integerValue, che su un double e' undefined e vale zero: una sola
+  // richiesta accettata, e i voti di quella coppia sparivano dalla classifica
+  // pur restando intatti nel database. 540 richieste azzeravano tutto.
+  await store.submitVote({ denomination: 50, winner: 'a', loser: 'c' });
+  await store.submitVote({ denomination: 50, winner: 'a', loser: 'c' });
+
+  const res = await fetch(`http://${HOST}/v1/${ROOT}:commit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      writes: [
+        {
+          update: { name: `${ROOT}/stats/all`, fields: { last: { stringValue: 'd50_a_c_lo' } } },
+          updateMask: { fieldPaths: ['last'] },
+          updateTransforms: [
+            { fieldPath: 'c.d50_a_c_lo', increment: { doubleValue: 1 } },
+          ],
+        },
+      ],
+    }),
+  });
+
+  assert.equal(res.status, 403, 'un incremento in virgola mobile deve essere respinto');
+  assert.equal(find(await store.loadPairStats(), 50, 'a', 'c').winsLo, 2, 'i voti restano leggibili');
+});
+
+test('a counter already poisoned is still read, not silently zeroed', async () => {
+  // Difesa in profondita': se un double fosse gia' finito nel database prima
+  // della correzione delle regole, leggerlo come zero butterebbe via voti veri.
+  await fetch(`http://${HOST}/v1/${ROOT}/stats/all?updateMask.fieldPaths=c`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer owner' },
+    body: JSON.stringify({
+      fields: { c: { mapValue: { fields: { d50_a_c_lo: { doubleValue: 7 } } } } },
+    }),
+  });
+
+  const row = find(await store.loadPairStats(), 50, 'a', 'c');
+  assert.equal(row.winsLo, 7, 'il valore in virgola mobile va letto, non azzerato');
+});
+
+test('a counter name the rules would refuse is ignored by the reader too', async () => {
+  // Le regole e il lettore devono fallire in modo indipendente: se una chiave
+  // storta passasse, verrebbe letta come un risultato vero. Con 1000 vittorie
+  // fasulle un autoconfronto porterebbe un disegno in cima alla classifica.
+  await fetch(`http://${HOST}/v1/${ROOT}/stats/all?updateMask.fieldPaths=c`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer owner' },
+    body: JSON.stringify({
+      fields: { c: { mapValue: { fields: {
+        d50_c_a_lo: { integerValue: '1000' },   // coppia rovesciata
+        d50_a_a_lo: { integerValue: '1000' },   // un disegno contro se stesso
+        d7_a_c_lo: { integerValue: '1000' },    // taglio inesistente
+        d50_a_b_lo: { integerValue: '4' },      // questa e' valida
+      } } } },
+    }),
+  });
+
+  const stats = await store.loadPairStats();
+  assert.deepEqual(
+    stats.map((s) => `${s.denomination}|${s.designLo}|${s.designHi}`),
+    ['50|a|b'],
+    'deve restare solo la coppia valida'
+  );
+  assert.equal(stats[0].winsLo, 4);
+});

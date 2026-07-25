@@ -8,10 +8,12 @@ on:
     branches: [claude/eu-banknote-voting-a65myy]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+# No permissions by default. They used to be declared here, at workflow level,
+# which meant the `test` job also held pages:write and id-token:write while
+# running `npm ci` over firebase-tools and its hundreds of transitive packages.
+# One compromised lifecycle script in that tree would have had a token able to
+# publish arbitrary content to the site. Only `deploy` needs to publish.
+permissions: {}
 
 # One publication at a time. Queued runs are dropped, but the one in flight is
 # allowed to finish: interrupting a deploy halfway would leave the site in an
@@ -23,6 +25,8 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -47,6 +51,10 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

@@ -83,11 +83,21 @@ function showView(name) {
     $(`view-${v}`).hidden = v !== name;
   }
   for (const link of document.querySelectorAll('.nav a')) {
-    link.classList.toggle('is-active', link.dataset.view === name);
+    const attiva = link.dataset.view === name;
+    link.classList.toggle('is-active', attiva);
+    // Il colore della pillola dice dove si è solo a chi lo vede.
+    if (attiva) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
   }
   if (name === 'classifica') renderRankings();
   if (name === 'design') renderDesignGallery();
   window.scrollTo(0, 0);
+
+  // Il contenuto cambia senza che la pagina si ricarichi: spostando il fuoco
+  // sulla sezione, uno screen reader riparte da lì e legge la nuova
+  // intestazione. Senza, resta ad annunciare la vista precedente.
+  // preventScroll perché la posizione l'ha già decisa la riga sopra.
+  $(`view-${name}`).focus({ preventScroll: true });
 }
 
 /* -------------------------------------------------------- indici sui dati */
@@ -182,7 +192,21 @@ function renderArena() {
         side: t(`side.${side}`),
       });
     }
+    // Il nome del bottone veniva dalla somma dei due alt: ripeteva due volte
+    // "Disegno B, banconota da 200 euro" e non diceva che serve a votare.
+    $(`card-${pos}`).setAttribute(
+      'aria-label',
+      t('vote.cardLabel', { letter: design.letter, denom: denomination })
+    );
   }
+
+  // Dopo un voto le immagini cambiano ma il fuoco non si muove: senza questo
+  // annuncio, chi non vede non ha modo di sapere che la sfida è un'altra.
+  $('challenge-live').textContent = t('a11y.newChallenge', {
+    a: DESIGNS_BY_ID[left].letter,
+    b: DESIGNS_BY_ID[right].letter,
+    denom: denomination,
+  });
 
   updateVoteCount();
 }
@@ -399,7 +423,7 @@ function renderDesignGallery() {
       <article class="design-card">
         <div class="design-notes ${isPortrait(d.id) ? 'is-portrait' : ''}">${notes}</div>
         <div class="design-body">
-          <h3>${t('rank.proposal', { letter: d.letter })}${themeTag(d)}</h3>
+          <h2>${t('rank.proposal', { letter: d.letter })}${themeTag(d)}</h2>
           <p class="who">${text.designer}</p>
           <p class="desc">${text.description}</p>
         </div>
@@ -440,7 +464,7 @@ function applyTheme() {
   }
 
   for (const b of $('theme-buttons').querySelectorAll('.seg-btn')) {
-    b.classList.toggle('is-active', b.dataset.value === state.theme);
+    setSegState(b, b.dataset.value === state.theme);
   }
 }
 
@@ -468,7 +492,7 @@ function applyLanguage() {
   $('method-body').innerHTML = t('method.bodyHtml');
 
   for (const b of $('lang-buttons').querySelectorAll('.seg-btn')) {
-    b.classList.toggle('is-active', b.dataset.value === state.lang);
+    setSegState(b, b.dataset.value === state.lang);
   }
 
   // Il testo generato dal codice non ha attributi da rileggere: va rifatto.
@@ -477,6 +501,20 @@ function applyLanguage() {
   if (state.rankings) renderRankings();
   renderDesignGallery();
   updateVoteCount();
+}
+
+/**
+ * Stato di un bottone segmentato.
+ *
+ * La classe da sola colora e basta: uno screen reader leggeva cinque bottoni
+ * di lingua identici, senza modo di sapere quale fosse attiva. `aria-pressed`
+ * lo dice, ed è anche il gancio su cui il foglio di stile disegna un contorno,
+ * perché la differenza fra i due sfondi è 1,2:1 — invisibile a chi ha poca
+ * sensibilità al contrasto.
+ */
+function setSegState(button, active) {
+  button.classList.toggle('is-active', active);
+  button.setAttribute('aria-pressed', String(active));
 }
 
 function buildSegButtons(container, options, onPick) {
@@ -510,6 +548,12 @@ function wireControls() {
   // finivano per far girare anche questo codice. Cambiando lingua, `data-scope`
   // era indefinito, nessun contenitore corrispondeva e la classifica spariva.
   const scopeButtons = document.querySelectorAll('.seg-btn[data-scope]');
+  // Lo stato iniziale è nell'HTML come sola classe: senza questo giro, i due
+  // bottoni restano senza aria-pressed finché non li si clicca, e chi apre la
+  // classifica non sa quale delle due sia mostrata.
+  for (const btn of scopeButtons) {
+    setSegState(btn, btn.dataset.scope === state.rankScope);
+  }
   for (const btn of scopeButtons) {
     btn.addEventListener('click', () => {
       state.rankScope = btn.dataset.scope;
@@ -518,15 +562,24 @@ function wireControls() {
       state.visibleRows = PAGE_SIZE;
       renderRankings();
       for (const b of scopeButtons) {
-        b.classList.toggle('is-active', b === btn);
+        setSegState(b, b === btn);
       }
       showRankScope();
     });
   }
 
+  // Scorciatoie da tastiera, ma solo quando nessun controllo ha il fuoco.
+  //
+  // Il filtro escludeva soltanto input/textarea/select, e questo rompeva due
+  // cose per chi naviga da tastiera. Con il fuoco su una carta, spazio è
+  // l'attivatore nativo di un <button>: il preventDefault lo annullava e al
+  // suo posto saltava la coppia, quindi si credeva di votare e invece si
+  // scartava. E con il fuoco ovunque nel piè di pagina, le frecce — che sono
+  // il modo naturale di muoversi fra bottoni e i tasti di lettura degli
+  // screen reader — votavano una banconota fuori schermo.
   document.addEventListener('keydown', (e) => {
     if (currentView() !== 'vota') return;
-    if (e.target.closest('input, textarea, select')) return;
+    if (e.target.closest('a, button, input, textarea, select')) return;
     if (e.key === 'ArrowLeft') { e.preventDefault(); vote('left'); }
     else if (e.key === 'ArrowRight') { e.preventDefault(); vote('right'); }
     else if (e.key === ' ') { e.preventDefault(); skip(); }
