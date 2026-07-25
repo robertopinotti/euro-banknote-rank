@@ -484,17 +484,21 @@ kbd {
 
 .rank-summary { color: var(--ink-soft); font-size: .93rem; margin: 14px 0 26px; }
 
-.ranking { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ranking { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 
+/* Quattro elementi soli: posizione, proposta, punteggio e la banconota.
+   Le prime tre stanno su una riga; la banconota occupa la riga sotto, larga
+   quanto serve per riconoscerla a colpo d'occhio — che è tutto il motivo per
+   cui è lì. */
 .rank-row {
   display: grid;
-  grid-template-columns: 44px 92px 1fr auto;
-  align-items: center;
-  gap: 16px;
+  grid-template-columns: 44px 1fr auto;
+  align-items: baseline;
+  gap: 10px 14px;
   background: var(--bg-raised);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 12px 18px 12px 12px;
+  padding: 14px 18px;
   box-shadow: var(--shadow);
 }
 
@@ -508,94 +512,25 @@ kbd {
 
 .rank-row.is-first .rank-pos { color: var(--gold); }
 
-.rank-thumb {
-  position: relative;
-  aspect-ratio: 2 / 1;
-  background: var(--bg-sunken);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.rank-thumb img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.rank-info { min-width: 0; }
-
 .rank-name { font-weight: 650; letter-spacing: -.01em; }
 
-.rank-designer {
-  color: var(--ink-faint);
-  font-size: .85rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tag {
-  display: inline-block;
-  font-size: .7rem;
+.rank-elo {
+  font-size: 1.25rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  padding: 2px 8px;
-  border-radius: 999px;
-  vertical-align: 1px;
-  margin-left: 8px;
-}
-
-.tag.culture { background: color-mix(in srgb, var(--gold) 18%, transparent); color: var(--gold); }
-.tag.nature  { background: color-mix(in srgb, var(--green) 18%, transparent); color: var(--green); }
-
-/* Il taglio accanto alla proposta. Serve nella classifica generale, dove la
-   stessa proposta compare sei volte: senza, si leggerebbero righe identiche. */
-.rank-denom {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 1px 8px;
-  border-radius: 6px;
-  background: var(--bg-sunken);
-  color: var(--ink-soft);
-  font-size: .78rem;
-  font-weight: 700;
+  letter-spacing: -.02em;
   font-variant-numeric: tabular-nums;
-  vertical-align: 1px;
 }
 
-/* Nota che spiega cosa si sta guardando, in cima a ciascun livello. */
-.scope-note {
-  color: var(--ink-soft);
-  font-size: .9rem;
-  max-width: 68ch;
-  margin: 0 0 20px;
-}
+.rank-note { grid-column: 1 / -1; }
 
-.scope-note strong { color: var(--ink); }
-
-.rank-score { text-align: right; font-variant-numeric: tabular-nums; }
-.rank-elo { font-size: 1.25rem; font-weight: 700; letter-spacing: -.02em; }
-.rank-err { color: var(--ink-faint); font-size: .78rem; display: block; }
-.rank-record { color: var(--ink-faint); font-size: .8rem; display: block; margin-top: 2px; }
-
-.rank-bar {
-  grid-column: 1 / -1;
-  height: 5px;
-  border-radius: 3px;
-  background: var(--bg-sunken);
-  overflow: hidden;
-}
-
-.rank-bar span {
+.rank-note img {
   display: block;
-  height: 100%;
-  min-width: 6px;
-  border-radius: 3px;
-  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--gold)));
-  transition: width .4s ease;
+  width: 100%;
+  /* Le immagini sono larghe 1000 px: oltre questa misura si ingrandirebbero
+     senza guadagnare dettaglio. */
+  max-width: 560px;
+  height: auto;
+  border-radius: 4px;
 }
 
 /* ---------------------------------------------------------------- matrice */
@@ -764,10 +699,9 @@ kbd {
   }
   .rank-row {
     grid-template-columns: 34px 1fr auto;
-    gap: 12px;
+    gap: 8px 12px;
     padding: 12px 14px;
   }
-  .rank-thumb { display: none; }
 }
 
 @media (max-width: 560px) {

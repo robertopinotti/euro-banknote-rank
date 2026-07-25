@@ -263,53 +263,35 @@ function themeTag(design) {
 }
 
 /**
- * Una riga di classifica.
+ * Una riga di classifica: posizione, proposta, punteggio e la banconota.
  *
- * @param {object} entry              riga con elo, eloError, wins, played, rank
- * @param {number|null} denomination  taglio della miniatura; null = famiglia intera
- * @param {number} maxElo
- * @param {number} minElo
- * @param {boolean} [showDenomination] mostra il taglio accanto alla proposta:
- *   serve nella classifica generale, dove convivono banconote di tagli diversi
- *   e la sola lettera non basta a capire di quale si tratta.
+ * Nient'altro. Designer, tema, record di vittorie ed errore standard erano
+ * rumore in una lista che serve a rispondere a una domanda sola — chi sta
+ * davanti e a cosa somiglia — e li si trova comunque nella scheda del design.
+ *
+ * @param {object} entry              riga con elo, rank, designId, denomination
+ * @param {number|null} denomination  taglio da mostrare; null = famiglia, si usa il 50 €
  */
-function rankRow(entry, denomination, maxElo, minElo, showDenomination = false) {
+function rankRow(entry, denomination) {
   const design = DESIGNS_BY_ID[entry.designId];
-  const span = Math.max(1, maxElo - minElo);
-  // La barra parte dall'8% invece che da zero: l'ultimo in classifica resta
-  // comunque visibile, e il confronto fra le lunghezze resta leggibile.
-  const pct = 8 + ((entry.elo - minElo) / span) * 92;
-  const thumbDenom = denomination ?? 50;
-
-  const record =
-    entry.played === 0
-      ? t('rank.recordNone')
-      : t(entry.wins === 1 ? 'rank.recordOne' : 'rank.recordMany', {
-          w: entry.wins,
-          n: entry.played,
-          p: Math.round(entry.winRate * 100),
-        });
-
-  const denomLabel = showDenomination
-    ? `<span class="rank-denom">${entry.denomination} €</span>`
-    : '';
+  // Per una famiglia non esiste un taglio: il 50 € sta in mezzo alla serie ed
+  // è quello che la rappresenta meglio.
+  const denom = denomination ?? 50;
 
   return `
     <li class="rank-row ${entry.rank === 1 ? 'is-first' : ''}">
       <div class="rank-pos">${entry.rank}</div>
-      <div class="rank-thumb">
-        <img src="${imageUrl(entry.designId, thumbDenom)}" alt="" loading="lazy">
+      <div class="rank-name">${t('rank.proposal', { letter: design.letter })}</div>
+      <div class="rank-elo">${Math.round(entry.elo)}</div>
+      <div class="rank-note">
+        <img src="${imageUrl(entry.designId, denom)}"
+             style="aspect-ratio:${imageAspect(entry.designId, denom, 'front')}"
+             alt="${t('alt.note', {
+               letter: design.letter,
+               denom,
+               side: t('side.front'),
+             })}" loading="lazy">
       </div>
-      <div class="rank-info">
-        <div class="rank-name">${t('rank.proposal', { letter: design.letter })}${denomLabel}${themeTag(design)}</div>
-        <div class="rank-designer">${designText(entry.designId).designer}</div>
-      </div>
-      <div class="rank-score">
-        <span class="rank-elo">${Math.round(entry.elo)}</span>
-        <span class="rank-err">± ${Math.round(entry.eloError)}</span>
-        <span class="rank-record">${record}</span>
-      </div>
-      <div class="rank-bar"><span style="width:${pct.toFixed(1)}%"></span></div>
     </li>`;
 }
 
@@ -351,23 +333,17 @@ function renderRankings() {
       : t('rank.summarySome', { n: totalVotes.toLocaleString(state.lang), mode });
 
   // Generale: tutte e 60 le banconote
-  const all = allNotesRanking();
-  const allElos = all.map((r) => r.elo);
-  $('ranking-all-list').innerHTML = all
-    .map((r) => rankRow(r, r.denomination, Math.max(...allElos), Math.min(...allElos), true))
+  $('ranking-all-list').innerHTML = allNotesRanking()
+    .map((r) => rankRow(r, r.denomination))
     .join('');
 
   // Per design
-  const famElos = families.map((f) => f.elo);
-  $('ranking-list').innerHTML = families
-    .map((f) => rankRow(f, null, Math.max(...famElos), Math.min(...famElos)))
-    .join('');
+  $('ranking-list').innerHTML = families.map((f) => rankRow(f, null)).join('');
 
   // Per taglio
   const rows = state.rankings.byDenomination.get(state.rankDenom);
-  const elos = rows.map((r) => r.elo);
   $('ranking-denom-list').innerHTML = rows
-    .map((r) => rankRow(r, state.rankDenom, Math.max(...elos), Math.min(...elos)))
+    .map((r) => rankRow(r, state.rankDenom))
     .join('');
 
   renderMatrix(rows);
