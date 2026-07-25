@@ -1,8 +1,8 @@
-name: Pubblica su GitHub Pages
+name: Publish to GitHub Pages
 
-# Il sito e' statico e senza build: si pubblica il repository cosi' com'e'.
-# Il workflow gira a ogni push sul branch di default e si puo' lanciare a mano
-# dalla scheda Actions.
+# The site is static and build-free: the repository is published as it is.
+# This runs on every push to the default branch, and can be started by hand
+# from the Actions tab.
 on:
   push:
     branches: [claude/eu-banknote-voting-a65myy]
@@ -13,9 +13,9 @@ permissions:
   pages: write
   id-token: write
 
-# Una pubblicazione alla volta. Le esecuzioni gia' in coda vengono scartate,
-# ma quella in corso viene lasciata finire: interrompere un deploy a meta'
-# lascerebbe il sito in uno stato incoerente.
+# One publication at a time. Queued runs are dropped, but the one in flight is
+# allowed to finish: interrupting a deploy halfway would leave the site in an
+# inconsistent state.
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -30,13 +30,13 @@ jobs:
           node-version: '22'
           cache: npm
 
-      # Il motore di classifica: la parte con la logica vera.
+      # The rating engine: the part with the real logic.
       - run: node --test test/rating.test.mjs
 
-      # Le regole di sicurezza Firestore, provate contro l'emulatore. Sul piano
-      # gratuito sono l'unica difesa dei dati, quindi una build verde deve
-      # significare anche che restano solide. L'emulatore gira su Java, gia'
-      # presente sui runner GitHub.
+      # The Firestore security rules, exercised against the emulator. On the
+      # free plan they are the only thing protecting the data, so a green build
+      # has to mean they still hold. The emulator runs on Java, already present
+      # on GitHub runners.
       - run: npm ci
       - uses: actions/setup-java@v4
         with:
@@ -57,16 +57,17 @@ jobs:
         with:
           node-version: '22'
 
-      # Rimarca CSS e script con l'impronta del contenuto. GitHub Pages serve
-      # ogni file con dieci minuti di cache indipendenti l'uno dall'altro:
-      # senza questo, dopo una pubblicazione un browser puo' ritrovarsi con
-      # l'HTML nuovo e il CSS vecchio, e la pagina risulta rotta.
+      # Re-stamp CSS and scripts with their content fingerprint. GitHub Pages
+      # serves every file with its own ten-minute cache, so without this a
+      # browser can end up with the new HTML and the old CSS after a deploy,
+      # and the page comes out broken.
       - run: node tools/stamp-assets.mjs
 
-      # enablement: true crea il sito Pages se non esiste ancora. Con il
-      # repository privato falliva ("Resource not accessible by integration"):
-      # Pages non era disponibile sul piano, e l'errore arrivava travestito da
-      # problema di permessi. Da repository pubblico Pages e' disponibile.
+      # enablement: true creates the Pages site if it does not exist yet. On a
+      # private repository this failed with "Resource not accessible by
+      # integration": Pages was not available on that plan, and the error
+      # arrived disguised as a permissions problem. On a public repository
+      # Pages is available.
       - uses: actions/configure-pages@v5
         with:
           enablement: true

@@ -1,19 +1,18 @@
 rules_version = '2';
 
 // ============================================================================
-//  Regole di sicurezza Firestore per la classifica delle banconote.
+//  Firestore security rules for the banknote ranking.
 //
-//  Sul piano gratuito le Cloud Functions non sono disponibili, quindi il
-//  browser scrive direttamente su Firestore e queste regole sono l'unica
-//  difesa. Sono scritte per garantire una cosa sola, ma garantirla bene:
-//  un voto puo' solo aggiungere 1 a un contatore. Non si puo' scrivere un
-//  punteggio arbitrario, non si puo' toccare l'altro contatore, non si puo'
-//  cancellare niente, non si puo' creare un documento che non corrisponde a
-//  una coppia valida.
+//  Cloud Functions are not available on the free plan, so the browser writes
+//  to Firestore directly and these rules are the only defence. They are
+//  written to guarantee one thing, but to guarantee it well: a vote can only
+//  add 1 to one counter. You cannot write an arbitrary score, you cannot touch
+//  the other counter, you cannot delete anything, and you cannot create a
+//  document that does not correspond to a valid pair.
 //
-//  Quello che le regole NON possono fare e' impedire a uno script di inviare
-//  molti voti legittimi da +1. Per quello serve App Check (vedi README): le
-//  regole difendono il valore dei dati, App Check difende la loro provenienza.
+//  What the rules CANNOT do is stop a script from sending many legitimate +1
+//  votes. That needs App Check (see the README): the rules defend the value of
+//  the data, App Check defends where it comes from.
 // ============================================================================
 
 service cloud.firestore {
@@ -27,9 +26,9 @@ service cloud.firestore {
       return value is string && value.matches('^[a-j]$');
     }
 
-    // I tre campi identificativi devono essere coerenti fra loro e con l'id
-    // del documento, cosi' una coppia ha una riga sola e non si possono
-    // creare documenti spuri.
+    // The three identity fields must be consistent with each other and with
+    // the document id, so a pair has exactly one row and spurious documents
+    // cannot be created.
     function hasValidIdentity(pairId, data) {
       return isDenomination(data.denomination)
           && isDesign(data.designLo)
@@ -38,13 +37,12 @@ service cloud.firestore {
           && pairId == string(data.denomination) + '_' + data.designLo + '_' + data.designHi;
     }
 
-    // Esattamente questi cinque campi, ne' uno di piu' ne' uno di meno.
-    // Servono entrambi i controlli: hasOnly vuol dire "sottoinsieme di", quindi
-    // da solo lascerebbe passare un documento a cui manca un contatore.
-    // Un documento cosi' verrebbe respinto lo stesso — i controlli successivi
-    // leggerebbero un campo inesistente e la valutazione fallirebbe — ma per
-    // effetto collaterale del motore delle regole, non per scelta. hasAll non
-    // chiude una falla, rende esplicito qualcosa che era solo implicito.
+    // Exactly these five fields, no more and no fewer. Both checks are needed:
+    // hasOnly means "subset of", so on its own it would let through a document
+    // missing a counter. Such a document would be rejected anyway — the later
+    // checks would read a non-existent field and evaluation would fail — but
+    // as a side effect of the rules engine, not by choice. hasAll does not
+    // close a hole; it makes explicit something that was only implicit.
     function hasExactShape(data) {
       return data.keys().hasAll(['denomination', 'designLo', 'designHi', 'winsLo', 'winsHi'])
           && data.keys().hasOnly(['denomination', 'designLo', 'designHi', 'winsLo', 'winsHi']);
@@ -57,18 +55,18 @@ service cloud.firestore {
 
     match /pairStats/{pairId} {
 
-      // La classifica e' pubblica.
+      // The ranking is public.
       allow read: if true;
 
-      // Primo voto per questa coppia: nasce il documento, con esattamente un
-      // voto in totale. Nessun campo oltre i cinque previsti.
+      // First vote for this pair: the document is born, with exactly one vote
+      // in total. No fields beyond the five expected ones.
       allow create: if hasExactShape(request.resource.data)
                     && hasValidIdentity(pairId, request.resource.data)
                     && counters(request.resource.data)
                     && request.resource.data.winsLo + request.resource.data.winsHi == 1;
 
-      // Voto successivo: puo' cambiare solo uno dei due contatori, e solo di
-      // +1. I campi identificativi devono restare quelli di prima.
+      // Later votes: only one of the two counters may change, and only by +1.
+      // The identity fields must stay as they were.
       allow update: if hasExactShape(request.resource.data)
                     && hasValidIdentity(pairId, request.resource.data)
                     && counters(request.resource.data)
@@ -85,12 +83,12 @@ service cloud.firestore {
                           && request.resource.data.winsLo == resource.data.winsLo)
                        );
 
-      // I voti non si cancellano.
+      // Votes are never deleted.
       allow delete: if false;
     }
 
-    // Tutto il resto e' chiuso: se un giorno si aggiunge una collezione, deve
-    // essere una scelta esplicita e non un buco lasciato aperto.
+    // Everything else is closed: if a collection is added one day, that has to
+    // be an explicit choice and not a hole left open.
     match /{document=**} {
       allow read, write: if false;
     }

@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Voto a coppie sulle dieci proposte di design per le future banconote in euro",
+  "description": "Pairwise voting on the ten design proposals for the future euro banknotes",
   "scripts": {
     "test": "node --test test/rating.test.mjs",
     "test:rules": "firebase emulators:exec --only firestore --project banconota-test \"node --test test/firestore-rules.test.mjs test/firestore-store.test.mjs\"",
     "start": "python3 -m http.server 8000",
     "stamp": "node tools/stamp-assets.mjs"
   },
-  "//": "Il sito non ha dipendenze a runtime: e' HTML, CSS e moduli ES serviti cosi' come sono. Quelle qui sotto servono solo a eseguire i test delle regole di sicurezza Firestore contro l'emulatore.",
+  "//": "The site has no runtime dependencies: it is HTML, CSS and ES modules served as they are. The ones below exist only to run the Firestore security-rules tests against the emulator.",
   "devDependencies": {
     "@firebase/rules-unit-testing": "^5.0.1",
     "firebase": "^12.16.0",

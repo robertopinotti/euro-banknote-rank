@@ -77,7 +77,7 @@
   <section id="view-classifica" class="view" hidden>
     <div class="rank-head">
       <h1 data-i18n="rank.title"></h1>
-      <div class="seg" role="group" aria-label="Tipo di classifica">
+      <div class="seg" role="group" data-i18n-aria="rank.scopeLabel">
         <button type="button" class="seg-btn is-active" data-scope="banconote" data-i18n="scope.note"></button>
         <button type="button" class="seg-btn" data-scope="disegni" data-i18n="scope.design"></button>
       </div>
@@ -116,11 +116,11 @@
     <div class="footer-controls">
       <div class="picker">
         <span class="picker-label" data-i18n="footer.theme"></span>
-        <div class="seg seg-sm" id="theme-buttons" role="group"></div>
+        <div class="seg seg-sm" id="theme-buttons" role="group" data-i18n-aria="footer.theme"></div>
       </div>
       <div class="picker">
         <span class="picker-label" data-i18n="footer.language"></span>
-        <div class="seg seg-sm" id="lang-buttons" role="group"></div>
+        <div class="seg seg-sm" id="lang-buttons" role="group" data-i18n-aria="footer.language"></div>
       </div>
     </div>
     <p class="footer-credit" data-i18n-html="footer.creditHtml"></p>
@@ -133,7 +133,7 @@
   "imports": {
     "./src/data.js": "./src/data.js?v=aa8b3bae",
     "./src/design-texts.js": "./src/design-texts.js?v=90993af7",
-    "./src/i18n.js": "./src/i18n.js?v=c9612df3",
+    "./src/i18n.js": "./src/i18n.js?v=b977b14e",
     "./src/image-aspects.js": "./src/image-aspects.js?v=bcb9390f",
     "./src/rating.js": "./src/rating.js?v=333aa031",
     "./src/store.js": "./src/store.js?v=dd3318fe",
@@ -141,6 +141,6 @@
   }
 }
 </script>
-<script type="module" src="src/app.js?v=721f8e45"></script>
+<script type="module" src="src/app.js?v=198237c3"></script>
 </body>
 </html>

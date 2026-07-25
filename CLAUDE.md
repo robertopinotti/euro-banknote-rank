@@ -1,69 +1,86 @@
 # CLAUDE.md
 
-Note per chi lavora su questo repository con Claude Code.
+Notes for anyone working on this repository with Claude Code.
 
-## Cos'è
+## What this is
 
-Sito statico di voto a coppie sulle dieci proposte di design per le future
-banconote in euro, con classifica calcolata via Bradley–Terry. Vedi
-[README.md](README.md) (o [README.en.md](README.en.md)) per il quadro completo.
+A static pairwise-voting site for the ten design proposals for the future euro
+banknotes, ranked with Bradley–Terry. See [README.md](README.md) (or
+[README.it.md](README.it.md)) for the full picture.
 
-## Vincolo principale: niente build
+## Language: English
 
-Il sito è HTML + CSS + moduli ES serviti così come sono. **Non introdurre un
-bundler, un transpiler o dipendenze a runtime.** Le dipendenze in `package.json`
-esistono solo per i test delle regole Firestore e non finiscono mai nella pagina.
+**This is an international repository. Write everything in English:**
 
-Conseguenze pratiche:
+- **Code comments** — every comment, docstring and inline note.
+- **Commit messages** — subject and body.
+- **Documentation** — `README.md` is the English one and is the primary. Its
+  Italian counterpart `README.it.md` must carry the same content: if you change
+  one, change the other.
+- **Identifiers** — variables, functions, CSS classes, element ids, i18n keys.
 
-- Niente JSX, TypeScript, import da CDN, `npm run build`.
-- Il codice deve girare nel browser così com'è scritto.
-- Se serve generare qualcosa (testi, proporzioni delle immagini), lo si genera
-  una volta con uno script e si versiona il risultato.
+Two deliberate exceptions:
 
-## Comandi
+- The **user-facing strings** in `src/i18n.js` are the site's five languages
+  (it/en/fr/de/es). That is the product, not the source language.
+- The **ECB design texts** in `src/design-texts.js` are the ECB's own official
+  translations. Never rewrite or translate them yourself.
+
+Older comments and commits are in Italian — the project started that way. Do not
+mix: anything you write or rewrite goes in English.
+
+## Main constraint: no build step
+
+The site is HTML + CSS + ES modules served exactly as they are. **Do not
+introduce a bundler, a transpiler, or any runtime dependency.** The dependencies
+in `package.json` exist only for the Firestore rules tests and never reach the
+page.
+
+In practice:
+
+- No JSX, no TypeScript, no CDN imports, no `npm run build`.
+- The code must run in the browser as written.
+- If something needs generating (texts, image aspect ratios), generate it once
+  with a script and commit the result.
+
+## Commands
 
 ```bash
-python3 -m http.server 8000   # servire il sito in locale
-npm test                      # 9 test del motore di classifica
-npm run test:rules            # 25 test contro l'emulatore Firestore (serve Java)
-npm run stamp                 # riallinea le impronte anti-cache in index.html
+python3 -m http.server 8000   # serve the site locally
+npm test                      # 9 rating-engine tests
+npm run test:rules            # 25 tests against the Firestore emulator (needs Java)
+npm run stamp                 # realign the cache-busting fingerprints in index.html
 ```
 
-## Mappa dei file
+## File map
 
-| file | cosa contiene |
+| file | what it holds |
 | --- | --- |
-| `index.html` | le quattro viste; ogni testo visibile è una chiave `data-i18n` |
-| `src/app.js` | controller: instradamento, sfida a due, rendering delle classifiche |
-| `src/rating.js` | Bradley–Terry (MM di Hunter), scala Elo, scelta delle coppie |
-| `src/store.js` | Firestore via REST, oppure `localStorage` |
-| `src/data.js` | i 10 disegni, i 6 tagli, i percorsi delle immagini |
-| `src/i18n.js` | tutti i testi dell'interfaccia in it/en/fr/de/es |
-| `config.js` | progetto Firebase e chiave pubblica |
-| `tools/stamp-assets.mjs` | impronte `?v=` e import map |
+| `index.html` | the four views; every visible string is a `data-i18n` key |
+| `src/app.js` | controller: routing, the head-to-head, ranking rendering |
+| `src/rating.js` | Bradley–Terry (Hunter's MM), Elo scale, pair selection |
+| `src/store.js` | Firestore over REST, or `localStorage` |
+| `src/data.js` | the 10 designs, the 6 denominations, image paths |
+| `src/i18n.js` | all interface text in it/en/fr/de/es |
+| `config.js` | Firebase project and public key |
+| `tools/stamp-assets.mjs` | `?v=` fingerprints and the import map |
 
-**File generati, da non modificare a mano:** `src/design-texts.js` (testi
-ufficiali BCE) e `src/image-aspects.js` (proporzioni delle 120 immagini). Se il
-contenuto va cambiato, si rigenera.
+**Generated files, never hand-edit:** `src/design-texts.js` (official ECB texts)
+and `src/image-aspects.js` (aspect ratios of the 120 images). If the content
+needs to change, regenerate it.
 
-## Convenzioni
+## Conventions
 
-**Lingua.** Commenti, messaggi di commit e documentazione sono in italiano;
-identificatori e chiavi in inglese. Il README ha una versione inglese di pari
-contenuto: se cambia uno, cambia anche l'altro.
+**Comments explain *why*, not *what*.** Several of them record a mistake already
+made and the reason for the current shape. Do not drop them while rewriting the
+surrounding code — they are worth more than the line they sit above.
 
-**Commenti.** Spiegano *perché*, non *cosa*. Diversi commenti registrano un
-errore già commesso e la ragione della forma attuale: non toglierli riscrivendo
-il codice attorno, valgono più della riga che descrivono.
+**i18n.** Every visible string goes through `src/i18n.js`. Keys with an `Html`
+suffix contain markup and are inserted with `innerHTML`; everything else is plain
+text inserted with `textContent`. The distinction lives in the name on purpose:
+confusing the two is the classic way to open an XSS hole.
 
-**i18n.** Ogni testo visibile passa da `src/i18n.js`. Le chiavi con suffisso
-`Html` contengono marcatura e vengono inserite con `innerHTML`; tutte le altre
-sono testo semplice inserito con `textContent`. La distinzione è nel nome
-apposta: confonderle è il modo classico di aprire un buco XSS.
-
-Aggiungendo una chiave, aggiungila in **tutte e cinque** le lingue. Controllo
-rapido:
+When you add a key, add it in **all five** languages. Quick check:
 
 ```bash
 node -e "import('./src/i18n.js').then(({STRINGS,LANGUAGES})=>{
@@ -73,36 +90,32 @@ node -e "import('./src/i18n.js').then(({STRINGS,LANGUAGES})=>{
 })"
 ```
 
-I testi dei disegni non sono traduzioni nostre: sono quelle ufficiali della BCE.
-Non riscriverli.
+**Cache.** Every served file carries a content-derived `?v=`, and imported
+modules are covered by an import map generated by `tools/stamp-assets.mjs`. If
+you add a file under `src/`, the script picks it up on its own — but it has to be
+re-run (`npm run stamp`), or CI will do it at deploy time.
 
-**Cache.** Ogni file servito porta un `?v=` derivato dal contenuto, e i moduli
-importati sono coperti da un import map generato da `tools/stamp-assets.mjs`.
-Se aggiungi un file in `src/`, lo script lo prende da solo — ma va rieseguito
-(`npm run stamp`), altrimenti ci pensa la CI al deploy.
+**CSS.** One stylesheet. The theme tokens are duplicated under three selectors
+(`prefers-color-scheme` for auto, `[data-theme="dark"]` and
+`[data-theme="light"]` for an explicit choice), because a manual choice has to
+win in both directions.
 
-**CSS.** Un foglio solo. I token del tema sono duplicati sotto tre selettori
-(`prefers-color-scheme` per l'automatico, `[data-theme="dark"]` e
-`[data-theme="light"]` per la scelta esplicita), perché la scelta manuale deve
-vincere in entrambe le direzioni.
+## Traps already hit
 
-## Trappole già incontrate
+- **Block replacements that swallow adjacent code.** It has happened three times
+  (a lost function, three lost `localStorage` constants). After a wide edit,
+  reload the page in a real browser: unit tests will not catch it.
+- **Counting DOM nodes does not tell you they are visible.** A bug where the
+  ranking vanished went undetected because the rows were there — it was the
+  container that was hidden. Measure rendered height.
+- **ECB images are not all oriented the way the design is.** Three designs
+  (D, I, J) are portrait but published rotated. The objective test is the
+  European flag, always 3:2.
 
-- **Sostituzioni di blocco che mangiano codice adiacente.** È successo due volte
-  (una funzione persa, tre costanti di `localStorage` perse). Dopo una modifica
-  ampia, ricarica la pagina in un browser vero: i test unitari non se ne
-  accorgono.
-- **Contare i nodi nel DOM non dice se si vedono.** Un bug in cui la classifica
-  spariva è passato indenne perché le righe c'erano — era il contenitore a
-  essere nascosto. Misura l'altezza renderizzata.
-- **Le immagini della BCE non sono tutte orientate come il disegno.** Tre
-  disegni (D, I, J) sono verticali ma pubblicati ruotati. Il criterio oggettivo è
-  la bandiera europea, sempre 3:2.
-
-## Verifica prima di consegnare
+## Before handing work over
 
 1. `npm test`
-2. Apri il sito in un browser vero: vota, guarda entrambe le classifiche, cambia
-   lingua e tema, apri la galleria dei disegni e la pagina Metodo.
-3. Controlla la console: zero errori.
-4. `npm run stamp` se hai toccato CSS o JavaScript.
+2. Open the site in a real browser: vote, look at both rankings, switch language
+   and theme, open the design gallery and the Method page.
+3. Check the console: zero errors.
+4. `npm run stamp` if you touched CSS or JavaScript.

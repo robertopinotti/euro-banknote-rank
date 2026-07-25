@@ -449,6 +449,12 @@ function applyLanguage() {
   for (const el of document.querySelectorAll('[data-i18n-html]')) {
     el.innerHTML = t(el.dataset.i18nHtml);
   }
+  // Etichette che solo un lettore di schermo sente. Restavano in italiano in
+  // tutte e cinque le lingue perché scritte a mano nell'HTML: non si vedono,
+  // quindi nessuna schermata le avrebbe mai denunciate.
+  for (const el of document.querySelectorAll('[data-i18n-aria]')) {
+    el.setAttribute('aria-label', t(el.dataset.i18nAria));
+  }
   $('method-body').innerHTML = t('method.bodyHtml');
 
   for (const b of $('lang-buttons').querySelectorAll('.seg-btn')) {

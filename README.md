@@ -1,228 +1,227 @@
-# Banconota d'Europa
+# Banknote of Europe
 
-*[English version](README.en.md)*
+*[Versione italiana](README.it.md)*
 
-Sito di voto sulle dieci proposte di design per le future banconote in euro.
-Si vota a coppie — due banconote **dello stesso taglio**, una contro l'altra — e
-la classifica si ricava dai confronti con il modello **Bradley–Terry**.
+A voting site for the ten design proposals for the future euro banknotes. You
+vote in pairs — two banknotes **of the same denomination**, head to head — and
+the ranking is derived from those comparisons with the **Bradley–Terry** model.
 
-Sito statico: nessun processo di build, nessuna dipendenza a runtime.
+Static site: no build step, no runtime dependencies.
 
 🔗 **[robertopinotti.github.io/euro-banknote-rank](https://robertopinotti.github.io/euro-banknote-rank/)**
 
 ---
 
-## Come funziona
+## How it works
 
-**Perché lo stesso taglio.** Confrontare un 5 € con un 200 € non ha senso: sono
-disegni pensati per ruoli diversi. Si confrontano quindi solo banconote pari
-grado, e dalle sei classifiche per taglio si ricava per aggregazione la
-classifica dei dieci disegni completi.
+**Why same-denomination.** Comparing a €5 with a €200 makes no sense: they are
+designed for different roles. So only equals compete, and the ranking of the ten
+complete designs is derived by aggregating the six per-denomination rankings.
 
-**Da 270 confronti a una classifica.** Con 10 disegni e 6 tagli le coppie
-possibili sono 45 per taglio, 270 in tutto. A ogni disegno si associa una
-*forza* `p` e si assume `P(i batte j) = p_i / (p_i + p_j)`. Le forze si stimano
-con l'algoritmo MM di Hunter. Rispetto alla percentuale di vittorie il modello
-pesa la qualità dell'avversario — battere il primo vale più che battere
-l'ultimo — e non dipende dall'ordine in cui arrivano i voti.
+**From 270 comparisons to a ranking.** With 10 designs and 6 denominations there
+are 45 possible pairs per denomination, 270 in total. Each design gets a
+*strength* `p`, and `P(i beats j) = p_i / (p_i + p_j)`. Strengths are estimated
+with Hunter's MM algorithm. Compared with a plain win percentage, the model
+weighs the quality of the opponent — beating the leader counts for more than
+beating the last — and does not depend on the order votes arrive in.
 
-Il punteggio mostrato è la forza sulla scala Elo,
-`R = 1500 + (400/ln 10) · ln p`: 100 punti di distacco valgono circa il 64% di
-probabilità di vittoria, 400 punti valgono 10 a 1.
+The displayed score is that strength on the Elo scale,
+`R = 1500 + (400/ln 10) · ln p`: a 100-point gap means roughly a 64% chance of
+winning, 400 points mean 10 to 1.
 
-La classifica ha due livelli: **per banconota** (tutte e 60) e **per disegno**
-(i 10 disegni, ciascuno con la media dei suoi sei tagli). Spiegazione estesa
-nella pagina **Metodo** del sito.
-
----
-
-## Avviare in locale
-
-I moduli ES non si caricano da `file://`: serve un server statico qualsiasi.
-
-```bash
-python3 -m http.server 8000   # poi apri http://localhost:8000
-```
-
-Senza backend configurato il sito funziona lo stesso: i voti restano nel
-`localStorage` e la classifica è personale.
-
-## Test
-
-```bash
-npm test                      # 9 test del motore di classifica, nessuna dipendenza
-npm install && npm run test:rules   # 25 test contro l'emulatore Firestore (serve Java)
-```
-
-I test delle regole sono in due gruppi. Diciassette colpiscono le regole con l'SDK
-Firebase — scrivere un punteggio arbitrario, incrementare di 1000, togliere voti
-agli altri, cancellare — e devono fallire tutti. Gli altri otto fanno girare il
-codice vero di `src/store.js` contro l'emulatore, perché le regole sono scritte
-pensando all'SDK mentre il sito parla REST con `updateMask` e `updateTransforms`.
-Fra questi c'è il caso che conta di più: venti voti simultanei sulla stessa
-coppia devono dare venti voti contati, non uno perso.
+The ranking has two levels: **by banknote** (all 60) and **by design** (the 10
+designs, each averaging its six denominations). Full explanation on the
+**Method** page of the site.
 
 ---
 
-## Classifica condivisa (Firebase)
+## Running locally
 
-Senza backend ogni visitatore vede solo i propri voti. Per una classifica
-collettiva serve Firestore:
+ES modules will not load from `file://`, so any static server will do.
 
-1. Crea un progetto su [console.firebase.google.com](https://console.firebase.google.com)
-   e, al suo interno, un **database Firestore** (modalità produzione).
-2. Registra un'**app Web** (Impostazioni progetto → Le tue app → `</>`). Dei
-   valori mostrati servono solo `projectId` e `apiKey`.
-3. Pubblica le regole di [`firebase/firestore.rules`](firebase/firestore.rules),
-   dalla console (Firestore → Regole) oppure con
+```bash
+python3 -m http.server 8000   # then open http://localhost:8000
+```
+
+With no backend configured the site still works: votes stay in `localStorage`
+and the ranking is your own.
+
+## Tests
+
+```bash
+npm test                            # 9 rating-engine tests, no dependencies
+npm install && npm run test:rules   # 25 tests against the Firestore emulator (needs Java)
+```
+
+The rules tests come in two groups. Seventeen attack the rules through the Firebase
+SDK — writing an arbitrary score, incrementing by 1000, taking votes away from
+others, deleting — and all of them must fail. The other eight run the real
+`src/store.js` code against the emulator, because the rules are written with the
+SDK in mind while the site speaks REST with `updateMask` and `updateTransforms`.
+Among those is the case that matters most: twenty simultaneous votes on the same
+pair must yield twenty counted votes, not one lost.
+
+---
+
+## Shared ranking (Firebase)
+
+Without a backend every visitor sees only their own votes. A collective ranking
+needs Firestore:
+
+1. Create a project at [console.firebase.google.com](https://console.firebase.google.com)
+   and a **Firestore database** inside it (production mode).
+2. Register a **Web app** (Project settings → Your apps → `</>`). Of the values
+   shown you only need `projectId` and `apiKey`.
+3. Publish the rules in [`firebase/firestore.rules`](firebase/firestore.rules),
+   from the console (Firestore → Rules) or with
    `npx firebase deploy --only firestore:rules`.
 
-   **Non saltare questo passaggio.** Le regole predefinite sono "nega tutto" (il
-   sito non funziona) oppure "consenti tutto" per 30 giorni (chiunque può
-   cancellare la classifica).
-4. Scrivi `projectId` e `apiKey` in [`config.js`](config.js).
+   **Do not skip this step.** Firestore's defaults are either "deny everything"
+   (the site won't work) or "allow everything" for 30 days (anyone can wipe the
+   ranking).
+4. Put `projectId` and `apiKey` in [`config.js`](config.js).
 
-Il piano gratuito **Spark** basta: si usano solo Firestore e le sue regole,
-niente Cloud Functions. Un voto è una scrittura; caricare la classifica costa
-una lettura per coppia già votata (al massimo 270).
+The free **Spark** plan is enough: only Firestore and its rules are used, no
+Cloud Functions. One vote is one write; loading the ranking costs one read per
+pair already voted on (at most 270).
 
-### Come sono protetti i dati
+### How the data is protected
 
-La chiave Firebase è pubblica per definizione: sta nel codice di un sito statico
-e non protegge niente. A proteggere i dati sono le regole, che impongono che una
-scrittura possa solo aggiungere 1 a un contatore, che l'id del documento
-corrisponda alla coppia, che taglio e disegno esistano, e che niente si possa
-cancellare. **Non mettere mai in `config.js` una chiave di servizio o le
-credenziali dell'Admin SDK:** scavalcherebbero ogni regola.
+The Firebase key is public by design: it sits in the code of a static site and
+protects nothing. The rules are what protect the data. They require that a write
+can only add 1 to one counter, that the document id matches the pair, that the
+denomination and design exist, and that nothing can be deleted. **Never put a
+service key or Admin SDK credentials in `config.js`:** they would bypass every
+rule.
 
-| operazione | consentita |
+| operation | allowed |
 | --- | --- |
-| leggere la classifica | sì |
-| aggiungere 1 a un contatore | sì |
-| scrivere un punteggio arbitrario | no |
-| togliere voti | no |
-| cancellare dati | no |
+| read the ranking | yes |
+| add 1 to a counter | yes |
+| write an arbitrary score | no |
+| take votes away | no |
+| delete data | no |
 
-Resta una cosa che le regole non possono fare: impedire a uno script di inviare
-molti voti legittimi da +1. Se diventasse un problema, la risposta è
-[App Check](https://firebase.google.com/docs/app-check) con reCAPTCHA,
-disponibile sul piano gratuito.
+One thing the rules cannot do is stop a script from sending many legitimate +1
+votes. If that became a problem, the answer is
+[App Check](https://firebase.google.com/docs/app-check) with reCAPTCHA, available
+on the free plan.
 
-Se il backend è configurato ma irraggiungibile il sito ripiega sulla modalità
-locale e lo dichiara, invece di mostrare una pagina rotta.
-
----
-
-## Pubblicare
-
-[`.github/workflows/pages.yml`](.github/workflows/pages.yml) esegue i test e
-pubblica su GitHub Pages a ogni push. Non c'è build: si pubblica il repository
-così com'è.
-
-Prima di pubblicare gira [`tools/stamp-assets.mjs`](tools/stamp-assets.mjs), che
-aggiunge a CSS e script un `?v=` derivato dal contenuto. GitHub Pages serve ogni
-file con dieci minuti di cache indipendenti: senza marcatura, nei minuti dopo una
-pubblicazione un browser può ritrovarsi l'HTML nuovo e il CSS vecchio. Marcare
-l'HTML non basta per i moduli — `import './i18n.js'` si risolve rispetto a chi
-importa e scarta la query — quindi lo script genera anche un
-`<script type="importmap">` che rimappa ogni modulo alla sua versione. In locale
-si allinea con `npm run stamp`, ma non è necessario: ci pensa la CI.
-
-Perché l'attivazione automatica di Pages funzioni il repository deve essere
-pubblico, oppure privato con piano **GitHub Pro o Team**. Altrimenti fallisce con
-un errore che sembra di permessi (`Resource not accessible by integration`) ma è
-di disponibilità.
-
-Va bene anche qualunque altro hosting statico.
+If the backend is configured but unreachable, the site falls back to local mode
+and says so, rather than showing a broken page.
 
 ---
 
-## Struttura
+## Publishing
+
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml) runs the tests and
+publishes to GitHub Pages on every push. There is no build: the repository is
+published as it is.
+
+Before publishing it runs [`tools/stamp-assets.mjs`](tools/stamp-assets.mjs),
+which appends a content-derived `?v=` to CSS and scripts. GitHub Pages serves
+every file with its own ten-minute cache, so without that stamp a browser can end
+up with the new HTML and the old CSS in the minutes after a deploy. Stamping the
+HTML is not enough for modules — `import './i18n.js'` resolves against the
+importer and drops the query — so the script also generates a
+`<script type="importmap">` remapping every module to its versioned URL. Locally
+you can align them with `npm run stamp`, but you don't have to: CI does it.
+
+For Pages to enable itself the repository must be public, or private on a
+**GitHub Pro or Team** plan. Otherwise enablement fails with an error that looks
+like permissions (`Resource not accessible by integration`) but is really about
+availability.
+
+Any other static host works just as well.
+
+---
+
+## Layout
 
 ```
-index.html                     le quattro viste (vota, classifica, disegni, metodo)
-config.js                      progetto Firebase e chiave pubblica
-src/data.js                    i 10 disegni, i 6 tagli, i percorsi delle immagini
-src/rating.js                  Bradley–Terry, scala Elo, scelta delle coppie
-src/store.js                   accesso ai dati: Firestore o localStorage
-src/app.js                     interfaccia e instradamento
-src/i18n.js                    testi dell'interfaccia in it/en/fr/de/es
-src/design-texts.js            testi BCE dei disegni nelle 5 lingue (generato)
-src/image-aspects.js           proporzioni delle 120 immagini (generato)
-assets/css/style.css           foglio di stile unico, chiaro e scuro
-assets/banknotes/              120 immagini WebP (60 fronti + 60 retri)
-tools/stamp-assets.mjs         impronte anti-cache e import map
-firebase/firestore.rules       regole di sicurezza Firestore
-test/                          motore di classifica, regole ed adattatore Firestore
+index.html                     the four views (vote, ranking, designs, method)
+config.js                      Firebase project and public key
+src/data.js                    the 10 designs, the 6 denominations, image paths
+src/rating.js                  Bradley–Terry, Elo scale, pair selection
+src/store.js                   data access: Firestore or localStorage
+src/app.js                     interface and routing
+src/i18n.js                    interface text in it/en/fr/de/es
+src/design-texts.js            ECB design texts in 5 languages (generated)
+src/image-aspects.js           aspect ratios of the 120 images (generated)
+assets/css/style.css           single stylesheet, light and dark
+assets/banknotes/              120 WebP images (60 fronts + 60 reverses)
+tools/stamp-assets.mjs         cache-busting fingerprints and import map
+firebase/firestore.rules       Firestore security rules
+test/                          rating engine, rules, and the Firestore adapter
 ```
 
-Le dipendenze in `package.json` servono solo a eseguire i test delle regole
-Firestore: il sito non ne ha nessuna.
+The dependencies in `package.json` exist only to run the Firestore rules tests;
+the site itself has none.
 
-**Tre disegni su dieci — D, I e J — sono verticali**, ma la BCE pubblica quasi
-tutti i loro file in orizzontale, con il contenuto ruotato di 90°. Le immagini
-nel repository sono già raddrizzate. Il criterio non è a occhio: la bandiera
-europea è sempre 3:2, quindi se in un'immagine risulta più alta che larga il file
-è ruotato. L'unica eccezione già verticale è il fronte del 200 € del disegno D.
+**Three of the ten designs — D, I and J — are portrait**, but the ECB publishes
+almost all of their files in landscape, with the content rotated 90°. The images
+in this repository are already upright. The test is not by eye: the European flag
+is always 3:2, so if it measures taller than wide in an image, the file is
+rotated. The only file already published upright is the €200 front of design D.
 
-Le immagini sono ridimensionate a 1000 px sul lato lungo e convertite in WebP:
-8,8 MB invece dei 41 MB degli originali, perché una schermata di voto ne carica
-quattro alla volta. Gli originali restano sul sito della BCE.
+Images are resized to 1000 px on the long side and converted to WebP: 8.8 MB
+instead of the originals' 41 MB, because one voting screen loads four at a time.
+The originals stay on the ECB's site.
 
-Il sito è in **italiano, inglese, francese, tedesco e spagnolo**. Le descrizioni
-dei disegni non sono tradotte da noi: sono quelle ufficiali della BCE, prese
-dalle rispettive versioni linguistiche della sua pagina, così ai designer non
-vengono attribuite parole che non hanno scritto.
+The site is available in **Italian, English, French, German and Spanish**. The
+design descriptions are not our translations: they are the ECB's official ones,
+taken from the corresponding language versions of its page, so that designers are
+not credited with words they did not write.
 
 ---
 
-## I dieci disegni
+## The ten designs
 
-Cinque sul tema **cultura europea**, cinque sul tema **fiumi e uccelli**.
+Five on the theme **European culture**, five on **rivers and birds**.
 
-| | Designer | Tema |
+| | Designer | Theme |
 | --- | --- | --- |
-| A | Studio Joost Grootens | cultura europea |
-| B | PunktFormStrich | fiumi e uccelli |
-| C | Neue Gestaltung GmbH | cultura europea |
-| D | Rudy Guedj e François Girard-Meunier | fiumi e uccelli |
-| E | Myrsini Vardopoulou | cultura europea |
-| F | Jan Robert Dünnweller | cultura europea |
-| G | Rubio & del Amo e Cruz más Cruz | cultura europea |
-| H | Atelier Goppel-Toperngpong | fiumi e uccelli |
-| I | Isabelle Daëron | fiumi e uccelli |
-| J | Ville Tietäväinen | fiumi e uccelli |
+| A | Studio Joost Grootens | European culture |
+| B | PunktFormStrich | rivers and birds |
+| C | Neue Gestaltung GmbH | European culture |
+| D | Rudy Guedj and François Girard-Meunier | rivers and birds |
+| E | Myrsini Vardopoulou | European culture |
+| F | Jan Robert Dünnweller | European culture |
+| G | Rubio & del Amo and Cruz más Cruz | European culture |
+| H | Atelier Goppel-Toperngpong | rivers and birds |
+| I | Isabelle Daëron | rivers and birds |
+| J | Ville Tietäväinen | rivers and birds |
 
-Ogni disegno copre tutti e sei i tagli (5, 10, 20, 50, 100, 200 €), fronte e
-retro: 120 immagini in tutto.
-
----
-
-## Limiti da tenere presenti
-
-- Il campione è chi capita sul sito: **non è un sondaggio rappresentativo** della
-  popolazione europea e non va presentato come tale.
-- L'identificativo del votante sta nel browser: si può aggirare.
-- Si vota la banconota intera: fronte e retro sono mostrati insieme.
+Each design covers all six denominations (€5, 10, 20, 50, 100, 200), front and
+reverse: 120 images in total.
 
 ---
 
-## Immagini e attribuzione
+## Limits worth stating
 
-Le immagini sono **proposte di design** per una possibile futura serie di
-banconote in euro, non banconote definitive.
+- The sample is whoever happens to visit: **this is not a representative
+  survey** of the European population and must not be presented as one.
+- The voter id lives in the browser: it can be worked around.
+- You vote on the whole banknote: front and reverse are shown together.
 
-Fonte: Banca centrale europea —
+---
+
+## Images and attribution
+
+The images are **design proposals** for a possible future series of euro
+banknotes, not final banknotes.
+
+Source: European Central Bank —
 [Future euro banknote design proposals](https://www.ecb.europa.eu/euro/banknotes/future_banknotes/html/design-proposals.en.html).
 
-La BCE ne consente l'uso a fini **informativi, editoriali e di cronaca**. Non
-sono ammessi usi commerciali, promozionali o di merchandising, né alterazioni o
-presentazioni ingannevoli, né usi che lascino intendere un'approvazione della BCE
-o dell'Eurosistema, senza autorizzazione scritta preventiva. Le immagini vanno
-sempre identificate come proposte di design, citando la BCE come fonte.
+The ECB permits their use for **information, editorial and news** purposes.
+Commercial, promotional or merchandising use is not allowed, nor is alteration or
+misleading presentation, nor any use implying ECB or Eurosystem endorsement,
+without prior written permission. The images must always be identified as design
+proposals, citing the ECB as the source.
 
-Questo progetto è indipendente, non ha alcun rapporto con la BCE e non influisce
-sulla scelta ufficiale del design.
+This project is independent, has no relationship with the ECB, and has no bearing
+on the official choice of design.
 
-Il codice è dei rispettivi autori; le immagini restano soggette alle condizioni
-d'uso della BCE sopra riportate.
+The code belongs to its respective authors; the images remain subject to the
+ECB's terms of use above.

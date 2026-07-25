@@ -62,6 +62,7 @@ export const STRINGS = {
 
     'rank.title': 'Classifica',
     'scope.note': 'Per banconota',
+    'rank.scopeLabel': 'Tipo di classifica',
     'scope.design': 'Per disegno',
     'rank.noteDesign':
       'I dieci disegni, ciascuno con la media delle sue sei banconote.',
@@ -206,6 +207,7 @@ export const STRINGS = {
 
     'rank.title': 'Ranking',
     'scope.note': 'By banknote',
+    'rank.scopeLabel': 'Ranking type',
     'scope.design': 'By design',
     'rank.noteDesign':
       'The ten designs, each averaged across its six banknotes.',
@@ -351,6 +353,7 @@ export const STRINGS = {
 
     'rank.title': 'Classement',
     'scope.note': 'Par billet',
+    'rank.scopeLabel': 'Type de classement',
     'scope.design': 'Par graphisme',
     'rank.noteDesign':
       'Les dix graphismes, chacun avec la moyenne de ses six billets.',
@@ -499,6 +502,7 @@ export const STRINGS = {
 
     'rank.title': 'Rangliste',
     'scope.note': 'Nach Banknote',
+    'rank.scopeLabel': 'Art der Rangliste',
     'scope.design': 'Nach Design',
     'rank.noteDesign':
       'Die zehn Designs, jeweils als Mittel ihrer sechs Banknoten.',
@@ -522,7 +526,7 @@ export const STRINGS = {
 
     'alt.note': 'Design {letter}, {denom}-Euro-Banknote, {side}',
 
-    'footer.theme': 'Design',
+    'footer.theme': 'Darstellung',
     'theme.auto': 'Auto',
     'theme.light': 'Hell',
     'theme.dark': 'Dunkel',
@@ -646,6 +650,7 @@ export const STRINGS = {
 
     'rank.title': 'Clasificación',
     'scope.note': 'Por billete',
+    'rank.scopeLabel': 'Tipo de clasificación',
     'scope.design': 'Por diseño',
     'rank.noteDesign':
       'Los diez diseños, cada uno con la media de sus seis billetes.',
