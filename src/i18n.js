@@ -109,7 +109,7 @@ export const STRINGS = {
     'footer.language': 'Lingua',
     'footer.creditHtml':
       'Creato da Roberto Pinotti · ' +
-      `<a href="${REPO_URL}" target="_blank" rel="noopener">codice sorgente su GitHub</a>`,
+      `<a href="${REPO_URL}" target="_blank" rel="noopener">GitHub</a>`,
     'footer.attributionHtml':
       'Le immagini sono <strong>proposte di design</strong> per una possibile ' +
       'futura serie di banconote in euro. Fonte: Banca centrale europea — ' +
@@ -322,7 +322,7 @@ export const STRINGS = {
     'footer.language': 'Language',
     'footer.creditHtml':
       'Created by Roberto Pinotti · ' +
-      `<a href="${REPO_URL}" target="_blank" rel="noopener">source code on GitHub</a>`,
+      `<a href="${REPO_URL}" target="_blank" rel="noopener">GitHub</a>`,
     'footer.attributionHtml':
       'The images are <strong>design proposals</strong> for a possible future ' +
       'series of euro banknotes. Source: European Central Bank — ' +
@@ -538,7 +538,7 @@ export const STRINGS = {
     'footer.language': 'Langue',
     'footer.creditHtml':
       'Créé par Roberto Pinotti · ' +
-      `<a href="${REPO_URL}" target="_blank" rel="noopener">code source sur GitHub</a>`,
+      `<a href="${REPO_URL}" target="_blank" rel="noopener">GitHub</a>`,
     'footer.attributionHtml':
       'Les images sont des <strong>propositions de graphisme</strong> pour une ' +
       'éventuelle future série de billets en euros. Source : Banque centrale ' +
@@ -762,7 +762,7 @@ export const STRINGS = {
     'footer.language': 'Sprache',
     'footer.creditHtml':
       'Erstellt von Roberto Pinotti · ' +
-      `<a href="${REPO_URL}" target="_blank" rel="noopener">Quellcode auf GitHub</a>`,
+      `<a href="${REPO_URL}" target="_blank" rel="noopener">GitHub</a>`,
     'footer.attributionHtml':
       'Die Abbildungen sind <strong>Gestaltungsvorschläge</strong> für eine ' +
       'mögliche künftige Euro-Banknotenserie. Quelle: Europäische Zentralbank — ' +
@@ -985,7 +985,7 @@ export const STRINGS = {
     'footer.language': 'Idioma',
     'footer.creditHtml':
       'Creado por Roberto Pinotti · ' +
-      `<a href="${REPO_URL}" target="_blank" rel="noopener">código fuente en GitHub</a>`,
+      `<a href="${REPO_URL}" target="_blank" rel="noopener">GitHub</a>`,
     'footer.attributionHtml':
       'Las imágenes son <strong>propuestas de diseño</strong> para una posible ' +
       'futura serie de billetes en euros. Fuente: Banco Central Europeo — ' +
