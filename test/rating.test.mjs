@@ -7,6 +7,8 @@ import assert from 'node:assert/strict';
 import {
   bradleyTerry,
   computeRankings,
+  standardErrors,
+  rankWithTies,
   strengthToElo,
   pickPair,
 } from '../src/rating.js';
@@ -212,4 +214,86 @@ test('i tagli sconosciuti nei dati non inquinano le classifiche', () => {
   const { byDenomination, totalVotes } = computeRankings(stats, ids, [5]);
   assert.equal(totalVotes, 10, 'il taglio da 500 € non esiste e va ignorato');
   assert.equal(byDenomination.get(5)[0].played, 10);
+});
+
+/* ------------------------------------------- uncertainty and equal footing */
+
+test('the standard error falls as the comparisons pile up', () => {
+  const ids = ['a', 'b'];
+  const se = (n) => {
+    const wins = new Map([['a', n / 2], ['b', n / 2]]);
+    const pairN = new Map([['a|b', n]]);
+    const { strength } = bradleyTerry(ids, wins, pairN);
+    return standardErrors(ids, pairN, strength).get('a');
+  };
+  assert.ok(se(100) < se(10), `${se(100)} should be below ${se(10)}`);
+  assert.ok(se(10) < se(0));
+});
+
+test('a design nobody has voted on still has a finite error', () => {
+  // Only the regularisation term is left: info = 2·prior·1/(1+1)² = 0.5,
+  // so se = 1/√0.5 = √2. It is the closed form that anchors the whole scale.
+  const ids = ['a', 'b'];
+  const { strength } = bradleyTerry(ids, new Map(), new Map());
+  const se = standardErrors(ids, new Map(), strength).get('a');
+  assert.ok(Math.abs(se - Math.SQRT2) < 1e-9, `se = ${se}`);
+});
+
+test('the error of a whole design is the error of a mean of six', () => {
+  const ids = ['a', 'b'];
+  const denoms = [5, 10, 20, 50, 100, 200];
+  const stats = denoms.map((d) => ({
+    denomination: d, designLo: 'a', designHi: 'b', winsLo: 7, winsHi: 3,
+  }));
+  const { byDenomination, families } = computeRankings(stats, ids, denoms);
+
+  const a = families.find((f) => f.designId === 'a');
+  const varSum = denoms.reduce((acc, d) => {
+    const row = byDenomination.get(d).find((r) => r.designId === 'a');
+    return acc + row.eloError ** 2;
+  }, 0);
+  assert.ok(Math.abs(a.eloError - Math.sqrt(varSum) / 6) < 1e-9);
+});
+
+test('with no votes at all every design is level at 1500, and says so', () => {
+  const ids = ['a', 'b', 'c'];
+  const { families } = computeRankings([], ids, [5]);
+  for (const f of families) {
+    assert.ok(Math.abs(f.elo - 1500) < 1e-6);
+    assert.ok(Number.isFinite(f.eloError) && f.eloError > 0);
+  }
+  const shown = rankWithTies(families);
+  assert.deepEqual(shown.map((r) => r.displayRank), [1, 1, 1]);
+});
+
+test('rankWithTies shares the position, and numbers the next one properly', () => {
+  const rows = [
+    { elo: 1600, eloError: 15 },
+    { elo: 1599, eloError: 15 },
+    { elo: 1400, eloError: 15 },
+  ];
+  const shown = rankWithTies(rows);
+  assert.deepEqual(shown.map((r) => r.displayRank), [1, 1, 3]);
+  assert.deepEqual(shown.map((r) => r.tied), [true, true, false]);
+});
+
+test('being level is not contagious down the list', () => {
+  // 1600 / 1585 / 1570 with se 15: the threshold is z·√(15²+15²) ≈ 21.2, so the
+  // second joins the first (15 apart) and the third does NOT get in through the
+  // second — it is 30 from the leader. Chained neighbour to neighbour this
+  // would be one group of three, and on the per-banknote ranking, where
+  // consecutive rows are a handful of points apart, one group of sixty.
+  const rows = [
+    { elo: 1600, eloError: 15 },
+    { elo: 1585, eloError: 15 },
+    { elo: 1570, eloError: 15 },
+  ];
+  assert.deepEqual(rankWithTies(rows).map((r) => r.displayRank), [1, 1, 3]);
+});
+
+test('rankWithTies does not touch the rows it is given', () => {
+  const rows = [{ elo: 1600, eloError: 15, rank: 1 }, { elo: 1599, eloError: 15, rank: 2 }];
+  const shown = rankWithTies(rows);
+  assert.equal(rows[1].displayRank, undefined);
+  assert.equal(shown[1].rank, 2, 'the strict position stays available');
 });
