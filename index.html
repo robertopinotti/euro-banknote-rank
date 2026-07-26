@@ -1,10 +1,49 @@
 <!doctype html>
-<html lang="it">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quale sarà la banconota più bella d'Europa?</title>
-<meta name="description" content="Vota a due a due le dieci proposte di design per le future banconote in euro e scopri la classifica calcolata con il modello Bradley–Terry.">
+
+<!-- The head is in English, and only in English, while the site opens in the
+     visitor's language. Two reasons. Crawlers do not run JavaScript, so what is
+     written here is what a shared link shows, whatever the sharer was reading;
+     and some of them (Slack, Signal, several feed readers) ignore og:title and
+     fall back to <title>, so a head in two languages would produce a different
+     card depending on the app. English is the one language this European
+     audience shares, and the strings below are STRINGS.en, tested for it.
+     The moment app.js runs, title, description and lang become the visitor's
+     language: this text is for machines. -->
+<title>Which will be Europe's most beautiful banknote?</title>
+<meta name="description" content="Vote two at a time on the ten design proposals for the future euro banknotes and see the ranking computed with the Bradley–Terry model.">
+
+<link rel="canonical" href="https://robertopinotti.github.io/euro-banknote-rank/">
+
+<!-- Absolute URLs on purpose: WhatsApp does not resolve relative ones, and it
+     is the channel the share button feeds. The declared width and height are
+     what makes the big card appear on the very first scrape instead of a
+     placeholder. The cover is not fingerprinted with ?v= — Facebook and
+     WhatsApp cache a scrape by URL for days, so if it ever changes, rename the
+     file rather than overwriting it. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Banknote of Europe">
+<meta property="og:url" content="https://robertopinotti.github.io/euro-banknote-rank/">
+<meta property="og:title" content="Which will be Europe's most beautiful banknote?">
+<meta property="og:description" content="Vote two at a time on the ten design proposals for the future euro banknotes and see the ranking computed with the Bradley–Terry model.">
+<meta property="og:image" content="https://robertopinotti.github.io/euro-banknote-rank/assets/og-cover.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Two of the proposed 50 euro banknotes side by side, E and H, with a vs sign between them.">
+<meta property="og:locale" content="en_GB">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+
+<!-- Title, description and image fall back to the og:* ones by specification.
+     Repeating them here would be three more strings to keep in step by hand. -->
+<meta name="twitter:card" content="summary_large_image">
+
 <link rel="stylesheet" href="assets/css/style.css?v=6881c487">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%B6%3C/text%3E%3C/svg%3E">
 </head>
@@ -173,6 +212,6 @@
   }
 }
 </script>
-<script type="module" src="src/app.js?v=fa47838d"></script>
+<script type="module" src="src/app.js?v=b340292f"></script>
 </body>
 </html>

@@ -47,7 +47,7 @@ and the ranking is your own.
 ## Tests
 
 ```bash
-npm test                            # 9 rating-engine tests, no dependencies
+npm test                            # 13 tests: rating engine and share card, no dependencies
 npm install && npm run test:rules   # 38 tests against the Firestore emulator (needs Java)
 ```
 
@@ -207,9 +207,12 @@ src/design-texts.js            ECB design texts in 5 languages (generated)
 src/image-aspects.js           aspect ratios of the 120 images (generated)
 assets/css/style.css           single stylesheet, light and dark
 assets/banknotes/              120 WebP images (60 fronts + 60 reverses)
+assets/og-cover.jpg            the picture shown when the link is shared (generated)
 tools/stamp-assets.mjs         cache-busting fingerprints and import map
 tools/seed-aggregate.mjs       one-off migration to the single-document schema
 tools/measure-images.mjs       regenerates src/image-aspects.js from the images
+tools/og-cover.html            the share picture, as a page you can open and edit
+tools/make-og-image.mjs        screenshots that page into assets/og-cover.jpg
 firebase/firestore.rules       Firestore security rules
 test/                          rating engine, rules, and the Firestore adapter
 ```

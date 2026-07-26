@@ -34,8 +34,9 @@ jobs:
           node-version: '22'
           cache: npm
 
-      # The rating engine: the part with the real logic.
-      - run: node --test test/rating.test.mjs
+      # The rating engine, and the share-card tags: the parts that run without
+      # a browser and without the emulator.
+      - run: node --test test/rating.test.mjs test/meta.test.mjs
 
       # The Firestore security rules, exercised against the emulator. On the
       # free plan they are the only thing protecting the data, so a green build

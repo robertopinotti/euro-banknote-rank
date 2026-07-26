@@ -46,7 +46,7 @@ In practice:
 
 ```bash
 python3 -m http.server 8000   # serve the site locally
-npm test                      # 9 rating-engine tests
+npm test                      # 13 tests: rating engine and share card
 npm run test:rules            # 35 tests against the Firestore emulator (needs Java)
 npm run stamp                 # realign the cache-busting fingerprints in index.html
 ```
@@ -63,10 +63,18 @@ npm run stamp                 # realign the cache-busting fingerprints in index.
 | `src/i18n.js` | all interface text in it/en/fr/de/es |
 | `config.js` | Firebase project and public key |
 | `tools/stamp-assets.mjs` | `?v=` fingerprints and the import map |
+| `tools/og-cover.html` | the share picture, as a page; `tools/make-og-image.mjs` screenshots it |
 
-**Generated files, never hand-edit:** `src/design-texts.js` (official ECB texts)
-and `src/image-aspects.js` — regenerate the latter with
-`node tools/measure-images.mjs` after touching any banknote image.
+**Generated files, never hand-edit:** `src/design-texts.js` (official ECB texts),
+`src/image-aspects.js` — regenerate with `node tools/measure-images.mjs` after
+touching any banknote image — and `assets/og-cover.jpg`, from
+`node tools/make-og-image.mjs` (needs Playwright, deliberately not a dependency).
+
+**The `<head>` is in English and stays in English.** `<title>`, the description
+and the `og:*` tags are static because crawlers do not run JavaScript: whatever
+`applyLanguage()` writes at runtime is invisible to them. Do not translate the
+`og:*` tags there, and keep `og:title`/`og:description` equal to `STRINGS.en` —
+`test/meta.test.mjs` fails if they drift apart.
 
 ## Conventions
 

@@ -525,6 +525,9 @@ function applyLanguage() {
   document
     .querySelector('meta[name="description"]')
     ?.setAttribute('content', t('meta.description'));
+  // Do NOT translate the og:* tags here. Crawlers never run this code: the card
+  // they show is the English one written in index.html, and rewriting the tags
+  // would only make them look translated to whoever inspects the page.
 
   for (const el of document.querySelectorAll('[data-i18n]')) {
     el.textContent = t(el.dataset.i18n);

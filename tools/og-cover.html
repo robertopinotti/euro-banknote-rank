@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Social preview — source composition</title>
+<!--
+  The picture that appears when the link is shared, laid out as a plain page so
+  it can be opened, looked at and adjusted in a browser. tools/make-og-image.mjs
+  screenshots this file at 1200x630 into assets/og-cover.jpg.
+
+  1200x630 (1.91:1) is what Facebook and WhatsApp show large; below roughly
+  300px on the short side they fall back to a small thumbnail beside the text.
+
+  Two deliberate choices:
+
+  - No sentence in any language. The head of index.html is monolingual, and the
+    wording lives in og:title, which is text and can be changed without
+    regenerating a JPEG. The euro mark, the banknotes and the letters A-J read
+    the same in the five languages of the site.
+  - The attribution line is not decoration. The ECB allows these images to be
+    reproduced provided they are identified as design proposals with the source
+    named, and this is the one place where the picture travels away from the
+    site without the footer next to it.
+
+  Paths are relative to this file: it is opened straight from disk, not served.
+-->
+<style>
+  :root {
+    /* The light theme of assets/css/style.css, copied rather than imported:
+       the stylesheet is built around the site's layout, and a preview that
+       silently followed a change of it would be worse than one that does not. */
+    --bg: #f7f5f0;
+    --bg-raised: #ffffff;
+    --ink: #1c1a17;
+    --ink-faint: #736c60;
+    --line: #dcd7cc;
+    --accent: #0b4ea2;
+    --on-accent: #ffffff;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    width: 1200px;
+    height: 630px;
+    margin: 0;
+    padding: 40px 44px 34px;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+    overflow: hidden;
+  }
+
+  .mark {
+    display: grid;
+    place-items: center;
+    width: 68px;
+    height: 68px;
+    border-radius: 18px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 40px;
+    font-weight: 700;
+    /* The glyph sits high in its box; nudged down so it looks centred. */
+    padding-bottom: 4px;
+  }
+
+  .stage {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .note {
+    position: relative;
+    width: 530px;
+    padding: 12px;
+    border-radius: 16px;
+    background: var(--bg-raised);
+    box-shadow: 0 2px 4px rgba(28, 26, 23, .06), 0 18px 40px rgba(28, 26, 23, .14);
+  }
+
+  .note img {
+    display: block;
+    width: 100%;
+    border-radius: 5px;
+  }
+
+  /* The letter chip, same idea as the one on the ranking rows. */
+  /* On the outer corners: in the middle they would run into the "vs". */
+  .letter {
+    position: absolute;
+    bottom: -16px;
+    right: -16px;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .note:first-child .letter { right: auto; left: -16px; }
+
+  .note:first-child { transform: rotate(-2.5deg); margin-right: -34px; }
+  .note:last-child  { transform: rotate(2.5deg);  margin-left: -34px; }
+
+  .versus {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 78px;
+    height: 78px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    color: var(--ink-faint);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: .04em;
+  }
+
+  .credit {
+    margin: 0;
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 21px;
+  }
+</style>
+</head>
+<body>
+
+<div class="mark">€</div>
+
+<div class="stage">
+  <div class="note">
+    <img src="../assets/banknotes/banknote-design-proposal-e-50-front.webp" alt="">
+    <span class="letter">E</span>
+  </div>
+  <div class="versus">vs</div>
+  <div class="note">
+    <img src="../assets/banknotes/banknote-design-proposal-h-50-front.webp" alt="">
+    <span class="letter">H</span>
+  </div>
+</div>
+
+<p class="credit">Design proposals — European Central Bank</p>
+
+</body>
+</html>

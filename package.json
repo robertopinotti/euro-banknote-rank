@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Pairwise voting on the ten design proposals for the future euro banknotes",
   "scripts": {
-    "test": "node --test test/rating.test.mjs",
+    "test": "node --test test/rating.test.mjs test/meta.test.mjs",
     "test:rules": "firebase emulators:exec --only firestore --project banconota-test \"node --test test/firestore-rules.test.mjs test/firestore-store.test.mjs\"",
     "start": "python3 -m http.server 8000",
     "stamp": "node tools/stamp-assets.mjs",
