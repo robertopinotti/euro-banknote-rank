@@ -87,12 +87,6 @@ export const STRINGS = {
     'rank.proposal': 'Disegno {letter}',
     'rank.proposalDenom': 'Disegno {letter} • {denom} €',
     'rank.showMore': 'Mostra altre {n}',
-    // Il segno accanto al numero: oggi e' lo stesso in tutte le lingue, ma sta
-    // in i18n perche' un giorno qualcuno vorra' "ex aequo" o "empate".
-    'rank.tieMark': '=',
-    'rank.tieA11y': 'a pari merito',
-    'rank.tieNote':
-      'Le posizioni a pari merito sono quelle che i voti raccolti non riescono a separare.',
 
     'designs.title': 'Le dieci proposte',
     'designs.ledeHtml':
@@ -214,13 +208,6 @@ export const STRINGS = {
       cima alla classifica: con poche decine di voti le posizioni si ribaltano
       facilmente, e solo dopo qualche centinaio diventano stabili.</p>
 
-      <p>Ogni punteggio ha la sua incertezza, calcolata dall'informazione di
-      Fisher: dice quanto i voti raccolti hanno inchiodato quel design. Due
-      punteggi che distano meno di un errore standard combinato condividono la
-      posizione, perché i voti non li separano. Il calcolo ignora la
-      correlazione fra le due stime, quindi dichiara qualche pari merito in
-      più del necessario: fra i due errori possibili, è quello onesto.</p>
-
       <h2>Chi ha ancora pochi voti</h2>
       <p>Un design che ha vinto i primi tre confronti avrebbe forza infinita: il
       modello, da solo, non saprebbe dove fermarsi. Si aggiungono quindi due
@@ -313,10 +300,6 @@ export const STRINGS = {
     'rank.proposal': 'Design {letter}',
     'rank.proposalDenom': 'Design {letter} • €{denom}',
     'rank.showMore': 'Show {n} more',
-    'rank.tieMark': '=',
-    'rank.tieA11y': 'equal',
-    'rank.tieNote':
-      'Positions shown as equal are the ones the votes collected cannot tell apart.',
 
     'designs.title': 'The ten proposals',
     'designs.ledeHtml':
@@ -440,14 +423,6 @@ export const STRINGS = {
       the ranking: with a few dozen votes positions flip easily, and only after a
       few hundred do they settle.</p>
 
-      <p>Every score carries its own uncertainty, computed from the Fisher
-      information: how firmly the votes collected so far pin that design down.
-      Two scores less than one combined standard error apart share a position,
-      because the votes do not separate them. The calculation ignores the
-      correlation between the two estimates, so it declares slightly more ties
-      than strictly necessary — of the two possible errors, that is the honest
-      one.</p>
-
       <h2>Designs with few votes so far</h2>
       <p>A design that won its first three comparisons would have infinite
       strength: the model alone would not know where to stop. Two fictitious
@@ -541,10 +516,6 @@ export const STRINGS = {
     'rank.proposal': 'Graphisme {letter}',
     'rank.proposalDenom': 'Graphisme {letter} • {denom} €',
     'rank.showMore': 'Afficher {n} de plus',
-    'rank.tieMark': '=',
-    'rank.tieA11y': 'ex aequo',
-    'rank.tieNote':
-      'Les positions ex aequo sont celles que les votes recueillis ne parviennent pas à départager.',
 
     'designs.title': 'Les dix propositions',
     'designs.ledeHtml':
@@ -675,14 +646,6 @@ export const STRINGS = {
       classement : avec quelques dizaines de votes les positions basculent
       facilement, et elles ne se stabilisent qu'après quelques centaines.</p>
 
-      <p>Chaque score porte son incertitude, calculée à partir de l'information
-      de Fisher : elle dit à quel point les votes recueillis ont fixé ce
-      graphisme. Deux scores distants de moins d'une erreur type combinée
-      partagent la position, parce que les votes ne les départagent pas. Le
-      calcul ignore la corrélation entre les deux estimations, il déclare donc
-      un peu plus d'ex aequo que nécessaire : des deux erreurs possibles, c'est
-      la plus honnête.</p>
-
       <h2>Ceux qui ont encore peu de votes</h2>
       <p>Un graphisme ayant gagné ses trois premières comparaisons aurait une
       force infinie : le modèle seul ne saurait pas où s'arrêter. On ajoute donc
@@ -777,10 +740,6 @@ export const STRINGS = {
     'rank.proposal': 'Design {letter}',
     'rank.proposalDenom': 'Design {letter} • {denom} €',
     'rank.showMore': 'Weitere {n} anzeigen',
-    'rank.tieMark': '=',
-    'rank.tieA11y': 'gleichauf',
-    'rank.tieNote':
-      'Gleichauf stehen die Plätze, die sich mit den gesammelten Stimmen nicht trennen lassen.',
 
     'designs.title': 'Die zehn Vorschläge',
     'designs.ledeHtml':
@@ -911,14 +870,6 @@ export const STRINGS = {
       angezeigten Vergleiche zu lesen: Bei einigen Dutzend Stimmen kippen die
       Platzierungen leicht, erst nach einigen Hundert werden sie stabil.</p>
 
-      <p>Zu jeder Punktzahl gehört ihre Unsicherheit, berechnet aus der
-      Fisher-Information: Sie sagt, wie fest die bisherigen Stimmen diesen
-      Entwurf einordnen. Zwei Punktzahlen, die weniger als einen kombinierten
-      Standardfehler auseinanderliegen, teilen sich den Platz, weil die Stimmen
-      sie nicht trennen. Die Rechnung lässt die Korrelation zwischen beiden
-      Schätzungen außer Acht und erklärt daher etwas mehr Gleichstände als
-      nötig — von beiden möglichen Fehlern der ehrlichere.</p>
-
       <h2>Entwürfe mit noch wenigen Stimmen</h2>
       <p>Ein Entwurf, der seine ersten drei Vergleiche gewonnen hat, hätte
       unendliche Stärke: Das Modell allein wüsste nicht, wo es aufhören soll.
@@ -1012,10 +963,6 @@ export const STRINGS = {
     'rank.proposal': 'Diseño {letter}',
     'rank.proposalDenom': 'Diseño {letter} • {denom} €',
     'rank.showMore': 'Mostrar {n} más',
-    'rank.tieMark': '=',
-    'rank.tieA11y': 'empatado',
-    'rank.tieNote':
-      'Los puestos empatados son los que los votos recogidos no consiguen separar.',
 
     'designs.title': 'Las diez propuestas',
     'designs.ledeHtml':
@@ -1140,14 +1087,6 @@ export const STRINGS = {
       número de comparaciones indicado arriba: con unas decenas de votos las
       posiciones cambian con facilidad, y solo tras unos cientos se
       estabilizan.</p>
-
-      <p>Cada puntuación lleva su incertidumbre, calculada a partir de la
-      información de Fisher: dice hasta qué punto los votos recogidos han
-      fijado ese diseño. Dos puntuaciones separadas por menos de un error
-      estándar combinado comparten el puesto, porque los votos no las separan.
-      El cálculo ignora la correlación entre las dos estimaciones, así que
-      declara algún empate de más: de los dos errores posibles, es el
-      honesto.</p>
 
       <h2>Los que aún tienen pocos votos</h2>
       <p>Un diseño que hubiera ganado sus tres primeras comparaciones tendría

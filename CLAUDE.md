@@ -46,7 +46,7 @@ In practice:
 
 ```bash
 python3 -m http.server 8000   # serve the site locally
-npm test                      # 20 tests: rating engine and share card
+npm test                      # 13 tests: rating engine and share card
 npm run test:rules            # 35 tests against the Firestore emulator (needs Java)
 npm run stamp                 # realign the cache-busting fingerprints in index.html
 ```

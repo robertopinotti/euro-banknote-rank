@@ -24,7 +24,7 @@ import {
   translate,
 } from './i18n.js';
 
-import { computeRankings, pickPair, rankWithTies } from './rating.js';
+import { computeRankings, pickPair } from './rating.js';
 
 import {
   createStore,
@@ -401,16 +401,9 @@ function rankRow(entry, denomination) {
       ? DENOMINATIONS.map((d) => notePair(entry.designId, d, design.letter)).join('')
       : notePair(entry.designId, denomination, design.letter);
 
-  // Il primo posto si giudica sulla posizione mostrata: quando le sei banconote
-  // di un disegno sono a pari merito l'oro tocca a tutte e sei, non a una sola.
   return `
-    <li class="rank-row ${entry.displayRank === 1 ? 'is-first' : ''} ${entry.tied ? 'is-tied' : ''}">
-      <div class="rank-pos">${entry.displayRank}${
-        entry.tied
-          ? `<span class="rank-tie" aria-hidden="true">${t('rank.tieMark')}</span>
-             <span class="visually-hidden">${t('rank.tieA11y')}</span>`
-          : ''
-      }</div>
+    <li class="rank-row ${entry.rank === 1 ? 'is-first' : ''}">
+      <div class="rank-pos">${entry.rank}</div>
       <div class="rank-name">${
         denomination == null
           ? t('rank.proposal', { letter: design.letter })
@@ -442,9 +435,7 @@ function allNotesRanking() {
   }
   rows.sort((a, b) => b.strength - a.strength);
   rows.forEach((r, i) => (r.rank = i + 1));
-  // Il pari merito si decide sull'elenco intero, non sulla fetta mostrata:
-  // altrimenti "mostra altre venti" cambierebbe i numeri delle righe già viste.
-  return rankWithTies(rows);
+  return rows;
 }
 
 function renderRankings() {
@@ -484,8 +475,7 @@ function renderRankings() {
   }
 
   // Per disegno
-  $('ranking-designs-list').innerHTML =
-    rankWithTies(families).map((f) => rankRow(f, null)).join('');
+  $('ranking-designs-list').innerHTML = families.map((f) => rankRow(f, null)).join('');
 }
 
 /* ------------------------------------------------------------- i design */

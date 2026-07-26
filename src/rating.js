@@ -109,83 +109,6 @@ export function bradleyTerry(items, wins, pairN, opts = {}) {
   return { strength: p, iterations, converged };
 }
 
-/**
- * Approximate standard error of ln(p_i), from the diagonal of the Fisher
- * information. A pair (i,j) with n_ij comparisons contributes
- * n_ij · p_i·p_j / (p_i+p_j)², and the virtual opponent contributes
- * 2·prior·p_i / (p_i+1)² — which is what keeps the value finite for a design
- * nobody has voted on yet.
- *
- * The off-diagonal terms are ignored, so this says how provisional a score
- * still is; it is not an exact confidence interval. Ignoring the correlation
- * between two estimates overstates the difference between them, so a criterion
- * built on it calls two designs indistinguishable slightly more often than it
- * should — which is the safe direction for a ranking that has to admit what it
- * does not know.
- */
-export function standardErrors(items, pairN, strength, prior = 1) {
-  const se = new Map();
-  for (const i of items) {
-    const pi = strength.get(i);
-    let info = 0;
-    for (const j of items) {
-      if (i === j) continue;
-      const n = pairN.get(pairKeyOf(i, j)) || 0;
-      if (n === 0) continue;
-      const pj = strength.get(j);
-      info += (n * pi * pj) / ((pi + pj) * (pi + pj));
-    }
-    info += (2 * prior * pi * 1) / ((pi + 1) * (pi + 1));
-    se.set(i, info > 0 ? 1 / Math.sqrt(info) : Infinity);
-  }
-  return se;
-}
-
-/**
- * Assigns the position to show, putting on equal footing the rows the data do
- * not separate.
- *
- * Rows come in already ordered by strength. Each group starts from its leader,
- * and the rows that follow join it while
- *
- *     |elo_leader − elo_row|  <  z · √(se_leader² + se_row²)
- *
- * Anchoring to the leader rather than to the previous row is the whole point:
- * chaining neighbour to neighbour is not transitive, and on the per-banknote
- * ranking — where consecutive rows are 1 to 5 points apart against a threshold
- * of about 54 — it would swallow all sixty rows into a single group.
- *
- * Numbering is the sporting one: a group of six occupies positions 1 to 6 and
- * the next row is 7th, not 2nd.
- *
- * @param {Array<{elo:number, eloError:number}>} rows sorted by strength, best first
- * @param {number} [z=1] how many combined standard errors count as a real gap
- * @returns {Array<object>} copies with `displayRank` and `tied` added
- */
-export function rankWithTies(rows, z = 1) {
-  // Copies: the caller's `rank` means something else — the strict position —
-  // and both are needed at the same time.
-  const out = rows.map((r) => ({ ...r, displayRank: 1, tied: false }));
-
-  let leader = 0;
-  for (let i = 1; i < out.length; i++) {
-    const a = out[leader];
-    const b = out[i];
-    const threshold = z * Math.hypot(a.eloError ?? 0, b.eloError ?? 0);
-
-    if (Math.abs(a.elo - b.elo) < threshold) {
-      b.displayRank = a.displayRank;
-      a.tied = true;
-      b.tied = true;
-    } else {
-      b.displayRank = i + 1;
-      leader = i;
-    }
-  }
-
-  return out;
-}
-
 function pairKeyOf(a, b) {
   return a < b ? `${a}|${b}` : `${b}|${a}`;
 }
@@ -267,7 +190,6 @@ export function computeRankings(pairStats, designIds, denominations, opts = {}) 
     }
 
     const { strength } = bradleyTerry(designIds, wins, pairN, { prior });
-    const se = standardErrors(designIds, pairN, strength, prior);
 
     const rows = designIds.map((id) => {
       const w = wins.get(id) || 0;
@@ -278,9 +200,6 @@ export function computeRankings(pairStats, designIds, denominations, opts = {}) 
         strength: strength.get(id),
         logStrength: Math.log(strength.get(id)),
         elo: strengthToElo(strength.get(id)),
-        // On the same scale as `elo`, so the two can be compared without
-        // anyone having to remember that the model works in logarithms.
-        eloError: se.get(id) * ELO_SCALE,
         wins: w,
         losses: l,
         played: w + l,
@@ -305,17 +224,9 @@ export function computeRankings(pairStats, designIds, denominations, opts = {}) 
     const wins = perNote.reduce((a, r) => a + r.wins, 0);
     const losses = perNote.reduce((a, r) => a + r.losses, 0);
 
-    // Error of a mean of six estimates: √(Σ se²)/6. The six denominations are
-    // treated as independent, which they are not — the same people vote on all
-    // of them — so this errs on the small side.
-    const varSum = perNote.reduce(
-      (acc, r) => acc + (r.eloError / ELO_SCALE) ** 2, 0
-    );
-
     return {
       designId: id,
       elo: ELO_BASE + ELO_SCALE * meanLog,
-      eloError: (Math.sqrt(varSum) / perNote.length) * ELO_SCALE,
       logStrength: meanLog,
       strength: Math.exp(meanLog),
       wins,

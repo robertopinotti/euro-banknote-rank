@@ -27,12 +27,6 @@ The displayed score is that strength on the Elo scale,
 `R = 1500 + (400/ln 10) · ln p`: a 100-point gap means roughly a 64% chance of
 winning, 400 points mean 10 to 1.
 
-**Positions the votes do not separate are shown as equal.** Every score comes
-with a standard error from the Fisher information, and two scores less than one
-combined error apart share a position — with 3,000 votes D and E sit one point
-apart, and calling one of them third and the other fourth would be inventing a
-difference. A group of six occupies positions 1 to 6 and the next row is 7th.
-
 The ranking has two levels: **by banknote** (all 60) and **by design** (the 10
 designs, each averaging its six denominations). Full explanation on the
 **Method** page of the site.
@@ -53,7 +47,7 @@ and the ranking is your own.
 ## Tests
 
 ```bash
-npm test                            # 20 tests: rating engine and share card, no dependencies
+npm test                            # 13 tests: rating engine and share card, no dependencies
 npm install && npm run test:rules   # 38 tests against the Firestore emulator (needs Java)
 ```
 
@@ -281,11 +275,6 @@ reverse: 120 images in total.
   survey** of the European population and must not be presented as one.
 - The voter id lives in the browser: it can be worked around.
 - You vote on the whole banknote: front and reverse are shown together.
-- The by-banknote ranking separates very little: sixty rows built from votes
-  that never compare one denomination with another, a few points apart each.
-  That is why so many of its positions come out equal — and why, in local mode
-  with a handful of votes, the whole list is one single group. It is not a
-  glitch: with six votes nothing can be ordered.
 
 ---
 
