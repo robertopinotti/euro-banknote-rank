@@ -749,6 +749,16 @@ kbd {
 
 .seg-sm .seg-btn { font-size: .82rem; padding: 5px 12px; }
 
+.footer-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: .85rem;
+  margin: 0 0 14px;
+}
+
+.footer-links span { color: var(--ink-faint); }
+
 .footer-credit {
   margin: 0;
   font-size: .9rem;

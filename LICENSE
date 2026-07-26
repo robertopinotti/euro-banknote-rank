@@ -1,0 +1,51 @@
+MIT License
+
+Copyright (c) 2026 Roberto Pinotti
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--------------------------------------------------------------------------
+
+WHAT THIS LICENCE DOES NOT COVER
+
+The MIT terms above apply to the source code of this project and to nothing
+else. Two sets of files in this repository are not the author's to license,
+and the permission granted above does not extend to them:
+
+  assets/banknotes/*      120 images of the design proposals for the future
+                          euro banknotes. Copyright European Central Bank.
+                          Reproduced for information purposes. The ECB permits
+                          informational, editorial and news use; commercial,
+                          promotional or merchandising use, alteration,
+                          misleading presentation, and any use implying ECB or
+                          Eurosystem endorsement all require prior written
+                          permission. The images must always be identified as
+                          design proposals, citing the ECB as the source.
+                          https://www.ecb.europa.eu/euro/banknotes/future_banknotes/html/design-proposals.en.html
+
+  src/design-texts.js     The ECB's own descriptions of the ten designs, in
+                          five languages, taken from the corresponding
+                          language versions of the page above. Copyright
+                          European Central Bank.
+
+If you reuse this project, the code comes with it; the images and the ECB's
+texts do not. Fetch them yourself under the ECB's terms, or replace them.
+
+This project is independent. It has no relationship with the European Central
+Bank or the Eurosystem, and no bearing on the official choice of design.

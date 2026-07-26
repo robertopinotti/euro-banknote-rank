@@ -74,7 +74,7 @@ const designText = (id) =>
 
 /* ------------------------------------------------------------ instradamento */
 
-const VIEWS = ['vota', 'classifica', 'design', 'metodo'];
+const VIEWS = ['vota', 'classifica', 'design', 'metodo', 'privacy'];
 
 /** Falso solo alla prima chiamata di showView, all'apertura della pagina. */
 let viewAlreadyShown = false;
@@ -540,6 +540,7 @@ function applyLanguage() {
     el.setAttribute('aria-label', t(el.dataset.i18nAria));
   }
   $('method-body').innerHTML = t('method.bodyHtml');
+  $('privacy-body').innerHTML = t('privacy.bodyHtml');
 
   for (const b of $('lang-buttons').querySelectorAll('.seg-btn')) {
     setSegState(b, b.dataset.value === state.lang);

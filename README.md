@@ -292,5 +292,19 @@ proposals, citing the ECB as the source.
 This project is independent, has no relationship with the ECB, and has no bearing
 on the official choice of design.
 
-The code belongs to its respective authors; the images remain subject to the
-ECB's terms of use above.
+## Licence
+
+The code is [MIT](LICENSE). The banknote images and the ECB's design texts are
+**not** covered by it — they are the ECB's, under the terms above, and the
+LICENSE file says so explicitly. Reuse the code freely; fetch the images
+yourself, or replace them.
+
+## Privacy
+
+No cookies, no analytics, no third-party scripts. Six things are kept in the
+browser's local storage — theme, language, votes cast, pairs already seen, the
+last ranking received, and any votes made while the database was unreachable —
+and none of them leaves it. A vote sends one thing: add one to a named counter.
+There is no identifier attached, which also means a vote cannot be undone or
+traced back. The site says all of this on its own **Privacy** page, linked from
+the footer, in all five languages.

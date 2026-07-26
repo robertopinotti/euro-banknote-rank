@@ -117,6 +117,60 @@ export const STRINGS = {
       'Riprodotte a fini informativi. Progetto indipendente, senza alcun legame ' +
       "con la BCE o l'Eurosistema, né alcuna loro approvazione.",
 
+    'privacy.title': 'Privacy e dati',
+    'privacy.link': 'Privacy',
+    'footer.licence': 'Licenza',
+    'privacy.bodyHtml': `
+      <h2>Questo sito non usa cookie</h2>
+      <p>Non uno. Non c'è nessun banner da accettare perché non c'è niente da
+      accettare: nessun cookie, nessuno strumento di statistica, nessuno script
+      di terze parti. La pagina che stai leggendo non chiede niente a nessuno
+      tranne che al server che la ospita.</p>
+
+      <h2>Cosa resta nel tuo browser</h2>
+      <p>Sei cose, salvate nella memoria locale del browser. Non escono da
+      qui: non vengono inviate a nessun server, né al mio né ad altri.</p>
+      <ul>
+        <li>il <strong>tema</strong> scelto (automatico, chiaro o scuro);</li>
+        <li>la <strong>lingua</strong> scelta;</li>
+        <li><strong>quanti voti</strong> hai espresso, per mostrarti il numero;</li>
+        <li>le <strong>coppie già viste</strong>, per non riproportele (le
+        ultime 400);</li>
+        <li>l'<strong>ultima classifica</strong> ricevuta, per poterti mostrare
+        qualcosa se il database non risponde.</li>
+        <li>i <strong>voti espressi mentre il database non rispondeva</strong>, che
+        restano qui e non vengono inviati in un secondo momento.</li>
+      </ul>
+      <p>Servono tutte a far funzionare il sito come te lo aspetti, e spariscono
+      cancellando i dati del sito dalle impostazioni del browser.</p>
+
+      <h2>Cosa viene inviato quando voti</h2>
+      <p>Una sola cosa: <em>aggiungi uno</em> a un contatore. Per esempio
+      <code>d50_a_c_lo</code>, che vuol dire «sul taglio da 50 €, fra i disegni
+      A e C ha vinto A». Nient'altro. Nessun identificativo, nessun numero di
+      sessione, nessun account: il server non ha modo di sapere che due voti
+      vengono dalla stessa persona.</p>
+      <p>La conseguenza va detta per intero, perché non è tutta a tuo favore:
+      i tuoi voti sono anonimi, ma proprio per questo non si possono annullare
+      né ricondurre a te, e chi volesse votare più volte non ha molto da
+      superare. È un compromesso scelto apposta — nessun dato in cambio di
+      difese meno rigide.</p>
+
+      <h2>Chi vede il tuo indirizzo IP</h2>
+      <p>Due servizi, come accade con qualunque sito.</p>
+      <ul>
+        <li><strong>GitHub Pages</strong>, che ospita le pagine e le immagini;</li>
+        <li><strong>Google Cloud Firestore</strong>, il database che conserva i
+        conteggi, quando leggi la classifica o voti.</li>
+      </ul>
+      <p>Entrambi registrano le richieste che ricevono, come fa ogni server. Io
+      non uso quei dati per nessuna statistica e non ho modo di collegarli a te.</p>
+
+      <h2>Come verificarlo</h2>
+      <p>Non devi fidarti sulla parola: il codice di questo sito è pubblico. Se
+      apri gli strumenti per sviluppatori del browser, alla scheda Rete, vedi
+      esattamente quali richieste partono e cosa contengono.</p>`,
+
     'method.title': 'Come si calcola la classifica',
     'method.bodyHtml': `
       <h2>Perché confronti a due</h2>
@@ -275,6 +329,62 @@ export const STRINGS = {
       `<a href="${ECB_URL}" target="_blank" rel="noopener">Future euro banknote design proposals</a>. ` +
       'Reproduced for information purposes. Independent project, with no link to ' +
       'and no endorsement from the ECB or the Eurosystem.',
+
+    'privacy.title': 'Privacy and data',
+    'privacy.link': 'Privacy',
+    'footer.licence': 'Licence',
+    'privacy.bodyHtml': `
+      <h2>This site uses no cookies</h2>
+      <p>Not one. There is no banner to accept because there is nothing to
+      accept: no cookies, no analytics, no third-party scripts. The page you
+      are reading asks nothing of anyone except the server hosting it.</p>
+
+      <h2>What stays in your browser</h2>
+      <p>Six things, kept in the browser's local storage. They do not leave
+      it: nothing is sent to any server, mine or anyone else's.</p>
+      <ul>
+        <li>the <strong>theme</strong> you picked (auto, light or dark);</li>
+        <li>the <strong>language</strong> you picked;</li>
+        <li><strong>how many votes</strong> you have cast, so the count can be
+        shown to you;</li>
+        <li>the <strong>pairs you have seen</strong>, so they are not offered
+        again (the last 400);</li>
+        <li>the <strong>last ranking</strong> received, so there is something
+        to show if the database does not answer.</li>
+        <li>any <strong>votes cast while the database was unreachable</strong>,
+        which stay here and are not sent later on.</li>
+      </ul>
+      <p>All of them exist to make the site behave as you would expect, and all
+      of them disappear if you clear this site's data in your browser
+      settings.</p>
+
+      <h2>What is sent when you vote</h2>
+      <p>One thing: <em>add one</em> to a counter. For instance
+      <code>d50_a_c_lo</code>, meaning "on the €50 note, between designs A and
+      C, A won". Nothing else. No identifier, no session number, no account:
+      the server has no way of knowing that two votes came from the same
+      person.</p>
+      <p>The consequence deserves to be stated in full, because it does not all
+      run in your favour: your votes are anonymous, but that is exactly why
+      they cannot be undone or traced back to you, and anyone wanting to vote
+      repeatedly does not have much to get past. It is a deliberate trade —
+      no data collected, in exchange for looser defences.</p>
+
+      <h2>Who sees your IP address</h2>
+      <p>Two services, as with any website.</p>
+      <ul>
+        <li><strong>GitHub Pages</strong>, which serves the pages and the
+        images;</li>
+        <li><strong>Google Cloud Firestore</strong>, the database holding the
+        counts, when you read the ranking or cast a vote.</li>
+      </ul>
+      <p>Both log the requests they receive, as every server does. I do not use
+      those logs for any analytics and have no way of connecting them to you.</p>
+
+      <h2>How to check</h2>
+      <p>You do not have to take my word for it: this site's code is public. Open
+      your browser's developer tools, Network tab, and you can see exactly which
+      requests go out and what they contain.</p>`,
 
     'method.title': 'How the ranking is computed',
     'method.bodyHtml': `
@@ -435,6 +545,67 @@ export const STRINGS = {
       `européenne — <a href="${ECB_URL}" target="_blank" rel="noopener">Future euro banknote design proposals</a>. ` +
       "Reproduites à titre d'information. Projet indépendant, sans aucun lien " +
       "avec la BCE ou l'Eurosystème, ni aucune approbation de leur part.",
+
+    'privacy.title': 'Confidentialité et données',
+    'privacy.link': 'Confidentialité',
+    'footer.licence': 'Licence',
+    'privacy.bodyHtml': `
+      <h2>Ce site n'utilise aucun cookie</h2>
+      <p>Aucun. Il n'y a pas de bandeau à accepter parce qu'il n'y a rien à
+      accepter : pas de cookies, pas d'outil de mesure d'audience, pas de script
+      tiers. La page que vous lisez ne demande rien à personne, sauf au serveur
+      qui l'héberge.</p>
+
+      <h2>Ce qui reste dans votre navigateur</h2>
+      <p>Six choses, conservées dans le stockage local du navigateur. Elles
+      n'en sortent pas : rien n'est envoyé à aucun serveur, ni au mien ni à
+      d'autres.</p>
+      <ul>
+        <li>le <strong>thème</strong> choisi (automatique, clair ou sombre) ;</li>
+        <li>la <strong>langue</strong> choisie ;</li>
+        <li><strong>combien de votes</strong> vous avez exprimés, pour vous en
+        afficher le nombre ;</li>
+        <li>les <strong>duels déjà vus</strong>, pour ne pas vous les reproposer
+        (les 400 derniers) ;</li>
+        <li>le <strong>dernier classement</strong> reçu, pour avoir quelque
+        chose à montrer si la base de données ne répond pas.</li>
+        <li>les <strong>votes exprimés pendant que la base de données ne
+        répondait pas</strong>, qui restent ici et ne sont pas envoyés ensuite.</li>
+      </ul>
+      <p>Tout cela sert à faire fonctionner le site comme vous l'attendez, et
+      disparaît en effaçant les données du site dans les réglages du
+      navigateur.</p>
+
+      <h2>Ce qui est envoyé quand vous votez</h2>
+      <p>Une seule chose : <em>ajouter un</em> à un compteur. Par exemple
+      <code>d50_a_c_lo</code>, c'est-à-dire « sur le billet de 50 €, entre les
+      graphismes A et C, c'est A qui l'emporte ». Rien d'autre. Aucun
+      identifiant, aucun numéro de session, aucun compte : le serveur n'a aucun
+      moyen de savoir que deux votes viennent de la même personne.</p>
+      <p>La conséquence mérite d'être dite entièrement, car elle ne joue pas
+      seulement en votre faveur : vos votes sont anonymes, mais c'est
+      précisément pour cela qu'on ne peut ni les annuler ni les rattacher à
+      vous, et que quiconque voudrait voter plusieurs fois n'a pas grand-chose
+      à contourner. C'est un compromis assumé — aucune donnée collectée, en
+      échange de défenses plus souples.</p>
+
+      <h2>Qui voit votre adresse IP</h2>
+      <p>Deux services, comme pour n'importe quel site.</p>
+      <ul>
+        <li><strong>GitHub Pages</strong>, qui héberge les pages et les
+        images ;</li>
+        <li><strong>Google Cloud Firestore</strong>, la base de données qui
+        conserve les décomptes, quand vous consultez le classement ou que vous
+        votez.</li>
+      </ul>
+      <p>Les deux journalisent les requêtes reçues, comme tout serveur. Je
+      n'utilise ces journaux pour aucune statistique et n'ai aucun moyen de les
+      relier à vous.</p>
+
+      <h2>Comment le vérifier</h2>
+      <p>Inutile de me croire sur parole : le code de ce site est public. Ouvrez
+      les outils de développement de votre navigateur, onglet Réseau, et vous
+      verrez exactement quelles requêtes partent et ce qu'elles contiennent.</p>`,
 
     'method.title': 'Comment le classement est calculé',
     'method.bodyHtml': `
@@ -599,6 +770,67 @@ export const STRINGS = {
       'Wiedergabe zu Informationszwecken. Unabhängiges Projekt, ohne Verbindung ' +
       'zur EZB oder zum Eurosystem und ohne deren Billigung.',
 
+    'privacy.title': 'Datenschutz und Daten',
+    'privacy.link': 'Datenschutz',
+    'footer.licence': 'Lizenz',
+    'privacy.bodyHtml': `
+      <h2>Diese Website verwendet keine Cookies</h2>
+      <p>Kein einziges. Es gibt kein Banner zum Akzeptieren, weil es nichts zu
+      akzeptieren gibt: keine Cookies, keine Analysewerkzeuge, keine Skripte
+      Dritter. Die Seite, die Sie gerade lesen, fragt niemanden etwas außer dem
+      Server, der sie ausliefert.</p>
+
+      <h2>Was in Ihrem Browser bleibt</h2>
+      <p>Sechs Dinge, im lokalen Speicher des Browsers. Sie verlassen ihn nicht:
+      Nichts wird an irgendeinen Server gesendet, weder an meinen noch an
+      andere.</p>
+      <ul>
+        <li>die gewählte <strong>Darstellung</strong> (automatisch, hell oder
+        dunkel);</li>
+        <li>die gewählte <strong>Sprache</strong>;</li>
+        <li><strong>wie viele Stimmen</strong> Sie abgegeben haben, um Ihnen die
+        Zahl anzuzeigen;</li>
+        <li>die <strong>bereits gesehenen Duelle</strong>, damit sie nicht
+        erneut erscheinen (die letzten 400);</li>
+        <li>die <strong>zuletzt empfangene Rangliste</strong>, damit etwas
+        angezeigt werden kann, wenn die Datenbank nicht antwortet.</li>
+        <li>die <strong>Stimmen, die Sie abgegeben haben, während die Datenbank
+        nicht erreichbar war</strong> — sie bleiben hier und werden später nicht
+        gesendet.</li>
+      </ul>
+      <p>All das dient dazu, dass die Website sich so verhält, wie Sie es
+      erwarten, und verschwindet, wenn Sie in den Browsereinstellungen die Daten
+      dieser Website löschen.</p>
+
+      <h2>Was beim Abstimmen gesendet wird</h2>
+      <p>Eine einzige Sache: <em>zähle eins dazu</em> bei einem Zähler. Zum
+      Beispiel <code>d50_a_c_lo</code>, also „bei der 50-Euro-Note hat zwischen
+      den Designs A und C A gewonnen". Sonst nichts. Keine Kennung, keine
+      Sitzungsnummer, kein Konto: Der Server kann nicht wissen, dass zwei
+      Stimmen von derselben Person stammen.</p>
+      <p>Die Folge gehört vollständig gesagt, denn sie ist nicht nur zu Ihrem
+      Vorteil: Ihre Stimmen sind anonym, aber genau deshalb lassen sie sich
+      weder zurücknehmen noch Ihnen zuordnen, und wer mehrfach abstimmen wollte,
+      hat wenig zu überwinden. Das ist ein bewusster Tausch — keine erhobenen
+      Daten, dafür weichere Abwehr.</p>
+
+      <h2>Wer Ihre IP-Adresse sieht</h2>
+      <p>Zwei Dienste, wie bei jeder Website.</p>
+      <ul>
+        <li><strong>GitHub Pages</strong>, das die Seiten und Bilder
+        ausliefert;</li>
+        <li><strong>Google Cloud Firestore</strong>, die Datenbank mit den
+        Zählern, wenn Sie die Rangliste lesen oder abstimmen.</li>
+      </ul>
+      <p>Beide protokollieren die eingehenden Anfragen, wie jeder Server. Ich
+      nutze diese Protokolle für keinerlei Statistik und kann sie Ihnen nicht
+      zuordnen.</p>
+
+      <h2>Wie Sie es überprüfen</h2>
+      <p>Sie müssen mir nicht glauben: Der Code dieser Website ist öffentlich.
+      Öffnen Sie die Entwicklerwerkzeuge Ihres Browsers, Reiter Netzwerk, und
+      Sie sehen genau, welche Anfragen hinausgehen und was sie enthalten.</p>`,
+
     'method.title': 'Wie die Rangliste berechnet wird',
     'method.bodyHtml': `
       <h2>Warum paarweise Vergleiche</h2>
@@ -760,6 +992,63 @@ export const STRINGS = {
       `<a href="${ECB_URL}" target="_blank" rel="noopener">Future euro banknote design proposals</a>. ` +
       'Reproducidas con fines informativos. Proyecto independiente, sin vínculo ' +
       'alguno con el BCE ni el Eurosistema, ni respaldo por su parte.',
+
+    'privacy.title': 'Privacidad y datos',
+    'privacy.link': 'Privacidad',
+    'footer.licence': 'Licencia',
+    'privacy.bodyHtml': `
+      <h2>Este sitio no usa cookies</h2>
+      <p>Ninguna. No hay ningún aviso que aceptar porque no hay nada que
+      aceptar: ni cookies, ni herramientas de analítica, ni scripts de terceros.
+      La página que estás leyendo no le pide nada a nadie salvo al servidor que
+      la aloja.</p>
+
+      <h2>Qué se queda en tu navegador</h2>
+      <p>Seis cosas, guardadas en el almacenamiento local del navegador. No
+      salen de ahí: no se envían a ningún servidor, ni al mío ni a otros.</p>
+      <ul>
+        <li>el <strong>tema</strong> elegido (automático, claro u oscuro);</li>
+        <li>el <strong>idioma</strong> elegido;</li>
+        <li><strong>cuántos votos</strong> has emitido, para mostrarte el
+        número;</li>
+        <li>los <strong>duelos ya vistos</strong>, para no repetírtelos (los
+        últimos 400);</li>
+        <li>la <strong>última clasificación</strong> recibida, para poder
+        mostrarte algo si la base de datos no responde.</li>
+        <li>los <strong>votos emitidos mientras la base de datos no
+        respondía</strong>, que se quedan aquí y no se envían después.</li>
+      </ul>
+      <p>Todo ello sirve para que el sitio funcione como esperas, y desaparece
+      al borrar los datos del sitio desde los ajustes del navegador.</p>
+
+      <h2>Qué se envía cuando votas</h2>
+      <p>Una sola cosa: <em>suma uno</em> a un contador. Por ejemplo
+      <code>d50_a_c_lo</code>, es decir «en el billete de 50 €, entre los
+      diseños A y C ha ganado A». Nada más. Ningún identificador, ningún número
+      de sesión, ninguna cuenta: el servidor no tiene forma de saber que dos
+      votos vienen de la misma persona.</p>
+      <p>La consecuencia conviene decirla entera, porque no todo va a tu favor:
+      tus votos son anónimos, pero precisamente por eso no se pueden anular ni
+      atribuir a ti, y quien quisiera votar varias veces no tiene mucho que
+      sortear. Es un compromiso elegido a propósito: ningún dato recogido, a
+      cambio de defensas más laxas.</p>
+
+      <h2>Quién ve tu dirección IP</h2>
+      <p>Dos servicios, como en cualquier sitio web.</p>
+      <ul>
+        <li><strong>GitHub Pages</strong>, que sirve las páginas y las
+        imágenes;</li>
+        <li><strong>Google Cloud Firestore</strong>, la base de datos que
+        guarda los recuentos, cuando consultas la clasificación o votas.</li>
+      </ul>
+      <p>Ambos registran las peticiones que reciben, como hace cualquier
+      servidor. Yo no uso esos registros para ninguna estadística y no tengo
+      forma de vincularlos contigo.</p>
+
+      <h2>Cómo comprobarlo</h2>
+      <p>No hace falta que me creas: el código de este sitio es público. Abre
+      las herramientas de desarrollo de tu navegador, pestaña Red, y verás
+      exactamente qué peticiones salen y qué contienen.</p>`,
 
     'method.title': 'Cómo se calcula la clasificación',
     'method.bodyHtml': `
