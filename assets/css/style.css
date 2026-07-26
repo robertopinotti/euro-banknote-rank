@@ -749,21 +749,15 @@ kbd {
 
 .seg-sm .seg-btn { font-size: .82rem; padding: 5px 12px; }
 
-.footer-links {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  font-size: .85rem;
-  margin: 0 0 14px;
-}
-
-.footer-links span { color: var(--ink-faint); }
-
+/* Testo in linea, non flex: cosi' su un telefono stretto la riga va a capo
+   come una frase invece di spezzarsi in colonne. */
 .footer-credit {
   margin: 0;
   font-size: .9rem;
   color: var(--ink-soft);
 }
+
+.footer-credit span[aria-hidden] { color: var(--ink-faint); }
 
 .footer-note {
   color: var(--ink-faint);
