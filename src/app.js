@@ -61,6 +61,10 @@ const state = {
   // le scorciatoie da tastiera non devono votare al buio.
   atMilestone: false,
   seen: loadSeenPairs(),
+  // Voti dati prima che il backend rispondesse. La prima sfida compare senza
+  // aspettare la rete, quindi si può votare quando `store` è ancora null: qui
+  // restano finché non c'è dove mandarli.
+  pendingVotes: [],
 };
 
 const $ = (id) => document.getElementById(id);
@@ -276,16 +280,34 @@ function vote(position) {
   state.seen.add(key);
   markPairSeen(key);
 
+  sendVote({ denomination, winner, loser });
+
+  const mine = myVoteCount();
+  if (mine > 0 && mine % MILESTONE_EVERY === 0) showMilestone(mine);
+  else nextChallenge();
+}
+
+/**
+ * Manda il voto al backend, o lo mette in coda se il backend non c'è ancora.
+ *
+ * La coda non è prudenza generica: le banconote compaiono prima che la rete
+ * abbia risposto, quindi esiste una finestra in cui `state.store` è null. Senza
+ * la coda quel voto sarebbe finito su un TypeError — perso, e con l'arena
+ * ferma, perché l'eccezione avrebbe interrotto `vote()` prima della sfida
+ * successiva.
+ */
+function sendVote({ denomination, winner, loser }) {
+  if (!state.store) {
+    state.pendingVotes.push({ denomination, winner, loser });
+    return;
+  }
+
   state.store.submitVote({ denomination, winner, loser }).catch((err) => {
     console.error(err);
     undoVoteLocally(denomination, winner, loser);
     recompute();
     showBanner('banner.voteFailed');
   });
-
-  const mine = myVoteCount();
-  if (mine > 0 && mine % MILESTONE_EVERY === 0) showMilestone(mine);
-  else nextChallenge();
 }
 
 function skip() {
@@ -682,17 +704,39 @@ async function main() {
   wireControls();
   showView(currentView());
 
+  // Le banconote prima della rete. Le statistiche servono a *scegliere* bene la
+  // coppia, non a mostrarla: aspettare il backend lasciava in pagina due carte
+  // vuote e collassate per tutta la durata della richiesta, senza dire niente.
+  // Senza statistiche pickPair pesa tutte le coppie allo stesso modo, cioè
+  // sorteggia — che è esattamente il comportamento giusto quando non si sa
+  // ancora niente.
+  nextChallenge();
+
   // Una sola lettura, non due: createStore restituisce le statistiche che ha
   // già scaricato per capire se il backend risponde. Chiederle di nuovo qui
   // raddoppiava il costo di ogni visita, ed è ciò che ha esaurito la quota
   // gratuita di Firestore lasciando tutti senza classifica condivisa.
   const { store, stats, staleSince } = await createStore();
   state.store = store;
-  state.stats = stats;
   state.staleSince = staleSince;
 
+  // Le statistiche lette prendono il posto di quelle in memoria, ma i voti dati
+  // durante l'attesa non sono ancora nel documento condiviso: vanno riapplicati
+  // sopra, altrimenti l'assegnazione li cancellerebbe dalla classifica senza
+  // che nulla lo mostri.
+  state.stats = stats;
+  for (const v of state.pendingVotes) {
+    applyVoteLocally(v.denomination, v.winner, v.loser);
+  }
+
   recompute();
-  nextChallenge();
+
+  // La sfida in corso non si tocca: cambiare le banconote sotto gli occhi di
+  // chi sta scegliendo sarebbe peggio dell'attesa che abbiamo appena tolto.
+
+  // splice() prima di inviare: sendVote rimette in coda se il backend manca, e
+  // riciclare l'array mentre lo si scorre è il modo di rimandare per sempre.
+  for (const v of state.pendingVotes.splice(0)) sendVote(v);
 
   if (state.store.mode === 'local') {
     showBanner(

@@ -21,6 +21,17 @@ import { BACKEND, FIREBASE } from '../config.js';
 /** I sei tagli che esistono davvero, per non fidarsi solo delle regole. */
 const VALID_DENOMINATIONS = new Set([5, 10, 20, 50, 100, 200]);
 
+/**
+ * Quanto si aspetta la lettura delle statistiche prima di rinunciare.
+ *
+ * Senza limite l'attesa dura fino al timeout del browser — decine di secondi —
+ * e in tutto quel tempo non arriva né la classifica condivisa né la copia
+ * salvata, che è proprio la risposta pensata per quando il backend non risponde.
+ * Sei secondi: chi ha una rete lenta ma viva fa in tempo, chi ha davanti un
+ * server muto smette di aspettare.
+ */
+const READ_TIMEOUT_MS = 6000;
+
 const LOCAL_STATS_KEY = 'ebr:pair-stats';
 const SEEN_KEY = 'ebr:seen-pairs';
 const MY_VOTES_KEY = 'ebr:my-votes';
@@ -145,7 +156,12 @@ export class FirestoreStore {
    */
   async loadPairStats() {
     const res = await fetch(
-      `${this.base}/stats/all?key=${encodeURIComponent(this.apiKey)}`
+      `${this.base}/stats/all?key=${encodeURIComponent(this.apiKey)}`,
+      // L'invio del voto non ha un limite di tempo, e non deve averlo: una
+      // scrittura interrotta potrebbe essere arrivata lo stesso, e annullarla
+      // in locale sfaserebbe il conteggio. Qui invece rinunciare è sicuro,
+      // perché non si perde niente: si legge di nuovo alla visita successiva.
+      { signal: AbortSignal.timeout?.(READ_TIMEOUT_MS) }
     );
 
     // A fresh install with nothing seeded yet: an empty ranking, not an error.
