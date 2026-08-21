@@ -28,6 +28,11 @@ const REPO_URL = 'https://github.com/robertopinotti/euro-banknote-rank';
 
 const SITE_URL = 'https://robertopinotti.github.io/euro-banknote-rank/';
 
+const AUTHOR_URL = 'https://robertopinotti.dev/';
+
+const AUTHOR_LINK =
+  `<a href="${AUTHOR_URL}" target="_blank" rel="noopener">robertopinotti.dev</a>`;
+
 export const STRINGS = {
   /* ------------------------------------------------------------- italiano */
   it: {
@@ -108,7 +113,7 @@ export const STRINGS = {
     'theme.dark': 'Scuro',
     'footer.language': 'Lingua',
     'footer.creditHtml':
-      'Creato da Roberto Pinotti · ' +
+      `Creato da ${AUTHOR_LINK} · ` +
       `<a href="${REPO_URL}" target="_blank" rel="noopener">GitHub</a>`,
     'footer.attributionHtml':
       'Le immagini sono <strong>proposte di design</strong> per una possibile ' +
@@ -321,7 +326,7 @@ export const STRINGS = {
     'theme.dark': 'Dark',
     'footer.language': 'Language',
     'footer.creditHtml':
-      'Created by Roberto Pinotti · ' +
+      `Created by ${AUTHOR_LINK} · ` +
       `<a href="${REPO_URL}" target="_blank" rel="noopener">GitHub</a>`,
     'footer.attributionHtml':
       'The images are <strong>design proposals</strong> for a possible future ' +
@@ -537,7 +542,7 @@ export const STRINGS = {
     'theme.dark': 'Sombre',
     'footer.language': 'Langue',
     'footer.creditHtml':
-      'Créé par Roberto Pinotti · ' +
+      `Créé par ${AUTHOR_LINK} · ` +
       `<a href="${REPO_URL}" target="_blank" rel="noopener">GitHub</a>`,
     'footer.attributionHtml':
       'Les images sont des <strong>propositions de graphisme</strong> pour une ' +
@@ -761,7 +766,7 @@ export const STRINGS = {
     'theme.dark': 'Dunkel',
     'footer.language': 'Sprache',
     'footer.creditHtml':
-      'Erstellt von Roberto Pinotti · ' +
+      `Erstellt von ${AUTHOR_LINK} · ` +
       `<a href="${REPO_URL}" target="_blank" rel="noopener">GitHub</a>`,
     'footer.attributionHtml':
       'Die Abbildungen sind <strong>Gestaltungsvorschläge</strong> für eine ' +
@@ -984,7 +989,7 @@ export const STRINGS = {
     'theme.dark': 'Oscuro',
     'footer.language': 'Idioma',
     'footer.creditHtml':
-      'Creado por Roberto Pinotti · ' +
+      `Creado por ${AUTHOR_LINK} · ` +
       `<a href="${REPO_URL}" target="_blank" rel="noopener">GitHub</a>`,
     'footer.attributionHtml':
       'Las imágenes son <strong>propuestas de diseño</strong> para una posible ' +
